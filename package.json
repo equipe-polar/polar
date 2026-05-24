@@ -1,0 +1,18 @@
+{
+  "name": "pola",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Sistema escolar para registro, acompanhamento e auditoria de ocorrencias institucionais.",
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @pola/api --filter web dev",
+    "lint": "pnpm --filter @pola/api lint",
+    "typecheck": "pnpm --filter @pola/api typecheck && pnpm --filter web typecheck",
+    "test": "pnpm --filter @pola/api test && pnpm --filter web test",
+    "build": "pnpm --filter @pola/api build && pnpm --filter web build",
+    "migrate:json": "pnpm --dir apps/api exec tsx ../../scripts/migrate-json-to-db.ts"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

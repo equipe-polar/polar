@@ -1,61 +1,106 @@
-# P.O.L.A.R. - API REST
+# P.O.L.A
 
-API REST em Node.js/Express para integrar o frontend HTML/CSS/JS, o backend Python e um endpoint externo de ocorrencias. A arquitetura principal do projeto foi preservada: a API nova fica em `api/src/`, o backend Python permanece em `backend/` e o frontend continua em `frontend/`.
+P.O.L.A e um sistema escolar para registro, acompanhamento e auditoria de ocorrencias institucionais.
 
-## Estrutura entregue
+## Problema Resolvido
+
+Escolas precisam registrar ocorrencias de forma padronizada, acompanhar responsaveis por cada etapa, preservar historico auditavel e impedir alteracoes indevidas depois do encerramento.
+
+## Funcionalidades Do MVP
+
+- Autenticacao JWT.
+- Controle por papeis: `PROFESSOR`, `COORDENADOR`, `DIRETOR`, `ADM`.
+- Gestao de usuarios, turmas e alunos.
+- Registro e acompanhamento de ocorrencias.
+- Historico automatico e imutavel de ocorrencias.
+- Notas, faltas, dashboard, relatorios, auditoria e notificacoes.
+- Validacao de entrada com Zod.
+- Testes de integracao da API com Vitest e Supertest.
+- Frontend React + TypeScript com layout institucional.
+
+## Arquitetura Atual
+
+A logica principal foi migrada para Node.js + TypeScript em `apps/api`. O frontend ativo fica em `apps/web` com React + TypeScript + Vite. O HTML antigo foi preservado em `legacy/frontend-html` apenas como prototipo visual.
 
 ```text
-api/
-  server.js
-  src/
-    app.js
-    controllers/
-    middlewares/
-    model/
-    routes/
-    util/
-backend/
-  services/
-    polar_api_service.py
-frontend/
-  js/
-    app.js
+apps/
+  api/
+    src/modules/
+    src/shared/
+    tests/
+  web/
+    src/
+    index.html
+database/
+docs/
+legacy/frontend-html/
+legacy/python/
+scripts/
 ```
 
-## Instalacao
+## Tecnologias
+
+- Node.js 20+
+- TypeScript
+- Express
+- React
+- Vite
+- React Router
+- Zod
+- JWT
+- bcryptjs
+- Vitest
+- Supertest
+- pnpm workspaces
+- PostgreSQL/Supabase planejado via `database/schema.sql`
+
+## Instalar
 
 ```bash
-cd api
-npm install
+pnpm install
 ```
 
-Requisitos locais:
+Se `pnpm` nao existir na maquina:
 
-- Node.js 18 ou superior.
-- Python instalado. No Windows, a API tenta ignorar atalhos do WindowsApps e usar o `python.exe` real.
-- Banco JSON padrao em `backend/banco_dados.json`.
+```bash
+npm install -g pnpm@9.15.4
+```
 
-## Configuracao
+## Configurar Ambiente
 
-Arquivo: `api/.env`
+Crie `apps/api/.env` a partir de `apps/api/.env.example`.
 
 ```env
+NODE_ENV=development
 PORT=3000
-PYTHON_PATH=py
-CORS_ORIGIN=*
-JWT_SECRET=altere-este-segredo-em-producao
+CORS_ORIGIN=http://localhost:5173
+JWT_SECRET=troque-por-um-segredo-forte-com-32-caracteres
 JWT_EXPIRES_IN=8h
-EXTERNAL_API_URL=https://exemplo.com/api/occurrences
-EXTERNAL_API_TIMEOUT=5000
+DATABASE_PROVIDER=json
+DATABASE_JSON_PATH=apps/api/data/dev-db.json
+BOOTSTRAP_ADMIN_EMAIL=admin@pola.local
+BOOTSTRAP_ADMIN_PASSWORD=
 ```
 
-Em producao, troque `JWT_SECRET`, restrinja `CORS_ORIGIN` e configure `EXTERNAL_API_URL` com o endpoint real.
+`JWT_SECRET` e obrigatorio. A API falha ao iniciar se ele nao estiver configurado. Nao versionar `.env` real.
 
-## Execucao
+Para o frontend, crie `apps/web/.env` a partir de `apps/web/.env.example` quando precisar apontar para outra API:
+
+```env
+VITE_API_URL=http://localhost:3000
+```
+
+## Rodar Em Desenvolvimento
 
 ```bash
-cd api
-npm start
+pnpm dev
+```
+
+Esse comando sobe API e web em paralelo. Para rodar separadamente:
+
+```bash
+pnpm --filter @pola/api dev
+pnpm --filter web dev
 ```
 
 Health check:
@@ -64,27 +109,69 @@ Health check:
 curl http://localhost:3000/health
 ```
 
-Resposta:
+O frontend Vite roda por padrao em `http://localhost:5173`.
 
-```json
-{
-  "status": "ok",
-  "uptime": 12.3,
-  "timestamp": "2026-05-15T18:30:00.000Z"
-}
+## Testes, Lint, Typecheck E Build
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
 ```
+
+Somente frontend:
+
+```bash
+pnpm --filter web test
+pnpm --filter web build
+```
+
+## Frontend
+
+Estrutura principal:
+
+```text
+apps/web/
+  src/app/
+  src/components/
+  src/features/
+  src/services/
+  src/styles/
+```
+
+Telas disponiveis:
+
+- login
+- dashboard
+- ocorrencias
+- nova ocorrencia
+- detalhe da ocorrencia
+- alunos
+- perfil/historico do aluno
+- turmas
+- usuarios
+- relatorios
+- configuracoes
+- acesso negado
+- pagina nao encontrada
+
+Documentacao visual: `docs/frontend/guia-visual.md`.  
+Catalogo de telas: `docs/frontend/telas.md`.
+
+As telas principais consomem a API em `VITE_API_URL` por meio de servicos HTTP tipados. Dados simulados ficam restritos aos testes automatizados.
 
 ## Autenticacao
 
-Login inicial:
+Login:
 
 ```http
 POST /auth/login
 Content-Type: application/json
 
 {
-  "username": "admin",
-  "password": "admin123"
+  "email": "usuario@escola.test",
+  "senha": "senha-forte"
 }
 ```
 
@@ -92,182 +179,115 @@ Resposta:
 
 ```json
 {
-  "message": "Login realizado com sucesso",
-  "token": "jwt...",
+  "token": "jwt",
   "user": {
-    "id": "id",
-    "username": "admin",
-    "role": "ADM"
+    "id": "uuid",
+    "nome": "Usuario",
+    "email": "usuario@escola.test",
+    "papel": "PROFESSOR"
   }
 }
 ```
 
-Use o token nas rotas protegidas:
+Nenhuma resposta retorna `senhaHash`, `senha_hash`, `password_hash` ou segredo.
 
-```http
-Authorization: Bearer jwt...
-```
+## Permissoes
 
-## Endpoints
+- `PROFESSOR`: registra ocorrencia, consulta ocorrencias permitidas, historico permitido e alunos permitidos.
+- `COORDENADOR`: consulta ocorrencias, coloca em analise, resolve ocorrencias e acessa relatorios operacionais.
+- `DIRETOR`: consulta ocorrencias, encerra ocorrencia e consulta relatorios gerais.
+- `ADM`: gerencia usuarios, turmas, alunos, permissoes, configuracoes e auditoria.
 
-Alunos:
+## Fluxo De Ocorrencia
 
-- `GET /students`
-- `GET /students/:id`
-- `POST /students`
-- `PUT /students/:id`
-- `DELETE /students/:id`
+Status oficiais:
 
-Ocorrencias:
+- `REGISTRADA`
+- `EM_ANALISE`
+- `RESOLVIDA`
+- `ENCERRADA`
 
-- `GET /occurrences`
-- `GET /occurrences/:id`
-- `POST /occurrences`
-- `PUT /occurrences/:id`
-- `DELETE /occurrences/:id`
-
-Usuarios:
-
-- `GET /users`
-- `POST /users`
-- `POST /auth/login`
-
-Relatorios:
-
-- `GET /reports/occurrences`
-- `GET /reports/student/:id`
-
-Notificacoes:
-
-- `POST /notifications`
-
-## Exemplos
-
-Criar aluno:
-
-```http
-POST /students
-Authorization: Bearer jwt...
-Content-Type: application/json
-
-{
-  "name": "Joao da Silva",
-  "class": "8A",
-  "registration": "2024001",
-  "responsibleName": "Maria Silva",
-  "responsibleContact": "(11) 99999-0000"
-}
-```
-
-Criar ocorrencia:
-
-```http
-POST /occurrences
-Authorization: Bearer jwt...
-Content-Type: application/json
-
-{
-  "studentId": "id-do-aluno",
-  "type": "Atraso",
-  "description": "Aluno chegou atrasado e foi orientado pela coordenacao.",
-  "severity": "baixa"
-}
-```
-
-Resposta com integracao externa concluida:
-
-```json
-{
-  "message": "Ocorrencia criada com sucesso",
-  "data": {
-    "id": "id",
-    "studentId": "id-do-aluno",
-    "type": "Atraso",
-    "status": "REGISTRADA"
-  },
-  "externalIntegration": {
-    "success": true,
-    "status": 200
-  }
-}
-```
-
-Se o endpoint externo falhar, a ocorrencia local continua salva e a API responde com status `207`:
-
-```json
-{
-  "message": "Ocorrencia criada com sucesso, mas a integracao externa falhou",
-  "data": {},
-  "externalIntegration": {
-    "success": false,
-    "status": null,
-    "message": "timeout"
-  }
-}
-```
-
-## Integracao Node -> Python
-
-A API Express chama `backend/services/polar_api_service.py` por `child_process`. O utilitario fica em:
+Fluxo permitido:
 
 ```text
-api/src/util/pythonBridge.js
+REGISTRADA -> EM_ANALISE -> RESOLVIDA -> ENCERRADA
 ```
 
-Fluxo:
+Nao e permitido pular etapas. Ocorrencia encerrada nao pode ser alterada. Historico e criado automaticamente e nao possui rota de edicao.
 
-1. Controller valida e sanitiza a entrada.
-2. `pythonBridge` executa o servico Python com comando e payload JSON.
-3. O Python le/grava `backend/banco_dados.json`.
-4. A resposta volta em JSON para o controller Express.
+## Endpoints Principais
 
-Exemplo interno:
+- `POST /auth/login`
+- `GET /auth/me`
+- `GET /usuarios`
+- `POST /usuarios`
+- `GET /turmas`
+- `POST /turmas`
+- `GET /alunos`
+- `POST /alunos`
+- `POST /ocorrencias`
+- `PATCH /ocorrencias/:id/status`
+- `GET /ocorrencias/:id/historico`
+- `POST /notas`
+- `GET /notas/alunos/:alunoId`
+- `POST /faltas`
+- `GET /faltas/alunos/:alunoId`
+- `GET /dashboard`
+- `GET /relatorios/ocorrencias`
+- `GET /auditoria`
 
-```js
-await callBackend("students.create", {
-  auth: { username: "admin", role: "ADM" },
-  student: { name: "Ana", class: "8A" }
-});
-```
+Tabela completa: `docs/api/endpoints.md`.
 
-## Integracao frontend -> API
+## Banco De Dados
 
-O arquivo `frontend/js/app.js` expoe `window.POLAR_API` com funcoes prontas:
+O contrato relacional esta em `database/schema.sql`. Enquanto PostgreSQL/Supabase nao estiver conectado, a API usa JSON temporario atras de repositorios em `apps/api/src/shared/database/repositories`.
 
-- `POLAR_API.login(username, password, remember)`
-- `POLAR_API.listOccurrences()`
-- `POLAR_API.createOccurrence(data)`
-- `POLAR_API.listStudents()`
-- `POLAR_API.createStudent(data)`
-- `POLAR_API.occurrenceReport()`
-- `POLAR_API.studentReport(id)`
-- `POLAR_API.sendNotification(data)`
+## Migrar Dados Antigos
 
-As telas `dashboard.html`, `ocorrencias-lista.html`, `ocorrencia-nova.html`, `alunos.html`, `aluno-historico.html` e `usuarios.html` tentam carregar dados reais quando existe token JWT salvo.
-
-## Seguranca
-
-- JWT nas rotas protegidas.
-- Hash de senha no backend Python via PBKDF2.
-- Sanitizacao basica de strings.
-- Validacao de campos obrigatorios nos models/controllers.
-- CORS configuravel por ambiente.
-- Tratamento global de erro.
-- Logs por requisicao.
-
-## Qualidade
-
-Verificacao sintatica:
+O script inicial le `backend/banco_dados.json` quando existir ou `legacy/python/backend/banco_dados.json` como fallback:
 
 ```bash
-cd api
-npm run check
+pnpm migrate:json
 ```
 
-Smoke test recomendado:
+Ele gera `apps/api/data/migrated-from-legacy.json`. A migracao real para PostgreSQL deve importar esse contrato para as tabelas de `database/schema.sql`.
 
-1. Inicie a API com `npm start`.
-2. Faca login em `POST /auth/login`.
-3. Use o JWT para criar um aluno em `POST /students`.
-4. Crie uma ocorrencia em `POST /occurrences`.
-5. Consulte `GET /reports/occurrences`.
+## Branches
+
+Fluxo recomendado:
+
+```text
+master
+  ^
+develop
+  ^
+feature/nome-da-funcionalidade
+```
+
+Nao fazer push direto na `master`. Use `develop` para integracao e abra PR para promover codigo estavel.
+
+## Commits
+
+Use commits curtos e objetivos:
+
+- `feat: adiciona fluxo de ocorrencias`
+- `fix: bloqueia login apos tentativas invalidas`
+- `docs: atualiza endpoints`
+- `test: cobre regras de status`
+
+## Roadmap
+
+- Conectar PostgreSQL/Supabase.
+- Criar migrations versionadas.
+- Adicionar refresh token e recuperacao de senha.
+- Refinar permissoes por turma/aluno.
+- Criar relatorios exportaveis.
+- Criar telas completas de edicao para usuarios e alunos.
+
+## Limitacoes Conhecidas
+
+- Persistencia JSON e temporaria para desenvolvimento.
+- Edicao completa de usuarios e alunos ainda precisa de telas dedicadas.
+- Exportacao de relatorios ainda e funcionalidade futura.
+- Migracao de dados reais precisa validacao manual antes de producao.
+- Python legado nao participa da build da API nova.

@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+.env
+database/.env
+database/env
+node_modules/
+npm-debug.log*

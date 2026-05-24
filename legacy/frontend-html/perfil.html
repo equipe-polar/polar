@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POLAR — Meu Perfil</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+  <div class="app">
+
+<aside class="sidebar">
+
+  <div class="sidebar__brand">
+    <h1>POLAR</h1>
+    <small>Sistema de Ocorrências Escolares</small>
+  </div>
+
+ <nav class="nav" aria-label="Principal">
+        <a class="is-active" href="dashboard.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Dashboard</a>
+        <a href="ocorrencias-lista.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Ocorrências</a>
+        <a href="alunos.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Alunos</a>
+        <a href="turmas.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg> Turmas</a>
+        <a href="notificacoes.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2">
+        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        Notificações</a>
+        <div class="nav__group">
+          <button type="button" class="nav__item nav__group-toggle" aria-expanded="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg> Usuários <span class="nav__chev">▾</span></button>
+          <div class="nav__sub"><a href="usuarios.html">Gestão de usuários</a></div>
+        </div>
+        <div class="nav__group">
+          <button type="button" class="nav__item nav__group-toggle" aria-expanded="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Relatórios <span class="nav__chev">▾</span></button>
+          <div class="nav__sub"><a href="relatorios.html">Geral</a></div>      
+        </div>
+        <div class="nav__group">
+          <button type="button" class="nav__item nav__group-toggle" aria-expanded="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.26-.04.53-.04.79 0"/></svg> Configurações <span class="nav__chev">▾</span></button>
+          <div class="nav__sub"><a href="#">Geral</a>
+        </div>
+      </nav>
+
+</aside>
+
+    <!-- MAIN -->
+    <div class="app-main">
+
+      <!-- TOPBAR -->
+      <header class="topbar">
+
+        <button type="button" class="icon-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2">
+
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </button>
+
+        <div class="topbar__user">
+          <span class="avatar">L</span>
+          Lucas Almeida
+        </div>
+
+      </header>
+
+      <!-- CONTENT -->
+      <main class="content">
+
+        <div class="page-head">
+          <h1>Meu Perfil</h1>
+          <p>Visualize as informações do seu perfil.</p>
+        </div>
+
+        <!-- HERO -->
+        <div class="card student-hero" style="margin-bottom: 1.25rem;">
+
+          <div class="student-hero__left">
+
+            <span class="avatar avatar-lg">LA</span>
+
+            <div>
+              <h2 style="margin-bottom: 4px;">
+                Lucas Ferreira Almeida
+              </h2>
+
+              <div class="text-muted">
+                Perfil: Aluno
+              </div>
+            </div>
+
+          </div>
+
+          <div class="student-hero__stats">
+
+            <div class="mini-stat mini-stat--blue">
+              <span class="n">14</span>
+              <span class="l">Ocorrências</span>
+            </div>
+
+            <div class="mini-stat mini-stat--yellow">
+              <span class="n">2</span>
+              <span class="l">Pendentes</span>
+            </div>
+
+            <div class="mini-stat mini-stat--green">
+              <span class="n">12</span>
+              <span class="l">Resolvidas</span>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- DADOS -->
+        <div class="card form-card">
+
+          <!-- DADOS PESSOAIS -->
+          <h2>Dados Pessoais</h2>
+
+          <div class="form-grid form-grid--2">
+
+            <div>
+              <label class="field-inline">Nome completo</label>
+              <input class="input readonly-field"
+                type="text"
+                value="Lucas Ferreira Almeida"
+                readonly>
+            </div>
+
+            <div>
+              <label class="field-inline">Data de nascimento</label>
+              <input class="input readonly-field"
+                type="text"
+                value="14/08/2008"
+                readonly>
+            </div>
+
+            <div>
+              <label class="field-inline">RG</label>
+              <input class="input readonly-field"
+                type="text"
+                value="48.721.963-5"
+                readonly>
+            </div>
+
+            <div>
+              <label class="field-inline">CPF</label>
+              <input class="input readonly-field"
+                type="text"
+                value="384.921.657-12"
+                readonly>
+            </div>
+
+          </div>
+
+          <hr style="margin: 30px 0; border: 1px solid var(--border);">
+
+          <!-- ENDEREÇO -->
+          <h2>Endereço</h2>
+
+          <div class="form-grid form-grid--2">
+
+            <div>
+              <label class="field-inline">Rua</label>
+              <input class="input readonly-field"
+                type="text"
+                value="Rua das Palmeiras"
+                readonly>
+            </div>
+
+            <div>
+              <label class="field-inline">Número</label>
+              <input class="input readonly-field"
+                type="text"
+                value="245"
+                readonly>
+            </div>
+
+            <div>
+              <label class="field-inline">Bairro</label>
+              <input class="input readonly-field"
+                type="text"
+                value="Jardim Primavera"
+                readonly>
+            </div>
+
+            <div>
+              <label class="field-inline">Cidade</label>
+              <input class="input readonly-field"
+                type="text"
+                value="São Bernardo do Campo"
+                readonly>
+            </div>
+
+            <div>
+              <label class="field-inline">Estado</label>
+              <input class="input readonly-field"
+                type="text"
+                value="SP"
+                readonly>
+            </div>
+
+            <div>
+              <label class="field-inline">CEP</label>
+              <input class="input readonly-field"
+                type="text"
+                value="09872-140"
+                readonly>
+            </div>
+
+          </div>
+
+          <hr style="margin: 30px 0; border: 1px solid var(--border);">
+
+          <!-- CONTATO -->
+          <h2>Contato</h2>
+
+          <div class="form-grid form-grid--2">
+
+            <div>
+              <label class="field-inline">Email</label>
+              <input class="input readonly-field"
+                type="text"
+                value="lucas.almeida@email.com"
+                readonly>
+            </div>
+
+            <div>
+              <label class="field-inline">Telefone Comercial</label>
+              <input class="input readonly-field"
+                type="text"
+                value="(11) 4123-8745"
+                readonly>
+            </div>
+
+            <div>
+              <label class="field-inline">Celular Principal</label>
+              <input class="input readonly-field"
+                type="text"
+                value="(11) 98877-6655"
+                readonly>
+            </div>
+
+            <div>
+              <label class="field-inline">Telefone para Recado</label>
+              <input class="input readonly-field"
+                type="text"
+                value="(11) 97766-5544"
+                readonly>
+            </div>
+
+            <div class="full">
+              <label class="field-inline">Observação</label>
+
+              <textarea class="input readonly-field" readonly>
+O telefone principal é a primeira forma de contato com o responsável.
+              </textarea>
+            </div>
+
+          </div>
+
+        </div>
+
+      </main>
+
+    </div>
+
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

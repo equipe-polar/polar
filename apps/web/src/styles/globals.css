@@ -1,0 +1,172 @@
+@import "./tokens.css";
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-family);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(29, 95, 167, 0.35);
+  outline-offset: 2px;
+}
+
+.app-root {
+  min-height: 100vh;
+}
+
+.page-grid {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.grid-2 {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid-3 {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid-4 {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.form-grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.form-grid .span-2 {
+  grid-column: 1 / -1;
+}
+
+.actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.text-danger {
+  color: var(--color-danger);
+}
+
+.state-message {
+  color: var(--color-text-muted);
+}
+
+.state-message--danger {
+  border-color: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-6);
+  background:
+    linear-gradient(120deg, rgba(29, 95, 167, 0.12), transparent 40%),
+    var(--color-bg);
+}
+
+.login-panel {
+  width: min(430px, 100%);
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.login-brand img {
+  width: 54px;
+  height: 54px;
+}
+
+.login-brand strong {
+  display: block;
+  font-size: 1.45rem;
+}
+
+.login-brand span {
+  color: var(--color-text-muted);
+  font-size: 0.94rem;
+}
+
+.summary-value {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.timeline li {
+  border-left: 3px solid var(--color-primary);
+  padding-left: var(--space-4);
+}
+
+.timeline strong {
+  display: block;
+}
+
+@media (max-width: 980px) {
+  .grid-4,
+  .grid-3,
+  .grid-2,
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  body {
+    background: var(--color-surface);
+  }
+}

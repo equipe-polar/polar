@@ -1,0 +1,9 @@
+node_modules/
+api/node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.tmp
+database/polar_api_test.json
+database/polar_api_test.json.tmp
+.env.local

@@ -1,13 +1,19 @@
 import type { AppConfig } from "./config.js";
 import { createJsonDatabase, type DatabaseClient } from "./database/database.js";
-import { UserRepository } from "./database/repositories/user.repository.js";
-import { TurmaRepository } from "./database/repositories/turma.repository.js";
-import { AlunoRepository } from "./database/repositories/aluno.repository.js";
-import { OcorrenciaRepository } from "./database/repositories/ocorrencia.repository.js";
-import { NotaRepository } from "./database/repositories/nota.repository.js";
-import { FaltaRepository } from "./database/repositories/falta.repository.js";
-import { AuditRepository } from "./database/repositories/audit.repository.js";
-import { NotificationRepository } from "./database/repositories/notification.repository.js";
+import { JsonUserRepository, type UserRepository } from "./database/repositories/user.repository.js";
+import { JsonTurmaRepository, type TurmaRepository } from "./database/repositories/turma.repository.js";
+import { JsonAlunoRepository, type AlunoRepository } from "./database/repositories/aluno.repository.js";
+import {
+  JsonOcorrenciaRepository,
+  type OcorrenciaRepository
+} from "./database/repositories/ocorrencia.repository.js";
+import { JsonNotaRepository, type NotaRepository } from "./database/repositories/nota.repository.js";
+import { JsonFaltaRepository, type FaltaRepository } from "./database/repositories/falta.repository.js";
+import { JsonAuditRepository, type AuditRepository } from "./database/repositories/audit.repository.js";
+import {
+  JsonNotificationRepository,
+  type NotificationRepository
+} from "./database/repositories/notification.repository.js";
 import { AuthService } from "../modules/auth/auth.service.js";
 import { UsersService } from "../modules/users/users.service.js";
 import { TurmasService } from "../modules/turmas/turmas.service.js";
@@ -46,23 +52,51 @@ export interface Services {
 }
 
 export interface ServiceContainer {
-  db: DatabaseClient;
   repositories: Repositories;
   services: Services;
+  close(): Promise<void>;
+}
+
+export function createJsonRepositories(db: DatabaseClient): Repositories {
+  return {
+    users: new JsonUserRepository(db),
+    turmas: new JsonTurmaRepository(db),
+    alunos: new JsonAlunoRepository(db),
+    ocorrencias: new JsonOcorrenciaRepository(db),
+    notas: new JsonNotaRepository(db),
+    faltas: new JsonFaltaRepository(db),
+    audit: new JsonAuditRepository(db),
+    notifications: new JsonNotificationRepository(db)
+  };
+}
+
+async function createRepositories(
+  config: AppConfig,
+  database?: DatabaseClient
+): Promise<{ repositories: Repositories; close: () => Promise<void> }> {
+  if (!database && config.databaseProvider === "mysql") {
+    if (!config.databaseUrl) {
+      throw new Error("DATABASE_URL e obrigatorio quando DATABASE_PROVIDER=mysql.");
+    }
+    const { createMysqlPool, createMysqlRepositories } = await import("./database/mysql/index.js");
+    const pool = createMysqlPool({ url: config.databaseUrl, ssl: config.databaseSsl });
+    return {
+      repositories: createMysqlRepositories(pool),
+      close: async () => {
+        await pool.end();
+      }
+    };
+  }
+
+  const db = database ?? createJsonDatabase(config.databaseJsonPath);
+  return {
+    repositories: createJsonRepositories(db),
+    close: async () => {}
+  };
 }
 
 export async function createServiceContainer(config: AppConfig, database?: DatabaseClient): Promise<ServiceContainer> {
-  const db = database ?? createJsonDatabase(config.databaseJsonPath);
-  const repositories: Repositories = {
-    users: new UserRepository(db),
-    turmas: new TurmaRepository(db),
-    alunos: new AlunoRepository(db),
-    ocorrencias: new OcorrenciaRepository(db),
-    notas: new NotaRepository(db),
-    faltas: new FaltaRepository(db),
-    audit: new AuditRepository(db),
-    notifications: new NotificationRepository(db)
-  };
+  const { repositories, close } = await createRepositories(config, database);
 
   const auth = new AuthService(repositories.users, repositories.audit, config);
   const services: Services = {
@@ -82,8 +116,8 @@ export async function createServiceContainer(config: AppConfig, database?: Datab
   await auth.bootstrapAdminIfNeeded();
 
   return {
-    db,
     repositories,
-    services
+    services,
+    close
   };
 }

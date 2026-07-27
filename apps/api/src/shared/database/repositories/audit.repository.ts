@@ -1,7 +1,12 @@
 import type { DatabaseClient } from "../database.js";
 import type { AuditLog } from "../../domain.js";
 
-export class AuditRepository {
+export interface AuditRepository {
+  list(): Promise<AuditLog[]>;
+  create(log: AuditLog): Promise<AuditLog>;
+}
+
+export class JsonAuditRepository implements AuditRepository {
   constructor(private readonly db: DatabaseClient) {}
 
   async list(): Promise<AuditLog[]> {

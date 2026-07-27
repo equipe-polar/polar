@@ -15,15 +15,12 @@ export class UsersController {
 
   create = async (req: Request, res: Response): Promise<Response> => {
     const actor = req.usuario;
-    const body = createUserSchema.parse(req.body);
-    const nome = body.nome ?? body.name;
-    const papel = body.papel ?? body.role;
-    const senha = body.senha ?? body.password;
-    if (!nome || !papel || !senha) {
-      throw badRequest("Nome, papel e senha sao obrigatorios.");
+    if (!actor) {
+      throw badRequest("Usuario autenticado nao encontrado.");
     }
 
-    const user = await this.services.users.create({ nome, email: body.email, papel, senha }, actor?.id ?? "sistema");
+    const body = createUserSchema.parse(req.body);
+    const user = await this.services.users.create(body, actor.id);
     return res.status(201).json({ data: user });
   };
 

@@ -1,4 +1,9 @@
-const API_URL = (import.meta.env.VITE_API_URL ?? "http://localhost:3000").replace(/\/$/, "");
+// Em producao o frontend e servido pela propria API (mesma origem), entao o
+// padrao e caminho relativo. Em desenvolvimento a API roda em outra porta.
+const API_URL = (import.meta.env.VITE_API_URL ?? (import.meta.env.PROD ? "" : "http://localhost:3000")).replace(
+  /\/$/,
+  ""
+);
 const TOKEN_KEY = "polar_token";
 
 export class ApiError extends Error {

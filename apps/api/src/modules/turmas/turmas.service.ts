@@ -82,25 +82,32 @@ export class TurmasService {
     return updated;
   }
 
+  // Exclusao fisica nao existe no POLAR: turmas sao inativadas para preservar
+  // o historico institucional. Turma com alunos ativos nao pode ser inativada.
   async delete(id: string, actorId: string): Promise<void> {
     const alunosDaTurma = await this.alunos.listByTurma(id);
     if (alunosDaTurma.length > 0) {
-      throw conflict("Nao e permitido remover turma com alunos vinculados.");
+      throw conflict("Nao e permitido inativar turma com alunos ativos vinculados.");
     }
 
-    const deleted = await this.turmas.delete(id);
-    if (!deleted) {
+    const now = agoraIso();
+    const updated = await this.turmas.update(id, (current) => ({
+      ...current,
+      ativa: false,
+      atualizadoEm: now
+    }));
+    if (!updated) {
       throw notFound("Turma nao encontrada.");
     }
 
     await this.audit.create({
       id: novoId(),
       usuarioId: actorId,
-      acao: "TURMA_REMOVIDA",
+      acao: "TURMA_INATIVADA",
       entidade: "turmas",
       entidadeId: id,
       metadata: {},
-      criadoEm: agoraIso()
+      criadoEm: now
     });
   }
 }

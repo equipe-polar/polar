@@ -8,16 +8,11 @@ import { agoraIso, novoId } from "../../shared/utils/ids.js";
 
 export interface AlunoInput {
   nome?: string | undefined;
-  name?: string | undefined;
   matricula?: string | undefined;
-  registration?: string | undefined;
   turmaId?: string | undefined;
   turmaNome?: string | undefined;
-  class?: string | undefined;
   responsavelNome?: string | undefined;
-  responsibleName?: string | undefined;
   responsavelContato?: string | undefined;
-  responsibleContact?: string | undefined;
   ativo?: boolean | undefined;
 }
 
@@ -42,8 +37,8 @@ export class AlunosService {
   }
 
   async create(input: AlunoInput, actorId: string): Promise<Aluno> {
-    const nome = input.nome ?? input.name ?? "";
-    const matricula = input.matricula ?? input.registration ?? "";
+    const nome = input.nome ?? "";
+    const matricula = input.matricula ?? "";
     const turma = await this.resolveTurma(input);
 
     if (!nome.trim()) {
@@ -64,8 +59,8 @@ export class AlunosService {
       nome,
       matricula,
       turmaId: turma.id,
-      responsavelNome: input.responsavelNome ?? input.responsibleName ?? "",
-      responsavelContato: input.responsavelContato ?? input.responsibleContact ?? "",
+      responsavelNome: input.responsavelNome ?? "",
+      responsavelContato: input.responsavelContato ?? "",
       ativo: true,
       criadoEm: now,
       atualizadoEm: now
@@ -91,15 +86,15 @@ export class AlunosService {
       throw notFound("Aluno nao encontrado.");
     }
 
-    const turma = input.turmaId || input.turmaNome || input.class ? await this.resolveTurma(input) : null;
+    const turma = input.turmaId || input.turmaNome ? await this.resolveTurma(input) : null;
     const now = agoraIso();
     const updated = await this.alunos.update(id, (aluno) => ({
       ...aluno,
-      nome: input.nome ?? input.name ?? aluno.nome,
-      matricula: input.matricula ?? input.registration ?? aluno.matricula,
+      nome: input.nome ?? aluno.nome,
+      matricula: input.matricula ?? aluno.matricula,
       turmaId: turma?.id ?? aluno.turmaId,
-      responsavelNome: input.responsavelNome ?? input.responsibleName ?? aluno.responsavelNome,
-      responsavelContato: input.responsavelContato ?? input.responsibleContact ?? aluno.responsavelContato,
+      responsavelNome: input.responsavelNome ?? aluno.responsavelNome,
+      responsavelContato: input.responsavelContato ?? aluno.responsavelContato,
       ativo: input.ativo ?? aluno.ativo,
       atualizadoEm: now
     }));
@@ -162,7 +157,7 @@ export class AlunosService {
       return turma;
     }
 
-    const turmaNome = input.turmaNome ?? input.class;
+    const turmaNome = input.turmaNome;
     if (!turmaNome) {
       throw badRequest("Aluno deve pertencer a uma turma valida.");
     }

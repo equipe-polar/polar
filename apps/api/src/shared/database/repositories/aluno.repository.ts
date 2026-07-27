@@ -1,7 +1,16 @@
 import type { DatabaseClient } from "../database.js";
 import type { Aluno } from "../../domain.js";
 
-export class AlunoRepository {
+export interface AlunoRepository {
+  list(): Promise<Aluno[]>;
+  findById(id: string): Promise<Aluno | null>;
+  findByMatricula(matricula: string): Promise<Aluno | null>;
+  listByTurma(turmaId: string): Promise<Aluno[]>;
+  create(aluno: Aluno): Promise<Aluno>;
+  update(id: string, updater: (aluno: Aluno) => Aluno): Promise<Aluno | null>;
+}
+
+export class JsonAlunoRepository implements AlunoRepository {
   constructor(private readonly db: DatabaseClient) {}
 
   async list(): Promise<Aluno[]> {

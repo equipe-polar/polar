@@ -1,12 +1,40 @@
 import type { DatabaseClient } from "../database.js";
 import { StatusOcorrencia, type Ocorrencia, type OcorrenciaHistorico } from "../../domain.js";
 
-export class OcorrenciaRepository {
+export interface OcorrenciaDuplicateParams {
+  alunoId: string;
+  categoria: string;
+  descricao: string;
+  criadoPorId: string;
+  desde: Date;
+}
+
+export interface OcorrenciaRepository {
+  list(): Promise<Ocorrencia[]>;
+  listByCriadoPor(criadoPorId: string): Promise<Ocorrencia[]>;
+  findById(id: string): Promise<Ocorrencia | null>;
+  listHistorico(ocorrenciaId: string): Promise<OcorrenciaHistorico[]>;
+  findDuplicate(params: OcorrenciaDuplicateParams): Promise<Ocorrencia | null>;
+  create(ocorrencia: Ocorrencia, historico: OcorrenciaHistorico): Promise<Ocorrencia>;
+  createHistorico(historico: OcorrenciaHistorico): Promise<OcorrenciaHistorico>;
+  updateWithHistorico(
+    id: string,
+    updater: (ocorrencia: Ocorrencia) => Ocorrencia,
+    historico?: OcorrenciaHistorico
+  ): Promise<Ocorrencia | null>;
+}
+
+export class JsonOcorrenciaRepository implements OcorrenciaRepository {
   constructor(private readonly db: DatabaseClient) {}
 
   async list(): Promise<Ocorrencia[]> {
     const state = await this.db.read();
     return state.ocorrencias;
+  }
+
+  async listByCriadoPor(criadoPorId: string): Promise<Ocorrencia[]> {
+    const state = await this.db.read();
+    return state.ocorrencias.filter((ocorrencia) => ocorrencia.criadoPorId === criadoPorId);
   }
 
   async findById(id: string): Promise<Ocorrencia | null> {
@@ -19,13 +47,7 @@ export class OcorrenciaRepository {
     return state.ocorrenciaHistorico.filter((item) => item.ocorrenciaId === ocorrenciaId);
   }
 
-  async findDuplicate(params: {
-    alunoId: string;
-    categoria: string;
-    descricao: string;
-    criadoPorId: string;
-    desde: Date;
-  }): Promise<Ocorrencia | null> {
+  async findDuplicate(params: OcorrenciaDuplicateParams): Promise<Ocorrencia | null> {
     const state = await this.db.read();
     const categoria = params.categoria.trim().toLowerCase();
     const descricao = params.descricao.trim().toLowerCase();
@@ -49,6 +71,13 @@ export class OcorrenciaRepository {
       state.ocorrencias.push(ocorrencia);
       state.ocorrenciaHistorico.push(historico);
       return ocorrencia;
+    });
+  }
+
+  async createHistorico(historico: OcorrenciaHistorico): Promise<OcorrenciaHistorico> {
+    return this.db.transaction((state) => {
+      state.ocorrenciaHistorico.push(historico);
+      return historico;
     });
   }
 

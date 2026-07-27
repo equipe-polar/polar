@@ -1,7 +1,12 @@
 import type { DatabaseClient } from "../database.js";
 import type { Falta } from "../../domain.js";
 
-export class FaltaRepository {
+export interface FaltaRepository {
+  create(falta: Falta): Promise<Falta>;
+  listByAluno(alunoId: string): Promise<Falta[]>;
+}
+
+export class JsonFaltaRepository implements FaltaRepository {
   constructor(private readonly db: DatabaseClient) {}
 
   async create(falta: Falta): Promise<Falta> {

@@ -37,6 +37,7 @@ export function DetalheOcorrenciaPage() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
+  const [observacao, setObservacao] = useState("");
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -71,7 +72,8 @@ export function DetalheOcorrenciaPage() {
     setUpdating(true);
     setError("");
     try {
-      await updateOcorrenciaStatus(id, status);
+      await updateOcorrenciaStatus(id, status, observacao);
+      setObservacao("");
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nao foi possivel alterar o status.");
@@ -123,17 +125,31 @@ export function DetalheOcorrenciaPage() {
           </Card>
           <Card title="Acoes permitidas">
             {actions.length > 0 ? (
-              <div className="actions-row">
-                {actions.map((action) => (
-                  <Button
-                    key={action.status}
-                    disabled={updating}
-                    onClick={() => void changeStatus(action.status)}
-                    icon={action.status === "ENCERRADA" ? <Lock size={18} /> : action.status === "RESOLVIDA" ? <CheckCircle2 size={18} /> : <Clock size={18} />}
-                  >
-                    {action.label}
-                  </Button>
-                ))}
+              <div className="page-grid">
+                <label className="field">
+                  <span className="field-label">Observacao / encaminhamento (opcional)</span>
+                  <textarea
+                    className="input"
+                    rows={3}
+                    maxLength={500}
+                    value={observacao}
+                    onChange={(event) => setObservacao(event.target.value)}
+                    placeholder="Ex: conversa realizada com o aluno; familia comunicada."
+                  />
+                </label>
+                <div className="actions-row">
+                  {actions.map((action) => (
+                    <Button
+                      key={action.status}
+                      disabled={updating}
+                      onClick={() => void changeStatus(action.status)}
+                      icon={action.status === "ENCERRADA" ? <Lock size={18} /> : action.status === "RESOLVIDA" ? <CheckCircle2 size={18} /> : <Clock size={18} />}
+                    >
+                      {action.label}
+                    </Button>
+                  ))}
+                </div>
+                <p className="muted">A observacao e gravada no historico junto com a mudanca de status.</p>
               </div>
             ) : (
               <p className="muted">Nenhuma acao disponivel para o perfil atual.</p>
@@ -153,6 +169,7 @@ export function DetalheOcorrenciaPage() {
                 <span className="muted">
                   {item.status} por {item.usuarioId}
                 </span>
+                {item.observacao ? <span className="muted">Observacao: {item.observacao}</span> : null}
               </li>
             ))}
           </ol>

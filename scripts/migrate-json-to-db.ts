@@ -145,12 +145,81 @@ function migrate(data: LegacyData): DatabaseState {
       ocorrenciaId: id,
       status: status(item.status),
       acao: "Ocorrencia migrada do JSON legado",
+      observacao: null,
       usuarioId: criadoPorId,
       criadoEm: createdAt
     });
   }
 
   return state;
+}
+
+async function insertIntoMysql(state: DatabaseState): Promise<void> {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error("DATABASE_URL e obrigatorio para inserir a migracao no MySQL.");
+  }
+
+  const { createMysqlPool, createMysqlRepositories } = await import("../apps/api/src/shared/database/mysql/index.js");
+  const pool = createMysqlPool({
+    url,
+    ssl: process.env.DATABASE_SSL === "true" || process.env.DATABASE_SSL === "1"
+  });
+  const repos = createMysqlRepositories(pool);
+
+  try {
+    const existentes = await repos.users.list();
+    if (existentes.length > 0) {
+      console.log("MySQL ja possui usuarios; insercao ignorada para nao duplicar dados.");
+      return;
+    }
+
+    for (const usuarioMigrado of state.usuarios) {
+      await repos.users.create(usuarioMigrado);
+    }
+    for (const turmaMigrada of state.turmas) {
+      await repos.turmas.create(turmaMigrada);
+    }
+
+    const turmasValidas = new Set(state.turmas.map((t) => t.id));
+    let alunosPulados = 0;
+    for (const alunoMigrado of state.alunos) {
+      if (!turmasValidas.has(alunoMigrado.turmaId)) {
+        alunosPulados += 1;
+        continue;
+      }
+      await repos.alunos.create(alunoMigrado);
+    }
+
+    const alunosValidos = new Set(state.alunos.filter((a) => turmasValidas.has(a.turmaId)).map((a) => a.id));
+    const usuariosValidos = new Set(state.usuarios.map((u) => u.id));
+    let ocorrenciasPuladas = 0;
+    for (const ocorrenciaMigrada of state.ocorrencias) {
+      if (!alunosValidos.has(ocorrenciaMigrada.alunoId) || !usuariosValidos.has(ocorrenciaMigrada.criadoPorId)) {
+        ocorrenciasPuladas += 1;
+        continue;
+      }
+      const historicos = state.ocorrenciaHistorico.filter((h) => h.ocorrenciaId === ocorrenciaMigrada.id);
+      const primeiro = historicos[0];
+      if (!primeiro) {
+        ocorrenciasPuladas += 1;
+        continue;
+      }
+      await repos.ocorrencias.create(ocorrenciaMigrada, primeiro);
+      for (const historico of historicos.slice(1)) {
+        await repos.ocorrencias.createHistorico(historico);
+      }
+    }
+
+    if (alunosPulados > 0 || ocorrenciasPuladas > 0) {
+      console.warn(
+        `Atencao: ${alunosPulados} aluno(s) e ${ocorrenciasPuladas} ocorrencia(s) pulados por vinculos invalidos no legado. Revise manualmente.`
+      );
+    }
+    console.log("Dados legados inseridos no MySQL.");
+  } finally {
+    await pool.end();
+  }
 }
 
 async function main(): Promise<void> {
@@ -160,6 +229,10 @@ async function main(): Promise<void> {
   await fs.mkdir(path.dirname(outputPath), { recursive: true });
   await fs.writeFile(outputPath, `${JSON.stringify(migrated, null, 2)}\n`, "utf8");
   console.log(`Migracao inicial gerada em ${outputPath}`);
+
+  if (process.env.DATABASE_PROVIDER === "mysql") {
+    await insertIntoMysql(migrated);
+  }
 }
 
 main().catch((error: unknown) => {

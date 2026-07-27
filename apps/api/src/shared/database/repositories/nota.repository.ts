@@ -1,7 +1,12 @@
 import type { DatabaseClient } from "../database.js";
 import type { Nota } from "../../domain.js";
 
-export class NotaRepository {
+export interface NotaRepository {
+  create(nota: Nota): Promise<Nota>;
+  listByAluno(alunoId: string): Promise<Nota[]>;
+}
+
+export class JsonNotaRepository implements NotaRepository {
   constructor(private readonly db: DatabaseClient) {}
 
   async create(nota: Nota): Promise<Nota> {

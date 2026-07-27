@@ -123,10 +123,14 @@ export async function createOcorrencia(payload: CreateOcorrenciaPayload): Promis
   return response.data;
 }
 
-export async function updateOcorrenciaStatus(id: string, status: StatusOcorrencia): Promise<Ocorrencia> {
+export async function updateOcorrenciaStatus(
+  id: string,
+  status: StatusOcorrencia,
+  observacao?: string
+): Promise<Ocorrencia> {
   const response = await apiRequest<ApiData<Ocorrencia>>(`/ocorrencias/${id}/status`, {
     method: "PATCH",
-    body: JSON.stringify({ status })
+    body: JSON.stringify(observacao?.trim() ? { status, observacao: observacao.trim() } : { status })
   });
   return response.data;
 }

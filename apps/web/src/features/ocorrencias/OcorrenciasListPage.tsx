@@ -8,10 +8,12 @@ import { Input } from "../../components/ui/Input";
 import { Select } from "../../components/ui/Select";
 import { Table } from "../../components/ui/Table";
 import type { OcorrenciaDetalhada } from "../../services/domain";
+import { useAuth } from "../../app/providers";
 import { listOcorrenciasDetalhadas } from "./ocorrencias.service";
 import { PrioridadeBadge, StatusBadge } from "./status";
 
 export function OcorrenciasListPage() {
+  const { user } = useAuth();
   const [aluno, setAluno] = useState("");
   const [status, setStatus] = useState("");
   const [prioridade, setPrioridade] = useState("");
@@ -59,7 +61,7 @@ export function OcorrenciasListPage() {
   return (
     <>
       <PageHeader
-        title="Ocorrencias"
+        title={user?.papel === "PROFESSOR" ? "Minhas ocorrencias" : "Ocorrencias"}
         breadcrumb={[{ label: "Dashboard", to: "/" }, { label: "Ocorrencias" }]}
         actions={
           <Link to="/ocorrencias/nova">

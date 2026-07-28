@@ -206,7 +206,7 @@ scripts/        migração de dados legados
 - [x] Persistência MySQL real com transações
 - [x] RBAC completo com regras de visibilidade e edição fechadas
 - [x] Docker + CI/CD (lint, typecheck, test, build)
-- [ ] Prova de execução real contra MySQL na nuvem (teste de contrato)
+- [x] Prova de execução real contra MySQL na nuvem (teste de contrato + seed rodando no TiDB Cloud)
 - [ ] Deploy público no ar
 - [ ] Roteiro de 6 passos executado na URL pública
 

@@ -1,293 +1,215 @@
-# P.O.L.A
+<div align="center">
 
-P.O.L.A e um sistema escolar para registro, acompanhamento e auditoria de ocorrencias institucionais.
+<img src="apps/web/src/assets/logo-polar.svg" width="72" height="72" alt="Logo do POLAR" />
 
-## Problema Resolvido
+# POLAR
 
-Escolas precisam registrar ocorrencias de forma padronizada, acompanhar responsaveis por cada etapa, preservar historico auditavel e impedir alteracoes indevidas depois do encerramento.
+**Sistema de gestão de ocorrências escolares** — do registro pelo professor ao encerramento pela direção, com histórico imutável e auditável.
 
-## Funcionalidades Do MVP
+[![CI](https://github.com/Origenes-Lessa/P.O.L.A/actions/workflows/ci.yml/badge.svg)](https://github.com/Origenes-Lessa/P.O.L.A/actions/workflows/ci.yml)
+[![Licença: MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-blue.svg)](LICENSE)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React_18-61DAFB?logo=react&logoColor=black)
+![Node.js](https://img.shields.io/badge/Node.js_20-339933?logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express_5-000000?logo=express&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL_8-4479A1?logo=mysql&logoColor=white)
 
-- Autenticacao JWT.
-- Controle por papeis: `PROFESSOR`, `COORDENADOR`, `DIRETOR`, `ADM`.
-- Gestao de usuarios, turmas e alunos.
-- Registro e acompanhamento de ocorrencias.
-- Historico automatico e imutavel de ocorrencias.
-- Notas, faltas, dashboard, relatorios, auditoria e notificacoes.
-- Validacao de entrada com Zod.
-- Testes de integracao da API com Vitest e Supertest.
-- Frontend React + TypeScript com layout institucional.
+[Documentação completa](docs/visao-geral.md) · [Sistema ao vivo](#) (em breve) · [Como rodar localmente](#rodar-em-desenvolvimento)
 
-## Arquitetura Atual
+</div>
 
-A logica principal foi migrada para Node.js + TypeScript em `apps/api`. O frontend ativo fica em `apps/web` com React + TypeScript + Vite. O HTML antigo foi preservado em `legacy/frontend-html` apenas como prototipo visual.
+---
+
+## O problema resolvido
+
+O registro de ocorrências disciplinares hoje é informal (papel, conversa, mensagem avulsa): a informação se perde, não há histórico por aluno, ninguém sabe em que etapa o caso está e nada é rastreável. O POLAR digitaliza o processo em um fluxo institucional único e auditável:
 
 ```text
-apps/
-  api/
-    src/modules/
-    src/shared/
-    tests/
-  web/
-    src/
-    index.html
-database/
-docs/
-legacy/frontend-html/
-legacy/python/
-scripts/
+PROFESSOR registra → COORDENAÇÃO analisa/resolve → DIREÇÃO encerra
+      (REGISTRADA)      (EM_ANALISE → RESOLVIDA)     (ENCERRADA)
 ```
 
-## Tecnologias
+Cada ação gera histórico **imutável** (append-only). O valor central é o histórico permanente por aluno — a análise de reincidência.
 
-- Node.js 20+
-- TypeScript
-- Express
-- React
-- Vite
-- React Router
-- Zod
-- JWT
-- bcryptjs
-- Vitest
-- Supertest
-- pnpm workspaces
-- PostgreSQL/Supabase planejado via `database/schema.sql`
+## Funcionalidades
 
-## Instalar
+- **Registro de ocorrências** com aluno, categoria, prioridade e descrição — autor e data sempre derivados no backend.
+- **Máquina de estados fechada**: 4 status, 3 transições, cada uma restrita a um papel. Pular etapa é rejeitado (`409`).
+- **Histórico append-only**: toda ação (criação, edição, transição) gera um registro imutável, com observação opcional do responsável.
+- **Visibilidade por papel**: professor vê só o que registrou; coordenação, direção e administração veem tudo.
+- **Notas, faltas, dashboard, relatórios e notificações** internas por turma e aluno.
+- **Auditoria completa** de login, criação/edição de entidades e mudanças de status.
+
+## Stack técnico
+
+| Camada | Tecnologia |
+| --- | --- |
+| Frontend | React 18 + TypeScript + Vite + React Router |
+| Backend | Node.js 20 + Express 5 + TypeScript |
+| Banco de dados | MySQL 8 (utf8mb4) via `mysql2`, com transações reais |
+| Validação | Zod |
+| Segurança | JWT, bcrypt, helmet, rate-limit + bloqueio de login, RBAC no backend |
+| Testes | Vitest + Supertest (integração da API) + Testing Library (web) |
+| CI/CD | GitHub Actions (lint, typecheck, test, build) + keepalive do deploy |
+| Deploy | Docker → Render (1 serviço: a API serve o build do React) |
+| Monorepo | pnpm workspaces |
+
+## Arquitetura
+
+```mermaid
+flowchart LR
+    subgraph Apresentacao
+        WEB["apps/web<br/>React 18 + Vite + TypeScript"]
+    end
+    subgraph Aplicacao
+        API["apps/api<br/>Node.js 20 + Express 5 + TypeScript"]
+        AUTH["Auth: JWT + bcrypt"]
+        RBAC["Permissões por papel"]
+        VAL["Validação: Zod"]
+    end
+    subgraph Persistencia
+        MYSQL[("MySQL 8<br/>utf8mb4")]
+    end
+    WEB -- "HTTP/JSON (REST)" --> API
+    API --- AUTH
+    API --- RBAC
+    API --- VAL
+    API -- "mysql2 (pool + transações)" --> MYSQL
+```
+
+Detalhamento completo (padrões, camadas, decisões): [docs/arquitetura/arquitetura.md](docs/arquitetura/arquitetura.md).
+
+## Modelo de segurança
+
+| Medida | Implementação |
+| --- | --- |
+| Senhas | bcrypt (custo 10); nenhuma resposta expõe hash |
+| Autenticação | JWT assinado, expiração configurável; bloqueio após 5 tentativas inválidas |
+| Autorização | RBAC aplicado no backend em toda rota — a UI só oculta, nunca é a autoridade |
+| Entrada | Zod em 100% dos endpoints; caracteres de controle rejeitados; HTML removido |
+| Banco | Queries 100% parametrizadas via `mysql2`; zero concatenação de SQL |
+| Cabeçalhos | `helmet` (CSP, X-Content-Type-Options, etc.) |
+| Auditoria | Log de login, criação/edição e transições de status |
+
+Detalhamento completo + análise LGPD (dados de menores): [docs/seguranca-e-lgpd.md](docs/seguranca-e-lgpd.md).
+
+## Rodar em desenvolvimento
+
+Pré-requisitos: Node 20+, pnpm 9 (`npm i -g pnpm@9.15.4`), Docker (para o MySQL local).
 
 ```bash
 pnpm install
 ```
 
-Se `pnpm` nao existir na maquina:
+Suba o MySQL e aplique o schema:
 
 ```bash
-npm install -g pnpm@9.15.4
+docker run --name polar-mysql -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=polar -p 3306:3306 -d mysql:8
+docker exec -i polar-mysql mysql -uroot -proot polar < database/schema.sql
 ```
 
-## Configurar Ambiente
-
-Crie `apps/api/.env` a partir de `apps/api/.env.example`.
+Crie `apps/api/.env` a partir de `apps/api/.env.example`:
 
 ```env
 NODE_ENV=development
 PORT=3000
 CORS_ORIGIN=http://localhost:5173
-JWT_SECRET=troque-por-um-segredo-forte-com-32-caracteres
-JWT_EXPIRES_IN=8h
-DATABASE_PROVIDER=json
-DATABASE_JSON_PATH=apps/api/data/dev-db.json
-BOOTSTRAP_ADMIN_EMAIL=admin@pola.local
-BOOTSTRAP_ADMIN_PASSWORD=
+JWT_SECRET=um-segredo-forte-com-pelo-menos-32-caracteres
+DATABASE_PROVIDER=mysql
+DATABASE_URL=mysql://root:root@localhost:3306/polar
+DATABASE_SSL=false
+SEED_SENHA_PADRAO=SenhaDemo1!
 ```
 
-`JWT_SECRET` e obrigatorio. A API falha ao iniciar se ele nao estiver configurado. Nao versionar `.env` real.
-
-Para o frontend, crie `apps/web/.env` a partir de `apps/web/.env.example` quando precisar apontar para outra API:
-
-```env
-VITE_API_URL=http://localhost:3000
-```
-
-## Rodar Em Desenvolvimento
+Popule os dados de demonstração e suba tudo:
 
 ```bash
+pnpm seed
 pnpm dev
 ```
 
-Esse comando sobe API e web em paralelo. Para rodar separadamente:
+- Web: <http://localhost:5173> — API: <http://localhost:3000/health>
+- Usuários de demonstração: `professor@escola.demo`, `coordenacao@escola.demo`, `direcao@escola.demo`, `admin@escola.demo` (senha = `SEED_SENHA_PADRAO`).
+
+> Sem Docker? `DATABASE_PROVIDER=json` roda a API com persistência em arquivo — **apenas** para desenvolvimento; produção exige MySQL (o boot falha sem ele).
+
+## Qualidade
 
 ```bash
-pnpm --filter @pola/api dev
-pnpm --filter web dev
+pnpm lint        # ESLint
+pnpm typecheck   # tsc API + web
+pnpm test        # Vitest API (integração HTTP real) + web
+pnpm build       # build de produção
 ```
 
-Health check:
+O CI executa os quatro em todo push/PR. O teste de contrato dos repositórios MySQL roda quando `TEST_DATABASE_URL` aponta para um banco com o schema aplicado.
 
-```bash
-curl http://localhost:3000/health
-```
+## Deploy
 
-O frontend Vite roda por padrao em `http://localhost:5173`.
-
-## Testes, Lint, Typecheck E Build
-
-```bash
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm build
-```
-
-Somente frontend:
-
-```bash
-pnpm --filter web test
-pnpm --filter web build
-```
-
-## Frontend
-
-Estrutura principal:
+Um serviço só (Docker), banco MySQL gratuito na nuvem, custo zero. Passo a passo completo: [docs/deploy/render.md](docs/deploy/render.md).
 
 ```text
-apps/web/
-  src/app/
-  src/components/
-  src/features/
-  src/services/
-  src/styles/
+[Browser] → Render (API Express + build React) → MySQL (TiDB Serverless/Aiven)
+                    ↑ GitHub Actions keepalive a cada 10 min
 ```
 
-Telas disponiveis:
+## Regras de negócio inegociáveis
 
-- login
-- dashboard
-- ocorrencias
-- nova ocorrencia
-- detalhe da ocorrencia
-- alunos
-- perfil/historico do aluno
-- turmas
-- usuarios
-- relatorios
-- configuracoes
-- acesso negado
-- pagina nao encontrada
+1. Só existem 4 estados e 3 transições, cada uma restrita a um papel. Pular etapa → `409`.
+2. Professor não altera status; professor só vê as próprias ocorrências.
+3. Edição: só o autor, só em `REGISTRADA`, sempre com registro de histórico.
+4. Histórico é append-only em todas as camadas; tentativa de edição → `405`.
+5. Ocorrência `ENCERRADA` é somente leitura, para sempre.
+6. Exclusão física não existe: alunos, turmas e usuários são **inativados**.
+7. Autor e data são derivados no backend, nunca digitados.
+8. O backend é a autoridade única de permissão; a UI apenas oculta.
+9. Aluno nunca é usuário do sistema.
+10. Acentuação PT-BR é válida por definição (utf8mb4 + validadores).
 
-Documentacao visual: `docs/frontend/guia-visual.md`.  
-Catalogo de telas: `docs/frontend/telas.md`.
+## Fluxo de trabalho
 
-As telas principais consomem a API em `VITE_API_URL` por meio de servicos HTTP tipados. Dados simulados ficam restritos aos testes automatizados.
+- `master` é a única branch de longa duração e é protegida: PR obrigatório, CI verde é pré-condição de merge.
+- Toda mudança nasce como `feature/<nome-curto>` (ou `fix/<nome-curto>`) e morre após o merge.
+- Commits: Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`).
 
-## Autenticacao
-
-Login:
-
-```http
-POST /auth/login
-Content-Type: application/json
-
-{
-  "email": "usuario@escola.test",
-  "senha": "senha-forte"
-}
-```
-
-Resposta:
-
-```json
-{
-  "token": "jwt",
-  "user": {
-    "id": "uuid",
-    "nome": "Usuario",
-    "email": "usuario@escola.test",
-    "papel": "PROFESSOR"
-  }
-}
-```
-
-Nenhuma resposta retorna `senhaHash`, `senha_hash`, `password_hash` ou segredo.
-
-## Permissoes
-
-- `PROFESSOR`: registra ocorrencia, consulta ocorrencias permitidas, historico permitido e alunos permitidos.
-- `COORDENADOR`: consulta ocorrencias, coloca em analise, resolve ocorrencias e acessa relatorios operacionais.
-- `DIRETOR`: consulta ocorrencias, encerra ocorrencia e consulta relatorios gerais.
-- `ADM`: gerencia usuarios, turmas, alunos, permissoes, configuracoes e auditoria.
-
-## Fluxo De Ocorrencia
-
-Status oficiais:
-
-- `REGISTRADA`
-- `EM_ANALISE`
-- `RESOLVIDA`
-- `ENCERRADA`
-
-Fluxo permitido:
+## Estrutura
 
 ```text
-REGISTRADA -> EM_ANALISE -> RESOLVIDA -> ENCERRADA
+apps/api/       Express + TS (módulos: auth, usuarios, turmas, alunos, ocorrencias,
+                notas, faltas, dashboard, relatorios, auditoria, notificacoes)
+apps/web/       React + TS (13 telas)
+database/       schema.sql (DDL MySQL) + seed.ts (dados de demonstração)
+docs/           documentação completa (produto, arquitetura, banco, testes, segurança, deploy)
+scripts/        migração de dados legados
 ```
 
-Nao e permitido pular etapas. Ocorrencia encerrada nao pode ser alterada. Historico e criado automaticamente e nao possui rota de edicao.
+## Documentação
 
-## Endpoints Principais
-
-- `POST /auth/login`
-- `GET /auth/me`
-- `GET /usuarios`
-- `POST /usuarios`
-- `GET /turmas`
-- `POST /turmas`
-- `GET /alunos`
-- `POST /alunos`
-- `POST /ocorrencias`
-- `PATCH /ocorrencias/:id/status`
-- `GET /ocorrencias/:id/historico`
-- `POST /notas`
-- `GET /notas/alunos/:alunoId`
-- `POST /faltas`
-- `GET /faltas/alunos/:alunoId`
-- `GET /dashboard`
-- `GET /relatorios/ocorrencias`
-- `GET /auditoria`
-
-Tabela completa: `docs/api/endpoints.md`.
-
-## Banco De Dados
-
-O contrato relacional esta em `database/schema.sql`. Enquanto PostgreSQL/Supabase nao estiver conectado, a API usa JSON temporario atras de repositorios em `apps/api/src/shared/database/repositories`.
-
-## Migrar Dados Antigos
-
-O script inicial le `backend/banco_dados.json` quando existir ou `legacy/python/backend/banco_dados.json` como fallback:
-
-```bash
-pnpm migrate:json
-```
-
-Ele gera `apps/api/data/migrated-from-legacy.json`. A migracao real para PostgreSQL deve importar esse contrato para as tabelas de `database/schema.sql`.
-
-## Branches
-
-Fluxo recomendado:
-
-```text
-master
-  ^
-develop
-  ^
-feature/nome-da-funcionalidade
-```
-
-Nao fazer push direto na `master`. Use `develop` para integracao e abra PR para promover codigo estavel.
-
-## Commits
-
-Use commits curtos e objetivos:
-
-- `feat: adiciona fluxo de ocorrencias`
-- `fix: bloqueia login apos tentativas invalidas`
-- `docs: atualiza endpoints`
-- `test: cobre regras de status`
+| Documento | Conteúdo |
+| --- | --- |
+| [docs/visao-geral.md](docs/visao-geral.md) | Problema, papéis, escopo, critério de aceite |
+| [docs/arquitetura/arquitetura.md](docs/arquitetura/arquitetura.md) | 3 camadas, padrões, diagramas |
+| [docs/arquitetura/decisao-mysql.md](docs/arquitetura/decisao-mysql.md) | ADR: por que MySQL |
+| [docs/banco-de-dados/modelo-relacional.md](docs/banco-de-dados/modelo-relacional.md) | DER + dicionário de dados |
+| [docs/banco-de-dados/normalizacao.md](docs/banco-de-dados/normalizacao.md) | 1FN→3FN com o modelo real |
+| [docs/api/endpoints.md](docs/api/endpoints.md) | Tabela completa de endpoints |
+| [docs/fluxos/fluxo-ocorrencias.md](docs/fluxos/fluxo-ocorrencias.md) | Máquina de estados e regras |
+| [docs/testes/plano-de-testes.md](docs/testes/plano-de-testes.md) | T01–T16 com evidências |
+| [docs/seguranca-e-lgpd.md](docs/seguranca-e-lgpd.md) | OWASP + LGPD (dados de menores) |
+| [docs/uso-de-ia.md](docs/uso-de-ia.md) | Declaração de uso de IA |
+| [docs/deploy/render.md](docs/deploy/render.md) | Passo a passo do deploy gratuito |
+| [docs/demo/roteiro-apresentacao.md](docs/demo/roteiro-apresentacao.md) | Roteiro ensaiável da banca |
+| 5 relatórios técnicos em [docs/relatorios/](docs/relatorios/) | Histórico da reestruturação Python/JSON → Node/TypeScript/MySQL |
 
 ## Roadmap
 
-- Conectar PostgreSQL/Supabase.
-- Criar migrations versionadas.
-- Adicionar refresh token e recuperacao de senha.
-- Refinar permissoes por turma/aluno.
-- Criar relatorios exportaveis.
-- Criar telas completas de edicao para usuarios e alunos.
+- [x] Persistência MySQL real com transações
+- [x] RBAC completo com regras de visibilidade e edição fechadas
+- [x] Docker + CI/CD (lint, typecheck, test, build)
+- [ ] Prova de execução real contra MySQL na nuvem (teste de contrato)
+- [ ] Deploy público no ar
+- [ ] Roteiro de 6 passos executado na URL pública
 
-## Limitacoes Conhecidas
+## Licença
 
-- Persistencia JSON e temporaria para desenvolvimento.
-- Edicao completa de usuarios e alunos ainda precisa de telas dedicadas.
-- Exportacao de relatorios ainda e funcionalidade futura.
-- Migracao de dados reais precisa validacao manual antes de producao.
-- Python legado nao participa da build da API nova.
+Distribuído sob a licença [MIT](LICENSE).

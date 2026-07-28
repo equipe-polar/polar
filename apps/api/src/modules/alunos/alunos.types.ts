@@ -1,17 +1,13 @@
 import { z } from "zod";
 
+// Os limites maximos espelham as colunas de database/schema.sql.
 export const createAlunoSchema = z.object({
-  nome: z.string().trim().min(2).optional(),
-  name: z.string().trim().min(2).optional(),
-  matricula: z.string().trim().min(1).optional(),
-  registration: z.string().trim().min(1).optional(),
-  turmaId: z.string().trim().min(1).optional(),
-  turmaNome: z.string().trim().min(1).optional(),
-  class: z.string().trim().min(1).optional(),
-  responsavelNome: z.string().trim().default(""),
-  responsibleName: z.string().trim().optional(),
-  responsavelContato: z.string().trim().default(""),
-  responsibleContact: z.string().trim().optional()
+  nome: z.string().trim().min(2).max(120),
+  matricula: z.string().trim().min(1).max(40),
+  turmaId: z.string().trim().min(1).max(36).optional(),
+  turmaNome: z.string().trim().min(1).max(120).optional(),
+  responsavelNome: z.string().trim().max(120).default(""),
+  responsavelContato: z.string().trim().max(80).default("")
 });
 
 export const updateAlunoSchema = createAlunoSchema.partial().extend({

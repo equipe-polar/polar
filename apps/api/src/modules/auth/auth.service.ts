@@ -18,14 +18,18 @@ export class AuthService {
     private readonly config: AppConfig
   ) {}
 
+  // Guarda por e-mail especifico (nao por "banco vazio"): permite que o admin
+  // real coexista com os dados de demonstracao do seed, em qualquer ordem de boot.
   async bootstrapAdminIfNeeded(): Promise<void> {
-    const usuarios = await this.users.list();
-    if (usuarios.length > 0) {
+    const existente = await this.users.findByEmailOrNome(this.config.bootstrapAdminEmail);
+    if (existente) {
+      console.log(`bootstrap ignorado: usuario ${this.config.bootstrapAdminEmail} ja existe`);
       return;
     }
 
     const password = this.config.bootstrapAdminPassword;
     if (!password) {
+      console.log("bootstrap ignorado: BOOTSTRAP_ADMIN_PASSWORD nao definida");
       return;
     }
 
@@ -59,6 +63,7 @@ export class AuthService {
       metadata: { email: usuario.email },
       criadoEm: now
     });
+    console.log(`bootstrap: admin ${usuario.email} criado com sucesso`);
   }
 
   async login(identifier: string, password: string): Promise<LoginResult> {

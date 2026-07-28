@@ -10,6 +10,7 @@
     "typecheck": "pnpm --filter @pola/api typecheck && pnpm --filter web typecheck",
     "test": "pnpm --filter @pola/api test && pnpm --filter web test",
     "build": "pnpm --filter @pola/api build && pnpm --filter web build",
+    "seed": "pnpm --dir apps/api exec tsx ../../database/seed.ts",
     "migrate:json": "pnpm --dir apps/api exec tsx ../../scripts/migrate-json-to-db.ts"
   },
   "engines": {

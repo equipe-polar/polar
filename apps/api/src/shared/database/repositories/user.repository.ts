@@ -1,7 +1,15 @@
 import type { DatabaseClient } from "../database.js";
 import type { Usuario } from "../../domain.js";
 
-export class UserRepository {
+export interface UserRepository {
+  list(): Promise<Usuario[]>;
+  findById(id: string): Promise<Usuario | null>;
+  findByEmailOrNome(identifier: string): Promise<Usuario | null>;
+  create(usuario: Usuario): Promise<Usuario>;
+  update(id: string, updater: (usuario: Usuario) => Usuario): Promise<Usuario | null>;
+}
+
+export class JsonUserRepository implements UserRepository {
   constructor(private readonly db: DatabaseClient) {}
 
   async list(): Promise<Usuario[]> {

@@ -1,0 +1,11 @@
+.git
+node_modules
+**/node_modules
+**/dist
+**/coverage
+.env
+**/.env
+apps/api/data/*.json
+docs
+*.md
+!README.md

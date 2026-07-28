@@ -5,21 +5,18 @@
 ```text
 master
   ^
-develop
-  ^
 feature/nome-da-funcionalidade
 ```
 
-- `master`: somente codigo estavel e pronto para apresentacao.
-- `develop`: integracao de desenvolvimento ativo.
-- `feature/*`: trabalho isolado por funcionalidade ou correcao.
+- `master`: unica branch de longa duracao, protegida. Somente codigo estavel, sempre com CI verde.
+- `feature/*` (ou `fix/*`): trabalho isolado por funcionalidade ou correcao, nasce de `master` e morre apos o merge.
 
-Nao fazer push direto na `master`.
+Nao fazer push direto na `master`. PR obrigatorio.
 
 ## Criar Feature Branch
 
 ```bash
-git checkout develop
+git checkout master
 git pull
 git checkout -b feature/nome-da-funcionalidade
 ```

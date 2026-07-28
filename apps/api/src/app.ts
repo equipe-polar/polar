@@ -1,5 +1,8 @@
+import fs from "node:fs";
+import path from "node:path";
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
 import type { AppConfig } from "./shared/config.js";
 import { loadConfig } from "./shared/config.js";
 import type { DatabaseClient } from "./shared/database/database.js";
@@ -26,6 +29,7 @@ export async function createApp(options: CreateAppOptions = {}) {
   const config = options.config ?? loadConfig();
   const container = await createServiceContainer(config, options.database);
   const app = express();
+  app.locals.close = container.close;
 
   const allowedOrigins =
     config.corsOrigin === "*"
@@ -35,6 +39,7 @@ export async function createApp(options: CreateAppOptions = {}) {
           .map((origin) => origin.trim())
           .filter(Boolean);
 
+  app.use(helmet());
   app.use(
     cors({
       origin(origin, callback) {
@@ -49,11 +54,25 @@ export async function createApp(options: CreateAppOptions = {}) {
   );
   app.use(express.json({ limit: "1mb" }));
 
-  app.get("/", (_req, res) => {
+  // Em producao a propria API serve o build do frontend (1 servico, 1 URL).
+  const webDist = path.resolve(process.cwd(), process.env.WEB_DIST_PATH ?? "apps/web/dist");
+  const serveSpa = config.nodeEnv === "production" && fs.existsSync(webDist);
+
+  if (!serveSpa) {
+    app.get("/", (_req, res) => {
+      res.json({
+        name: "POLAR API",
+        status: "online",
+        version: "3.0.0"
+      });
+    });
+  }
+
+  app.get("/api", (_req, res) => {
     res.json({
-      name: "P.O.L.A API",
+      name: "POLAR API",
       status: "online",
-      version: "2.0.0"
+      version: "3.0.0"
     });
   });
 
@@ -64,22 +83,38 @@ export async function createApp(options: CreateAppOptions = {}) {
     });
   });
 
+  if (serveSpa) {
+    // Navegacao de navegador (Accept: text/html) recebe o SPA ANTES das rotas
+    // da API: um F5 em /ocorrencias/:id abre o React, nao o JSON da API.
+    // Chamadas fetch (Accept */* ou application/json) seguem para a API.
+    app.use((req, res, next) => {
+      const aceitaHtml = req.headers.accept?.includes("text/html") ?? false;
+      if (req.method === "GET" && aceitaHtml && req.path !== "/health" && req.path !== "/api") {
+        res.sendFile(path.join(webDist, "index.html"));
+        return;
+      }
+      next();
+    });
+  }
+
+  // Rotas oficiais em portugues. Os aliases legados em ingles foram removidos:
+  // a padronizacao PT-BR e decisao registrada do projeto.
   app.use("/auth", authRoutes(container.services, config));
   app.use("/usuarios", usersRoutes(container.services, config));
-  app.use("/users", usersRoutes(container.services, config));
   app.use("/turmas", turmasRoutes(container.services, config));
   app.use("/alunos", alunosRoutes(container.services, config));
-  app.use("/students", alunosRoutes(container.services, config));
   app.use("/ocorrencias", ocorrenciasRoutes(container.services, config));
-  app.use("/occurrences", ocorrenciasRoutes(container.services, config));
   app.use("/notas", notasRoutes(container.services, config));
   app.use("/faltas", faltasRoutes(container.services, config));
   app.use("/dashboard", dashboardRoutes(container.services, config));
   app.use("/relatorios", relatoriosRoutes(container.services, config));
-  app.use("/reports", relatoriosRoutes(container.services, config));
   app.use("/auditoria", auditoriaRoutes(container.services, config));
   app.use("/notificacoes", notificationsRoutes(container.services, config));
-  app.use("/notifications", notificationsRoutes(container.services, config));
+
+  if (serveSpa) {
+    // Assets do build (JS/CSS/imagens) — depois das rotas da API.
+    app.use(express.static(webDist));
+  }
 
   app.use((_req, res) => {
     res.status(404).json({

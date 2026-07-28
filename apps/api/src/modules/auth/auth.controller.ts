@@ -1,41 +1,25 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
 import { badRequest } from "../../shared/errors/app-error.js";
+import { senhaSchema } from "../../shared/validation/senha.js";
 import type { Services } from "../../shared/services.js";
 
 export const loginSchema = z.object({
-  email: z.string().trim().optional(),
-  username: z.string().trim().optional(),
-  nome: z.string().trim().optional(),
-  password: z.string().min(1).optional(),
-  senha: z.string().min(1).optional()
+  email: z.string().trim().min(1, "E-mail e obrigatorio."),
+  senha: z.string().min(1, "Senha e obrigatoria.")
 });
 
 export const changePasswordSchema = z.object({
   senhaAtual: z.string().min(1),
-  novaSenha: z.string().min(8)
+  novaSenha: senhaSchema
 });
-
-function resolveIdentifier(body: z.infer<typeof loginSchema>): string {
-  return body.email ?? body.username ?? body.nome ?? "";
-}
-
-function resolvePassword(body: z.infer<typeof loginSchema>): string {
-  return body.password ?? body.senha ?? "";
-}
 
 export class AuthController {
   constructor(private readonly services: Services) {}
 
   login = async (req: Request, res: Response): Promise<Response> => {
     const body = loginSchema.parse(req.body);
-    const identifier = resolveIdentifier(body);
-    const password = resolvePassword(body);
-    if (!identifier || !password) {
-      throw badRequest("Usuario e senha sao obrigatorios.");
-    }
-
-    const result = await this.services.auth.login(identifier, password);
+    const result = await this.services.auth.login(body.email, body.senha);
     return res.json(result);
   };
 

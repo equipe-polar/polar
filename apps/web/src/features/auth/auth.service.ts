@@ -24,7 +24,7 @@ export function clearUser(): void {
 export async function loginRequest(identifier: string, senha: string): Promise<LoginResponse> {
   const result = await apiRequest<LoginResponse>("/auth/login", {
     method: "POST",
-    body: JSON.stringify({ email: identifier, username: identifier, senha })
+    body: JSON.stringify({ email: identifier, senha })
   });
   setToken(result.token);
   storeUser(result.user);

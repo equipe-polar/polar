@@ -68,6 +68,7 @@ export interface OcorrenciaHistorico {
   ocorrenciaId: string;
   status: StatusOcorrencia;
   acao: string;
+  observacao: string | null;
   usuarioId: string;
   criadoEm: string;
 }

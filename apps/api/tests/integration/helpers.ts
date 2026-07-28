@@ -28,6 +28,7 @@ export const testConfig: AppConfig = {
   jwtExpiresIn: "1h",
   databaseProvider: "json",
   databaseJsonPath: "apps/api/data/test.json",
+  databaseSsl: false,
   bootstrapAdminEmail: "admin@pola.local"
 };
 

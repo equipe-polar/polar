@@ -1,50 +1,56 @@
 # Fluxo De Ocorrencias
 
+## Máquina de estados
+
+```mermaid
+stateDiagram-v2
+    [*] --> REGISTRADA : Professor registra
+    REGISTRADA --> EM_ANALISE : Coordenador assume
+    EM_ANALISE --> RESOLVIDA : Coordenador resolve (observacao opcional)
+    RESOLVIDA --> ENCERRADA : Diretor encerra (observacao opcional)
+    ENCERRADA --> [*] : Somente leitura
+```
+
+Não existe pular etapa, retroceder, cancelar nem reabrir. Transição inválida → `409` e **nada é gravado**.
+
 ## Registro
 
-O professor registra uma ocorrencia com:
+O professor registra com: aluno válido e ativo, categoria, prioridade (`BAIXA`, `MEDIA`, `ALTA`) e descrição com pelo menos 10 caracteres. O backend deriva autor e data do usuário logado (não são digitáveis). A ocorrência nasce `REGISTRADA` e o primeiro registro de histórico é criado na mesma transação.
 
-- aluno valido
-- categoria
-- prioridade (`BAIXA`, `MEDIA`, `ALTA`)
-- descricao com conteudo suficiente
+Duplicata (mesmo autor + aluno + categoria + descrição em 5 minutos) é bloqueada com `409`.
 
-A ocorrencia nasce com status `REGISTRADA` e cria historico automatico.
+## Edição (regra fechada na v3)
 
-## Analise
+- **Quem**: somente o autor.
+- **Quando**: somente enquanto `REGISTRADA`.
+- **Rastreabilidade**: toda edição gera registro de histórico "Ocorrencia editada pelo autor".
+- Depois de `EM_ANALISE`, nem o autor edita (`409`). Terceiros nunca editam (`403`), inclusive ADM.
 
-O coordenador pode alterar `REGISTRADA` para `EM_ANALISE`.
+## Análise e resolução
 
-## Resolucao
-
-O coordenador pode alterar `EM_ANALISE` para `RESOLVIDA`.
+O coordenador assume (`REGISTRADA → EM_ANALISE`) e resolve (`EM_ANALISE → RESOLVIDA`). Na resolução pode registrar uma **observação/encaminhamento** (ex: "conversa com o aluno; família comunicada") — gravada no histórico, imutável como todo o resto.
 
 ## Encerramento
 
-O diretor pode alterar `RESOLVIDA` para `ENCERRADA`.
+Apenas o diretor encerra (`RESOLVIDA → ENCERRADA`), também com observação opcional. Encerramento é ato institucional formal: a ocorrência vira somente leitura para sempre.
 
-## Historico
+## Histórico
 
-Cada transicao cria registro em `ocorrenciaHistorico`. Nao ha rota de edicao manual do historico. Tentativas de edicao retornam `405`.
+Cada evento (criação, edição, transição) insere um registro com ação, status, autor, data e observação. Não existe rota de UPDATE/DELETE do histórico em nenhuma camada; tentativas retornam `405`.
 
-## Regras De Transicao
+## Visibilidade (regra fechada na v3)
 
-```text
-REGISTRADA -> EM_ANALISE -> RESOLVIDA -> ENCERRADA
-```
-
-- Nao pode pular status.
-- Professor nao altera status.
-- Coordenador nao encerra.
-- Diretor nao coloca em analise nem resolve.
-- Ocorrencia encerrada nao pode ser alterada.
-- Ocorrencia duplicada em janela curta e bloqueada.
-
-## Permissoes Por Papel
-
-| Papel | Acoes |
+| Papel | Enxerga |
 | --- | --- |
-| PROFESSOR | registrar ocorrencia, consultar ocorrencias permitidas, consultar historico permitido |
-| COORDENADOR | consultar, colocar em analise, resolver, relatorios operacionais |
-| DIRETOR | consultar, encerrar, relatorios gerais |
-| ADM | administrar cadastros, permissoes, configuracoes e auditoria |
+| PROFESSOR | Somente as ocorrências que ele registrou (lista, detalhe e histórico; alheias → `403`) |
+| COORDENADOR / DIRETOR / ADM | Todas |
+
+## Permissões por etapa
+
+| Transição | Papel exclusivo |
+| --- | --- |
+| `REGISTRADA → EM_ANALISE` | COORDENADOR |
+| `EM_ANALISE → RESOLVIDA` | COORDENADOR |
+| `RESOLVIDA → ENCERRADA` | DIRETOR |
+
+Professor não altera status em hipótese alguma. A UI esconde os botões, mas é o **backend** que bloqueia (`403`).

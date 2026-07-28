@@ -1,7 +1,12 @@
 import type { DatabaseClient } from "../database.js";
 import type { Notification } from "../../domain.js";
 
-export class NotificationRepository {
+export interface NotificationRepository {
+  list(): Promise<Notification[]>;
+  create(notification: Notification): Promise<Notification>;
+}
+
+export class JsonNotificationRepository implements NotificationRepository {
   constructor(private readonly db: DatabaseClient) {}
 
   async list(): Promise<Notification[]> {

@@ -20,25 +20,18 @@ const proximoStatus: Record<StatusOcorrencia, StatusOcorrencia | null> = {
 };
 
 export interface OcorrenciaCreateInput {
-  alunoId?: string | undefined;
-  studentId?: string | undefined;
-  categoria?: string | undefined;
-  type?: string | undefined;
-  prioridade?: PrioridadeOcorrencia | undefined;
-  severity?: PrioridadeOcorrencia | undefined;
-  descricao?: string | undefined;
-  description?: string | undefined;
+  alunoId: string;
+  categoria: string;
+  prioridade: PrioridadeOcorrencia;
+  descricao: string;
   local?: string | undefined;
   testemunhas?: string | undefined;
 }
 
 export interface OcorrenciaUpdateInput {
   categoria?: string | undefined;
-  type?: string | undefined;
   prioridade?: PrioridadeOcorrencia | undefined;
-  severity?: PrioridadeOcorrencia | undefined;
   descricao?: string | undefined;
-  description?: string | undefined;
   local?: string | undefined;
   testemunhas?: string | undefined;
 }
@@ -50,28 +43,33 @@ export class OcorrenciasService {
     private readonly audit: AuditRepository
   ) {}
 
-  async list(): Promise<Ocorrencia[]> {
+  // Professor consulta apenas as ocorrencias registradas por ele.
+  // Coordenacao, direcao e ADM consultam todas.
+  async list(actor: AuthenticatedUser): Promise<Ocorrencia[]> {
+    if (actor.papel === PapelUsuario.PROFESSOR) {
+      return this.ocorrencias.listByCriadoPor(actor.id);
+    }
     return this.ocorrencias.list();
   }
 
-  async get(id: string): Promise<Ocorrencia> {
+  async get(id: string, actor: AuthenticatedUser): Promise<Ocorrencia> {
     const ocorrencia = await this.ocorrencias.findById(id);
     if (!ocorrencia) {
       throw notFound("Ocorrencia nao encontrada.");
     }
+    if (actor.papel === PapelUsuario.PROFESSOR && ocorrencia.criadoPorId !== actor.id) {
+      throw forbidden("Professor consulta apenas as ocorrencias registradas por ele.");
+    }
     return ocorrencia;
   }
 
-  async historico(id: string): Promise<OcorrenciaHistorico[]> {
-    await this.get(id);
+  async historico(id: string, actor: AuthenticatedUser): Promise<OcorrenciaHistorico[]> {
+    await this.get(id, actor);
     return this.ocorrencias.listHistorico(id);
   }
 
   async create(input: OcorrenciaCreateInput, actor: AuthenticatedUser): Promise<Ocorrencia> {
-    const alunoId = input.alunoId ?? input.studentId ?? "";
-    const categoria = input.categoria ?? input.type ?? "";
-    const descricao = input.descricao ?? input.description ?? "";
-    const prioridade = input.prioridade ?? input.severity ?? PrioridadeOcorrencia.MEDIA;
+    const { alunoId, categoria, descricao, prioridade } = input;
 
     if (!alunoId || !categoria || !descricao) {
       throw badRequest("Ocorrencia exige aluno, categoria, prioridade e descricao.");
@@ -112,6 +110,7 @@ export class OcorrenciasService {
       ocorrenciaId: ocorrencia.id,
       status: StatusOcorrencia.REGISTRADA,
       acao: "Ocorrencia registrada",
+      observacao: null,
       usuarioId: actor.id,
       criadoEm: now
     };
@@ -130,22 +129,48 @@ export class OcorrenciasService {
     return ocorrencia;
   }
 
+  // Regra de edicao: somente o autor, somente enquanto REGISTRADA, e toda
+  // edicao gera registro de historico (rastreabilidade completa).
   async update(id: string, input: OcorrenciaUpdateInput, actor: AuthenticatedUser): Promise<Ocorrencia> {
-    const current = await this.get(id);
-    if (current.status === StatusOcorrencia.ENCERRADA) {
-      throw conflict("Ocorrencia encerrada nao pode ser alterada.");
+    const current = await this.get(id, actor);
+
+    if (current.criadoPorId !== actor.id) {
+      throw forbidden("Apenas o autor da ocorrencia pode edita-la.");
+    }
+    if (current.status !== StatusOcorrencia.REGISTRADA) {
+      throw conflict("Ocorrencia so pode ser editada enquanto estiver em REGISTRADA.");
+    }
+
+    // Sem campo algum nao ha edicao: evita poluir o historico com registro vazio.
+    const temAlteracao = Object.values(input).some((valor) => valor !== undefined);
+    if (!temAlteracao) {
+      throw badRequest("Informe pelo menos um campo para editar.");
     }
 
     const now = agoraIso();
-    const updated = await this.ocorrencias.updateWithHistorico(id, (ocorrencia) => ({
-      ...ocorrencia,
-      categoria: input.categoria ?? input.type ?? ocorrencia.categoria,
-      prioridade: input.prioridade ?? input.severity ?? ocorrencia.prioridade,
-      descricao: input.descricao ?? input.description ?? ocorrencia.descricao,
-      local: input.local ?? ocorrencia.local ?? "",
-      testemunhas: input.testemunhas ?? ocorrencia.testemunhas ?? "",
-      atualizadoEm: now
-    }));
+    const historico: OcorrenciaHistorico = {
+      id: novoId(),
+      ocorrenciaId: id,
+      status: current.status,
+      acao: "Ocorrencia editada pelo autor",
+      observacao: null,
+      usuarioId: actor.id,
+      criadoEm: now
+    };
+
+    const updated = await this.ocorrencias.updateWithHistorico(
+      id,
+      (ocorrencia) => ({
+        ...ocorrencia,
+        categoria: input.categoria ?? ocorrencia.categoria,
+        prioridade: input.prioridade ?? ocorrencia.prioridade,
+        descricao: input.descricao ?? ocorrencia.descricao,
+        local: input.local ?? ocorrencia.local ?? "",
+        testemunhas: input.testemunhas ?? ocorrencia.testemunhas ?? "",
+        atualizadoEm: now
+      }),
+      historico
+    );
 
     if (!updated) {
       throw notFound("Ocorrencia nao encontrada.");
@@ -164,8 +189,13 @@ export class OcorrenciasService {
     return updated;
   }
 
-  async updateStatus(id: string, status: StatusOcorrencia, actor: AuthenticatedUser): Promise<Ocorrencia> {
-    const current = await this.get(id);
+  async updateStatus(
+    id: string,
+    status: StatusOcorrencia,
+    actor: AuthenticatedUser,
+    observacao?: string
+  ): Promise<Ocorrencia> {
+    const current = await this.get(id, actor);
     if (current.status === StatusOcorrencia.ENCERRADA) {
       throw conflict("Ocorrencia encerrada nao pode ser alterada.");
     }
@@ -190,6 +220,7 @@ export class OcorrenciasService {
       ocorrenciaId: id,
       status,
       acao: `Status alterado de ${current.status} para ${status}`,
+      observacao: observacao?.trim() ? observacao.trim() : null,
       usuarioId: actor.id,
       criadoEm: now
     };

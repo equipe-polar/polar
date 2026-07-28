@@ -1,7 +1,16 @@
 import type { DatabaseClient } from "../database.js";
 import type { Turma } from "../../domain.js";
 
-export class TurmaRepository {
+// Sem metodo delete: exclusao fisica de turma nao existe no dominio do POLAR.
+export interface TurmaRepository {
+  list(): Promise<Turma[]>;
+  findById(id: string): Promise<Turma | null>;
+  findByNome(nome: string): Promise<Turma | null>;
+  create(turma: Turma): Promise<Turma>;
+  update(id: string, updater: (turma: Turma) => Turma): Promise<Turma | null>;
+}
+
+export class JsonTurmaRepository implements TurmaRepository {
   constructor(private readonly db: DatabaseClient) {}
 
   async list(): Promise<Turma[]> {
@@ -38,18 +47,6 @@ export class TurmaRepository {
       const updated = updater(current);
       state.turmas[index] = updated;
       return updated;
-    });
-  }
-
-  async delete(id: string): Promise<boolean> {
-    return this.db.transaction((state) => {
-      const index = state.turmas.findIndex((turma) => turma.id === id);
-      if (index < 0) {
-        return false;
-      }
-
-      state.turmas.splice(index, 1);
-      return true;
     });
   }
 }

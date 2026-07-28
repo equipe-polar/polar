@@ -198,9 +198,12 @@ async function main(): Promise<void> {
   const { repos, close } = await criarContexto();
 
   try {
-    const existentes = await repos.users.list();
-    if (existentes.length > 0) {
-      console.log("Banco ja possui usuarios; seed ignorado.");
+    // Guarda pelo e-mail sentinela do seed (nao por "banco vazio"): permite que
+    // o seed rode mesmo depois do bootstrap ja ter criado um admin real, e
+    // vice-versa. As duas rotinas coexistem em qualquer ordem de execucao.
+    const seedJaAplicado = await repos.users.findByEmailOrNome("admin@escola.demo");
+    if (seedJaAplicado) {
+      console.log("Seed ja aplicado (admin@escola.demo existe); seed ignorado.");
       return;
     }
 

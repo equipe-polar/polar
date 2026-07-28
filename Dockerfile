@@ -9,7 +9,7 @@ FROM node:20-slim
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 
-# .dockerignore ja remove node_modules, dist, .env, docs e o codigo legado.
+# .dockerignore ja remove node_modules, dist, .env e docs.
 COPY . .
 
 # --prod=false garante devDependencies (typescript, vite, tsc) mesmo que o

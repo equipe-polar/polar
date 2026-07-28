@@ -1,8 +1,24 @@
+<div align="center">
+
+<img src="apps/web/src/assets/logo-polar.svg" width="72" height="72" alt="Logo do POLAR" />
+
 # POLAR
 
-Sistema escolar de registro, acompanhamento e auditoria de ocorrências institucionais.
+**Sistema de gestão de ocorrências escolares** — do registro pelo professor ao encerramento pela direção, com histórico imutável e auditável.
 
-> Nome oficial: **POLAR** (evolução de PM-GPO → Acta → P.O.L.A). TCC do curso técnico em Desenvolvimento de Sistemas, com cliente real: a coordenação escolar.
+[![CI](https://github.com/Origenes-Lessa/P.O.L.A/actions/workflows/ci.yml/badge.svg)](https://github.com/Origenes-Lessa/P.O.L.A/actions/workflows/ci.yml)
+[![Licença: MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-blue.svg)](LICENSE)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React_18-61DAFB?logo=react&logoColor=black)
+![Node.js](https://img.shields.io/badge/Node.js_20-339933?logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express_5-000000?logo=express&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL_8-4479A1?logo=mysql&logoColor=white)
+
+[Documentação completa](docs/visao-geral.md) · [Sistema ao vivo](#) (em breve) · [Como rodar localmente](#rodar-em-desenvolvimento)
+
+</div>
+
+---
 
 ## O problema resolvido
 
@@ -15,13 +31,22 @@ PROFESSOR registra → COORDENAÇÃO analisa/resolve → DIREÇÃO encerra
 
 Cada ação gera histórico **imutável** (append-only). O valor central é o histórico permanente por aluno — a análise de reincidência.
 
-## Stack (v3)
+## Funcionalidades
+
+- **Registro de ocorrências** com aluno, categoria, prioridade e descrição — autor e data sempre derivados no backend.
+- **Máquina de estados fechada**: 4 status, 3 transições, cada uma restrita a um papel. Pular etapa é rejeitado (`409`).
+- **Histórico append-only**: toda ação (criação, edição, transição) gera um registro imutável, com observação opcional do responsável.
+- **Visibilidade por papel**: professor vê só o que registrou; coordenação, direção e administração veem tudo.
+- **Notas, faltas, dashboard, relatórios e notificações** internas por turma e aluno.
+- **Auditoria completa** de login, criação/edição de entidades e mudanças de status.
+
+## Stack técnico
 
 | Camada | Tecnologia |
 | --- | --- |
 | Frontend | React 18 + TypeScript + Vite + React Router |
 | Backend | Node.js 20 + Express 5 + TypeScript |
-| Banco de dados | **MySQL 8** (utf8mb4) via mysql2, com transações |
+| Banco de dados | MySQL 8 (utf8mb4) via `mysql2`, com transações reais |
 | Validação | Zod |
 | Segurança | JWT, bcrypt, helmet, rate-limit + bloqueio de login, RBAC no backend |
 | Testes | Vitest + Supertest (integração da API) + Testing Library (web) |
@@ -29,23 +54,44 @@ Cada ação gera histórico **imutável** (append-only). O valor central é o hi
 | Deploy | Docker → Render (1 serviço: a API serve o build do React) |
 | Monorepo | pnpm workspaces |
 
-## Documentação
+## Arquitetura
 
-| Documento | Conteúdo |
+```mermaid
+flowchart LR
+    subgraph Apresentacao
+        WEB["apps/web<br/>React 18 + Vite + TypeScript"]
+    end
+    subgraph Aplicacao
+        API["apps/api<br/>Node.js 20 + Express 5 + TypeScript"]
+        AUTH["Auth: JWT + bcrypt"]
+        RBAC["Permissões por papel"]
+        VAL["Validação: Zod"]
+    end
+    subgraph Persistencia
+        MYSQL[("MySQL 8<br/>utf8mb4")]
+    end
+    WEB -- "HTTP/JSON (REST)" --> API
+    API --- AUTH
+    API --- RBAC
+    API --- VAL
+    API -- "mysql2 (pool + transações)" --> MYSQL
+```
+
+Detalhamento completo (padrões, camadas, decisões): [docs/arquitetura/arquitetura.md](docs/arquitetura/arquitetura.md).
+
+## Modelo de segurança
+
+| Medida | Implementação |
 | --- | --- |
-| [docs/visao-geral.md](docs/visao-geral.md) | Problema, papéis, escopo, critério de aceite |
-| [docs/arquitetura/arquitetura.md](docs/arquitetura/arquitetura.md) | 3 camadas, padrões, diagramas |
-| [docs/arquitetura/decisao-mysql.md](docs/arquitetura/decisao-mysql.md) | ADR: por que MySQL |
-| [docs/banco-de-dados/modelo-relacional.md](docs/banco-de-dados/modelo-relacional.md) | DER + dicionário de dados |
-| [docs/banco-de-dados/normalizacao.md](docs/banco-de-dados/normalizacao.md) | 1FN→3FN com o modelo real |
-| [docs/api/endpoints.md](docs/api/endpoints.md) | Tabela completa de endpoints |
-| [docs/fluxos/fluxo-ocorrencias.md](docs/fluxos/fluxo-ocorrencias.md) | Máquina de estados e regras |
-| [docs/testes/plano-de-testes.md](docs/testes/plano-de-testes.md) | T01–T16 com evidências |
-| [docs/seguranca-e-lgpd.md](docs/seguranca-e-lgpd.md) | OWASP + LGPD (dados de menores) |
-| [docs/uso-de-ia.md](docs/uso-de-ia.md) | Declaração de uso de IA |
-| [docs/deploy/render.md](docs/deploy/render.md) | Passo a passo do deploy gratuito |
-| [docs/demo/roteiro-apresentacao.md](docs/demo/roteiro-apresentacao.md) | Roteiro ensaiável da banca |
-| [docs/gestao/](docs/gestao/) | Playbook de liderança + backlog de tarefas |
+| Senhas | bcrypt (custo 10); nenhuma resposta expõe hash |
+| Autenticação | JWT assinado, expiração configurável; bloqueio após 5 tentativas inválidas |
+| Autorização | RBAC aplicado no backend em toda rota — a UI só oculta, nunca é a autoridade |
+| Entrada | Zod em 100% dos endpoints; caracteres de controle rejeitados; HTML removido |
+| Banco | Queries 100% parametrizadas via `mysql2`; zero concatenação de SQL |
+| Cabeçalhos | `helmet` (CSP, X-Content-Type-Options, etc.) |
+| Auditoria | Log de login, criação/edição e transições de status |
+
+Detalhamento completo + análise LGPD (dados de menores): [docs/seguranca-e-lgpd.md](docs/seguranca-e-lgpd.md).
 
 ## Rodar em desenvolvimento
 
@@ -122,10 +168,9 @@ Um serviço só (Docker), banco MySQL gratuito na nuvem, custo zero. Passo a pas
 
 ## Fluxo de trabalho
 
-- Branches: `master` (estável) ← `develop` (integração) ← `feature/*`.
-- PR obrigatório para `master`; CI verde é pré-condição de merge.
+- `master` é a única branch de longa duração e é protegida: PR obrigatório, CI verde é pré-condição de merge.
+- Toda mudança nasce como `feature/<nome-curto>` (ou `fix/<nome-curto>`) e morre após o merge.
 - Commits: Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`).
-- Tarefas para a equipe: [docs/gestao/backlog-tarefas.md](docs/gestao/backlog-tarefas.md) — toda tarefa tem critério de aceite e validador nomeado.
 
 ## Estrutura
 
@@ -134,7 +179,37 @@ apps/api/       Express + TS (módulos: auth, usuarios, turmas, alunos, ocorrenc
                 notas, faltas, dashboard, relatorios, auditoria, notificacoes)
 apps/web/       React + TS (13 telas)
 database/       schema.sql (DDL MySQL) + seed.ts (dados de demonstração)
-docs/           documentação completa (banca, deploy, gestão)
+docs/           documentação completa (produto, arquitetura, banco, testes, segurança, deploy)
 scripts/        migração de dados legados
-legacy/ legado/ código histórico arquivado (não participa do build)
 ```
+
+## Documentação
+
+| Documento | Conteúdo |
+| --- | --- |
+| [docs/visao-geral.md](docs/visao-geral.md) | Problema, papéis, escopo, critério de aceite |
+| [docs/arquitetura/arquitetura.md](docs/arquitetura/arquitetura.md) | 3 camadas, padrões, diagramas |
+| [docs/arquitetura/decisao-mysql.md](docs/arquitetura/decisao-mysql.md) | ADR: por que MySQL |
+| [docs/banco-de-dados/modelo-relacional.md](docs/banco-de-dados/modelo-relacional.md) | DER + dicionário de dados |
+| [docs/banco-de-dados/normalizacao.md](docs/banco-de-dados/normalizacao.md) | 1FN→3FN com o modelo real |
+| [docs/api/endpoints.md](docs/api/endpoints.md) | Tabela completa de endpoints |
+| [docs/fluxos/fluxo-ocorrencias.md](docs/fluxos/fluxo-ocorrencias.md) | Máquina de estados e regras |
+| [docs/testes/plano-de-testes.md](docs/testes/plano-de-testes.md) | T01–T16 com evidências |
+| [docs/seguranca-e-lgpd.md](docs/seguranca-e-lgpd.md) | OWASP + LGPD (dados de menores) |
+| [docs/uso-de-ia.md](docs/uso-de-ia.md) | Declaração de uso de IA |
+| [docs/deploy/render.md](docs/deploy/render.md) | Passo a passo do deploy gratuito |
+| [docs/demo/roteiro-apresentacao.md](docs/demo/roteiro-apresentacao.md) | Roteiro ensaiável da banca |
+| 5 relatórios técnicos em [docs/relatorios/](docs/relatorios/) | Histórico da reestruturação Python/JSON → Node/TypeScript/MySQL |
+
+## Roadmap
+
+- [x] Persistência MySQL real com transações
+- [x] RBAC completo com regras de visibilidade e edição fechadas
+- [x] Docker + CI/CD (lint, typecheck, test, build)
+- [ ] Prova de execução real contra MySQL na nuvem (teste de contrato)
+- [ ] Deploy público no ar
+- [ ] Roteiro de 6 passos executado na URL pública
+
+## Licença
+
+Distribuído sob a licença [MIT](LICENSE).

@@ -45,6 +45,8 @@ DATABASE_PROVIDER=mysql DATABASE_URL="mysql://USUARIO:SENHA@HOST:PORTA/polar" DA
 
 > No Windows PowerShell: defina as variáveis com `$env:DATABASE_PROVIDER="mysql"` etc. antes de rodar `pnpm seed`.
 
+**A ordem entre este passo e o deploy da Parte 2 não importa.** O seed guarda pelo e-mail sentinela `admin@escola.demo`; o bootstrap do admin real (Parte 2) guarda pelo `BOOTSTRAP_ADMIN_EMAIL` configurado. Cada rotina só verifica o próprio e-mail, então os dados de demonstração e o admin real coexistem independente de qual rodar primeiro.
+
 ## Parte 2 — Criar o serviço no Render
 
 1. Crie conta em <https://render.com> (login com GitHub).
@@ -52,9 +54,9 @@ DATABASE_PROVIDER=mysql DATABASE_URL="mysql://USUARIO:SENHA@HOST:PORTA/polar" DA
 3. Preencha as variáveis marcadas como `sync: false`:
    - `DATABASE_URL`: a URL do MySQL da Parte 1
    - `CORS_ORIGIN`: a URL pública do serviço (ex: `https://polar.onrender.com`) — dá para ajustar depois do primeiro deploy
-   - `BOOTSTRAP_ADMIN_EMAIL`: e-mail do administrador inicial
+   - `BOOTSTRAP_ADMIN_EMAIL`: e-mail do administrador real (diferente de `admin@escola.demo`, que é só demonstração)
    - `BOOTSTRAP_ADMIN_PASSWORD`: senha forte (será exigida troca no primeiro login)
-4. Deploy. O primeiro build demora ~5 minutos.
+4. Deploy. O primeiro build demora ~5 minutos. No boot, os logs mostram claramente se o admin foi criado ou se já existia (`bootstrap: admin ... criado com sucesso` ou `bootstrap ignorado: ...`).
 5. Teste: `https://SEU-SERVICO.onrender.com/health` deve responder `{"status":"ok"}`.
 
 ## Parte 3 — Anti-hibernação (GitHub Actions)
@@ -107,4 +109,4 @@ pnpm dev
 | `ER_NO_SUCH_TABLE` | Schema não aplicado | Rodar `database/schema.sql` no banco |
 | Erro de TLS/SSL na conexão | `DATABASE_SSL` errado | `true` para TiDB/Aiven; `false` para MySQL local |
 | Primeiro acesso lento (~50s) | Serviço hibernou | Conferir a variável `POLAR_HEALTH_URL` do keepalive |
-| Login recusa `admin` | Bootstrap só roda com banco vazio | Usar os usuários do seed ou conferir `BOOTSTRAP_ADMIN_*` |
+| Login recusa `admin` | `BOOTSTRAP_ADMIN_PASSWORD` não definida, ou você está tentando o e-mail errado | Conferir os logs de boot (`bootstrap ignorado: ...`); usar `admin@escola.demo` (seed) ou o `BOOTSTRAP_ADMIN_EMAIL` configurado (admin real) |

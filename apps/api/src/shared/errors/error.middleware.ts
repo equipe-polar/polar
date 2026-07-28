@@ -28,6 +28,7 @@ export const errorMiddleware: ErrorRequestHandler = (error, _req, res, _next) =>
     return res.status(error.statusCode).json(payload);
   }
 
+  console.error("Erro nao tratado:", error);
   return res.status(500).json({
     error: {
       code: "INTERNAL_ERROR",

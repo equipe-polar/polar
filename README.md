@@ -14,7 +14,7 @@
 ![Express](https://img.shields.io/badge/Express_5-000000?logo=express&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL_8-4479A1?logo=mysql&logoColor=white)
 
-[Documentação completa](docs/visao-geral.md) · [Sistema ao vivo](#) (em breve) · [Como rodar localmente](#rodar-em-desenvolvimento)
+[Documentação completa](docs/visao-geral.md) · [Sistema ao vivo](https://polar-7p37.onrender.com/) · [Como rodar localmente](#rodar-em-desenvolvimento)
 
 </div>
 

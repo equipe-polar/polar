@@ -9,7 +9,7 @@
 | Autorização no servidor | Middleware `authorize(permissao)` por rota + regras de negócio no service (a UI apenas oculta) | A01 Broken Access Control |
 | Bloqueio de força bruta | 5 tentativas inválidas → bloqueio de 15 min (423); rate-limit por IP no login (429); mensagem genérica que não revela se o e-mail existe | A07 |
 | Validação de entrada | Zod em todos os endpoints; descrição ≥ 10 chars; caracteres de controle rejeitados; HTML removido (texto puro) | A03 Injection |
-| SQL parametrizado | 100% das queries via placeholders `?` do mysql2 — zero concatenação de SQL | A03 Injection |
+| SQL parametrizado | 100% das queries via placeholders `$1..$n` do pg — zero concatenação de SQL | A03 Injection |
 | Cabeçalhos de proteção | `helmet` (CSP, X-Content-Type-Options, frame-ancestors etc.) | A05 Security Misconfiguration |
 | CORS restrito | Lista de origens explícita via `CORS_ORIGIN` | A05 |
 | Política de senha | 8–72 caracteres, sem espaços nas bordas, sem caracteres de controle; troca obrigatória no primeiro login de conta criada por ADM | A07 |
@@ -22,7 +22,7 @@
 
 - Sem refresh token / expiração por inatividade (sessão expira pelo tempo do JWT).
 - Sem recuperação de senha por e-mail (fora de escopo: nenhuma comunicação externa).
-- Recomendado: usuário MySQL da aplicação com privilégios mínimos (sem DDL) — tarefa aberta para o setor de Banco de Dados.
+- Recomendado: usuário PostgreSQL da aplicação com privilégios mínimos (sem DDL) — tarefa aberta para o setor de Banco de Dados.
 
 ## 2. LGPD (Lei 13.709/2018)
 

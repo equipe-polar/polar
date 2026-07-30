@@ -1,4 +1,4 @@
-export type PapelUsuario = "PROFESSOR" | "COORDENADOR" | "DIRETOR" | "ADM";
+export type PapelUsuario = "PROFESSOR" | "COORDENADOR" | "DIRETOR" | "ADM" | "ALUNO";
 
 export type StatusOcorrencia = "REGISTRADA" | "EM_ANALISE" | "RESOLVIDA" | "ENCERRADA";
 

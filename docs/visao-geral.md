@@ -31,8 +31,9 @@ O nome evoluiu ao longo do projeto: PM-GPO → Acta → P.O.L.A → **POLAR** (n
 | `COORDENADOR` | Ver todas; `REGISTRADA→EM_ANALISE`; `EM_ANALISE→RESOLVIDA` (com observação); relatórios operacionais | Encerrar; pular etapas; editar histórico |
 | `DIRETOR` | Ver todas; `RESOLVIDA→ENCERRADA` (com observação); relatórios gerais | Analisar/resolver; editar histórico |
 | `ADM` | Gerir usuários, turmas, alunos, configurações e auditoria | Alterar status de ocorrência; editar ocorrência de terceiros |
+| `ALUNO` | Autenticar; conta somente leitura | Registrar ou alterar ocorrência; ver ocorrência alguma (ver nota) |
 
-**Aluno e responsável nunca são usuários do sistema** — aluno é apenas entidade de dados.
+**Sobre o papel `ALUNO`.** A conta existe e autentica, mas o modelo ainda não liga um `Usuario` a um registro de `Aluno`. Sem esse vínculo não há como decidir *quais* ocorrências são "as dele", e a regra do sistema é negar por padrão: listagem vazia e dashboard zerado. `Aluno` continua sendo entidade de dados — a conta de papel `ALUNO` é uma coisa, o registro do estudante é outra.
 
 ## 4. Escopo
 
@@ -46,7 +47,7 @@ O nome evoluiu ao longo do projeto: PM-GPO → Acta → P.O.L.A → **POLAR** (n
 - Histórico automático append-only, sem rota de edição/exclusão (tentativa → `405`).
 - Ocorrência `ENCERRADA` é somente leitura.
 - Histórico permanente por aluno (tela de reincidência).
-- **Persistência real em MySQL** — dados sobrevivem a restart (teste T10).
+- **Persistência real em PostgreSQL** — dados sobrevivem a restart (teste T10).
 - Validação de entrada (Zod) com suporte pleno a acentuação PT-BR.
 
 ### Desejável (entregue como bônus)

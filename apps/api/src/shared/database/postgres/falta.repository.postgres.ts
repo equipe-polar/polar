@@ -1,12 +1,12 @@
-import type { Pool, RowDataPacket } from "mysql2/promise";
+import type { Pool } from "pg";
 import type { Falta } from "../../domain.js";
 import type { FaltaRepository } from "../repositories/falta.repository.js";
-import { dateOnlyFromDb, dbDateTime, isoFromDbRequired } from "./mysql-client.js";
+import { dateOnlyFromDb, dbDateTime, isoFromDbRequired } from "./postgres-client.js";
 
-interface FaltaRow extends RowDataPacket {
+interface FaltaRow {
   id: string;
   aluno_id: string;
-  data: Date;
+  data: string;
   justificativa: string | null;
   registrada_por_id: string;
   criado_em: Date;
@@ -25,11 +25,11 @@ function toFalta(row: FaltaRow): Falta {
 
 const COLUNAS = "id, aluno_id, data, justificativa, registrada_por_id, criado_em";
 
-export class MysqlFaltaRepository implements FaltaRepository {
+export class PostgresFaltaRepository implements FaltaRepository {
   constructor(private readonly pool: Pool) {}
 
   async create(falta: Falta): Promise<Falta> {
-    await this.pool.execute(`INSERT INTO faltas (${COLUNAS}) VALUES (?, ?, ?, ?, ?, ?)`, [
+    await this.pool.query(`INSERT INTO faltas (${COLUNAS}) VALUES ($1, $2, $3, $4, $5, $6)`, [
       falta.id,
       falta.alunoId,
       falta.data,
@@ -41,8 +41,8 @@ export class MysqlFaltaRepository implements FaltaRepository {
   }
 
   async listByAluno(alunoId: string): Promise<Falta[]> {
-    const [rows] = await this.pool.query<FaltaRow[]>(
-      `SELECT ${COLUNAS} FROM faltas WHERE aluno_id = ? ORDER BY data DESC`,
+    const { rows } = await this.pool.query<FaltaRow>(
+      `SELECT ${COLUNAS} FROM faltas WHERE aluno_id = $1 ORDER BY data DESC`,
       [alunoId]
     );
     return rows.map(toFalta);

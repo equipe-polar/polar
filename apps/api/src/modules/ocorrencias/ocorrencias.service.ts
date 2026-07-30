@@ -36,6 +36,32 @@ export interface OcorrenciaUpdateInput {
   testemunhas?: string | undefined;
 }
 
+/**
+ * Escopo de leitura de ocorrencias por papel. Decisao unica, reusada pela listagem,
+ * pelo acesso direto por id e pelo dashboard -- foi a duplicacao dessa regra que
+ * deixou o dashboard entregar o agregado global para o professor.
+ *
+ * - `global`: coordenacao, direcao e ADM leem a escola inteira.
+ * - `autor`:  professor le apenas o que ele mesmo registrou.
+ * - `nenhum`: nega por padrao. O ALUNO cai aqui porque o modelo ainda nao vincula
+ *   Usuario a Aluno; enquanto esse vinculo nao existir, ele nao pode ler ocorrencia
+ *   nenhuma. Qualquer papel novo tambem cai aqui ate ser decidido explicitamente.
+ */
+export type EscopoOcorrencias = { tipo: "global" } | { tipo: "autor"; usuarioId: string } | { tipo: "nenhum" };
+
+export function escopoDeOcorrencias(actor: AuthenticatedUser): EscopoOcorrencias {
+  switch (actor.papel) {
+    case PapelUsuario.COORDENADOR:
+    case PapelUsuario.DIRETOR:
+    case PapelUsuario.ADM:
+      return { tipo: "global" };
+    case PapelUsuario.PROFESSOR:
+      return { tipo: "autor", usuarioId: actor.id };
+    default:
+      return { tipo: "nenhum" };
+  }
+}
+
 export class OcorrenciasService {
   constructor(
     private readonly ocorrencias: OcorrenciaRepository,
@@ -43,13 +69,16 @@ export class OcorrenciasService {
     private readonly audit: AuditRepository
   ) {}
 
-  // Professor consulta apenas as ocorrencias registradas por ele.
-  // Coordenacao, direcao e ADM consultam todas.
   async list(actor: AuthenticatedUser): Promise<Ocorrencia[]> {
-    if (actor.papel === PapelUsuario.PROFESSOR) {
-      return this.ocorrencias.listByCriadoPor(actor.id);
+    const escopo = escopoDeOcorrencias(actor);
+    switch (escopo.tipo) {
+      case "global":
+        return this.ocorrencias.list();
+      case "autor":
+        return this.ocorrencias.listByCriadoPor(escopo.usuarioId);
+      default:
+        return [];
     }
-    return this.ocorrencias.list();
   }
 
   async get(id: string, actor: AuthenticatedUser): Promise<Ocorrencia> {
@@ -57,7 +86,11 @@ export class OcorrenciasService {
     if (!ocorrencia) {
       throw notFound("Ocorrencia nao encontrada.");
     }
-    if (actor.papel === PapelUsuario.PROFESSOR && ocorrencia.criadoPorId !== actor.id) {
+    const escopo = escopoDeOcorrencias(actor);
+    if (escopo.tipo === "nenhum") {
+      throw forbidden("Papel sem permissao de leitura de ocorrencias.");
+    }
+    if (escopo.tipo === "autor" && ocorrencia.criadoPorId !== escopo.usuarioId) {
       throw forbidden("Professor consulta apenas as ocorrencias registradas por ele.");
     }
     return ocorrencia;

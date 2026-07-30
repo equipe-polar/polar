@@ -58,62 +58,67 @@ export async function createApp(options: CreateAppOptions = {}) {
   const webDist = path.resolve(process.cwd(), process.env.WEB_DIST_PATH ?? "apps/web/dist");
   const serveSpa = config.nodeEnv === "production" && fs.existsSync(webDist);
 
+  const banner = {
+    name: "POLAR API",
+    status: "online",
+    version: "3.0.0"
+  };
+
   if (!serveSpa) {
     app.get("/", (_req, res) => {
-      res.json({
-        name: "POLAR API",
-        status: "online",
-        version: "3.0.0"
-      });
+      res.json(banner);
     });
   }
 
   app.get("/api", (_req, res) => {
-    res.json({
-      name: "POLAR API",
-      status: "online",
-      version: "3.0.0"
-    });
+    res.json(banner);
   });
 
-  app.get("/health", (_req, res) => {
+  // Health check em dois enderecos: /api/health acompanha o prefixo da API,
+  // /health continua respondendo para plataformas que sondam a raiz.
+  const health = (_req: express.Request, res: express.Response): void => {
     res.json({
       status: "ok",
       timestamp: new Date().toISOString()
     });
-  });
+  };
+  app.get("/health", health);
+  app.get("/api/health", health);
+
+  // Toda a API vive sob /api. Antes os routers ficavam na raiz (/alunos, /turmas,
+  // /usuarios...), colidindo por nome com as rotas do React, e a desambiguacao era
+  // um truque de ordenacao baseado no header Accept: text/html. Roteamento de CDN
+  // e por caminho e nao consegue replicar esse discriminador -- com o prefixo, o
+  // SPA pode ser servido estaticamente e a API deixa de disputar caminho com ele.
+  //
+  // Rotas em portugues. Os aliases legados em ingles foram removidos:
+  // a padronizacao PT-BR e decisao registrada do projeto.
+  app.use("/api/auth", authRoutes(container.services, config));
+  app.use("/api/usuarios", usersRoutes(container.services, config));
+  app.use("/api/turmas", turmasRoutes(container.services, config));
+  app.use("/api/alunos", alunosRoutes(container.services, config));
+  app.use("/api/ocorrencias", ocorrenciasRoutes(container.services, config));
+  app.use("/api/notas", notasRoutes(container.services, config));
+  app.use("/api/faltas", faltasRoutes(container.services, config));
+  app.use("/api/dashboard", dashboardRoutes(container.services, config));
+  app.use("/api/relatorios", relatoriosRoutes(container.services, config));
+  app.use("/api/auditoria", auditoriaRoutes(container.services, config));
+  app.use("/api/notificacoes", notificationsRoutes(container.services, config));
 
   if (serveSpa) {
-    // Navegacao de navegador (Accept: text/html) recebe o SPA ANTES das rotas
-    // da API: um F5 em /ocorrencias/:id abre o React, nao o JSON da API.
-    // Chamadas fetch (Accept */* ou application/json) seguem para a API.
+    // Assets do build (JS/CSS/imagens).
+    app.use(express.static(webDist));
+
+    // Qualquer outro GET de navegacao devolve o index.html, para que um F5 em
+    // /ocorrencias/:id abra o React. Caminhos /api ja foram tratados acima e,
+    // se chegarem aqui, sao 404 de API -- devem responder JSON, nao HTML.
     app.use((req, res, next) => {
-      const aceitaHtml = req.headers.accept?.includes("text/html") ?? false;
-      if (req.method === "GET" && aceitaHtml && req.path !== "/health" && req.path !== "/api") {
+      if (req.method === "GET" && !req.path.startsWith("/api")) {
         res.sendFile(path.join(webDist, "index.html"));
         return;
       }
       next();
     });
-  }
-
-  // Rotas oficiais em portugues. Os aliases legados em ingles foram removidos:
-  // a padronizacao PT-BR e decisao registrada do projeto.
-  app.use("/auth", authRoutes(container.services, config));
-  app.use("/usuarios", usersRoutes(container.services, config));
-  app.use("/turmas", turmasRoutes(container.services, config));
-  app.use("/alunos", alunosRoutes(container.services, config));
-  app.use("/ocorrencias", ocorrenciasRoutes(container.services, config));
-  app.use("/notas", notasRoutes(container.services, config));
-  app.use("/faltas", faltasRoutes(container.services, config));
-  app.use("/dashboard", dashboardRoutes(container.services, config));
-  app.use("/relatorios", relatoriosRoutes(container.services, config));
-  app.use("/auditoria", auditoriaRoutes(container.services, config));
-  app.use("/notificacoes", notificationsRoutes(container.services, config));
-
-  if (serveSpa) {
-    // Assets do build (JS/CSS/imagens) — depois das rotas da API.
-    app.use(express.static(webDist));
   }
 
   app.use((_req, res) => {

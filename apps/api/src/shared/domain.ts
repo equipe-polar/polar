@@ -2,7 +2,8 @@ export enum PapelUsuario {
   PROFESSOR = "PROFESSOR",
   COORDENADOR = "COORDENADOR",
   DIRETOR = "DIRETOR",
-  ADM = "ADM"
+  ADM = "ADM",
+  ALUNO = "ALUNO"
 }
 
 export enum StatusOcorrencia {

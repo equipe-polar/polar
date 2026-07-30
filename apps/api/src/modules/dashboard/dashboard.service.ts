@@ -1,10 +1,16 @@
 import type { OcorrenciaRepository } from "../../shared/database/repositories/ocorrencia.repository.js";
+import type { Ocorrencia } from "../../shared/domain.js";
+import { escopoDeOcorrencias } from "../ocorrencias/ocorrencias.service.js";
+import type { AuthenticatedUser } from "../auth/auth.types.js";
 
 export class DashboardService {
   constructor(private readonly ocorrencias: OcorrenciaRepository) {}
 
-  async resumo() {
-    const ocorrencias = await this.ocorrencias.list();
+  // O agregado obedece ao mesmo escopo por papel da listagem de ocorrencias.
+  // Antes este metodo chamava list() direto e entregava os numeros da escola
+  // inteira ao professor, contradizendo a regra que o proprio sistema declara.
+  async resumo(actor: AuthenticatedUser) {
+    const ocorrencias = await this.carregarNoEscopo(actor);
     const porStatus: Record<string, number> = {};
     const porPrioridade: Record<string, number> = {};
     const porCategoria: Record<string, number> = {};
@@ -21,5 +27,17 @@ export class DashboardService {
       ocorrenciasPorPrioridade: porPrioridade,
       ocorrenciasPorCategoria: porCategoria
     };
+  }
+
+  private async carregarNoEscopo(actor: AuthenticatedUser): Promise<Ocorrencia[]> {
+    const escopo = escopoDeOcorrencias(actor);
+    switch (escopo.tipo) {
+      case "global":
+        return this.ocorrencias.list();
+      case "autor":
+        return this.ocorrencias.listByCriadoPor(escopo.usuarioId);
+      default:
+        return [];
+    }
   }
 }

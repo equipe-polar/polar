@@ -17,7 +17,7 @@ Automação: T02–T09 possuem equivalentes automatizados em `apps/api/tests/int
 | T07 | Transição inválida | Coordenador tenta `REGISTRADA→ENCERRADA` (pular etapa) | 409; nada gravado | | | | |
 | T08 | Encerramento pela direção | Diretor encerra `RESOLVIDA`; depois tenta editar a ocorrência | Encerra com sucesso; edição posterior bloqueada (409) | | | | |
 | T09 | Acesso sem autenticação | Chamar `/ocorrencias` sem token | 401 | | | | |
-| T10 | Persistência real | Registrar ocorrência → reiniciar o serviço → consultar | A ocorrência e o histórico continuam lá (MySQL) | | | | |
+| T10 | Persistência real | Registrar ocorrência → reiniciar o serviço → consultar | A ocorrência e o histórico continuam lá (PostgreSQL) | | | | |
 
 ## Casos adicionais da v3 (executar junto)
 
@@ -33,5 +33,5 @@ Automação: T02–T09 possuem equivalentes automatizados em `apps/api/tests/int
 ## Ambiente de referência
 
 - Navegador alvo: Chrome desktop (tablet como secundário).
-- URL pública: preencher após o deploy (ver [docs/deploy/render.md](../deploy/render.md)).
-- Credenciais de teste: usuários do seed (`*@escola.demo`).
+- URL pública: preencher após o deploy (ver [docs/deploy/vercel.md](../deploy/vercel.md)).
+- Credenciais de teste: contas do seed (`*@escola.polar`, uma por papel).

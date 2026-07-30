@@ -16,7 +16,7 @@ describe("Ocorrencias - regras v3", () => {
 
   async function criarOcorrencia(token: string): Promise<string> {
     const response = await request(ctx.app)
-      .post("/ocorrencias")
+      .post("/api/ocorrencias")
       .set("Authorization", `Bearer ${token}`)
       .send({
         alunoId: ctx.ids.aluno,
@@ -33,7 +33,7 @@ describe("Ocorrencias - regras v3", () => {
 
     // ADM cria um segundo professor.
     await request(ctx.app)
-      .post("/usuarios")
+      .post("/api/usuarios")
       .set("Authorization", `Bearer ${t.adm}`)
       .send({
         nome: "Professora Dois",
@@ -48,31 +48,31 @@ describe("Ocorrencias - regras v3", () => {
 
     // Professor 2 nao ve a ocorrencia do professor 1 na lista.
     const listaProfessor2 = await request(ctx.app)
-      .get("/ocorrencias")
+      .get("/api/ocorrencias")
       .set("Authorization", `Bearer ${professor2}`)
       .expect(200);
     expect(listaProfessor2.body.data).toHaveLength(0);
 
     // Professor 1 ve a propria.
     const listaProfessor1 = await request(ctx.app)
-      .get("/ocorrencias")
+      .get("/api/ocorrencias")
       .set("Authorization", `Bearer ${t.professor}`)
       .expect(200);
     expect(listaProfessor1.body.data).toHaveLength(1);
 
     // Professor 2 nao acessa o detalhe nem o historico da ocorrencia alheia.
     await request(ctx.app)
-      .get(`/ocorrencias/${idProfessor1}`)
+      .get(`/api/ocorrencias/${idProfessor1}`)
       .set("Authorization", `Bearer ${professor2}`)
       .expect(403);
     await request(ctx.app)
-      .get(`/ocorrencias/${idProfessor1}/historico`)
+      .get(`/api/ocorrencias/${idProfessor1}/historico`)
       .set("Authorization", `Bearer ${professor2}`)
       .expect(403);
 
     // Coordenacao ve todas.
     const listaCoordenacao = await request(ctx.app)
-      .get("/ocorrencias")
+      .get("/api/ocorrencias")
       .set("Authorization", `Bearer ${t.coordenador}`)
       .expect(200);
     expect(listaCoordenacao.body.data).toHaveLength(1);
@@ -84,21 +84,21 @@ describe("Ocorrencias - regras v3", () => {
 
     // ADM (nao autor) nao pode editar, mesmo com permissao ampla.
     await request(ctx.app)
-      .patch(`/ocorrencias/${id}`)
+      .patch(`/api/ocorrencias/${id}`)
       .set("Authorization", `Bearer ${t.adm}`)
       .send({ descricao: "Tentativa de edicao por terceiro nao autor." })
       .expect(403);
 
     // Autor edita em REGISTRADA.
     await request(ctx.app)
-      .patch(`/ocorrencias/${id}`)
+      .patch(`/api/ocorrencias/${id}`)
       .set("Authorization", `Bearer ${t.professor}`)
       .send({ descricao: "Descrição corrigida pelo autor com acentuação." })
       .expect(200);
 
     // A edicao gerou historico.
     const historico = await request(ctx.app)
-      .get(`/ocorrencias/${id}/historico`)
+      .get(`/api/ocorrencias/${id}/historico`)
       .set("Authorization", `Bearer ${t.professor}`)
       .expect(200);
     const acoes = historico.body.data.map((h: { acao: string }) => h.acao);
@@ -106,12 +106,12 @@ describe("Ocorrencias - regras v3", () => {
 
     // Depois de EM_ANALISE, nem o autor edita.
     await request(ctx.app)
-      .patch(`/ocorrencias/${id}/status`)
+      .patch(`/api/ocorrencias/${id}/status`)
       .set("Authorization", `Bearer ${t.coordenador}`)
       .send({ status: "EM_ANALISE" })
       .expect(200);
     await request(ctx.app)
-      .patch(`/ocorrencias/${id}`)
+      .patch(`/api/ocorrencias/${id}`)
       .set("Authorization", `Bearer ${t.professor}`)
       .send({ descricao: "Tentativa de edicao fora de REGISTRADA." })
       .expect(409);
@@ -122,13 +122,13 @@ describe("Ocorrencias - regras v3", () => {
     const id = await criarOcorrencia(t.professor);
 
     await request(ctx.app)
-      .patch(`/ocorrencias/${id}/status`)
+      .patch(`/api/ocorrencias/${id}/status`)
       .set("Authorization", `Bearer ${t.coordenador}`)
       .send({ status: "EM_ANALISE" })
       .expect(200);
 
     await request(ctx.app)
-      .patch(`/ocorrencias/${id}/status`)
+      .patch(`/api/ocorrencias/${id}/status`)
       .set("Authorization", `Bearer ${t.coordenador}`)
       .send({
         status: "RESOLVIDA",
@@ -137,13 +137,13 @@ describe("Ocorrencias - regras v3", () => {
       .expect(200);
 
     await request(ctx.app)
-      .patch(`/ocorrencias/${id}/status`)
+      .patch(`/api/ocorrencias/${id}/status`)
       .set("Authorization", `Bearer ${t.diretor}`)
       .send({ status: "ENCERRADA", observacao: "Encerrado após acompanhamento." })
       .expect(200);
 
     const historico = await request(ctx.app)
-      .get(`/ocorrencias/${id}/historico`)
+      .get(`/api/ocorrencias/${id}/historico`)
       .set("Authorization", `Bearer ${t.coordenador}`)
       .expect(200);
 
@@ -159,7 +159,7 @@ describe("Ocorrencias - regras v3", () => {
 
     // Caracteres de controle -> 400.
     await request(ctx.app)
-      .post("/ocorrencias")
+      .post("/api/ocorrencias")
       .set("Authorization", `Bearer ${t.professor}`)
       .send({
         alunoId: ctx.ids.aluno,
@@ -171,7 +171,7 @@ describe("Ocorrencias - regras v3", () => {
 
     // HTML e removido antes de persistir.
     const response = await request(ctx.app)
-      .post("/ocorrencias")
+      .post("/api/ocorrencias")
       .set("Authorization", `Bearer ${t.professor}`)
       .send({
         alunoId: ctx.ids.aluno,

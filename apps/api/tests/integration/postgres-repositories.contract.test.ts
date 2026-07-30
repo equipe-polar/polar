@@ -1,7 +1,11 @@
-// Teste de contrato dos repositorios MySQL.
-// So roda quando TEST_DATABASE_URL aponta para um MySQL com o schema aplicado
-// (ex: mysql://root:root@localhost:3306/polar_test). Sem a variavel, e ignorado
-// e o CI permanece verde sem banco.
+// Teste de contrato dos repositorios PostgreSQL.
+// So roda quando TEST_DATABASE_URL aponta para um Postgres com o schema aplicado
+// (ex: postgresql://polar:senha@localhost:5432/polar_test). Sem a variavel, e
+// ignorado e o CI permanece verde sem banco.
+//
+// E a prova real da migracao MySQL -> PostgreSQL: cobre acentuacao PT-BR,
+// integridade de boolean e data, NUMERIC voltando como number, atomicidade da
+// transacao de status + historico e deteccao de duplicata.
 //
 // ATENCAO: o banco de teste e TRUNCADO no inicio de cada execucao.
 
@@ -21,36 +25,25 @@ import type { Repositories } from "../../src/shared/services.js";
 
 const url = process.env.TEST_DATABASE_URL;
 
-describe.runIf(Boolean(url))("repositorios MySQL (contrato)", () => {
+describe.runIf(Boolean(url))("repositorios PostgreSQL (contrato)", () => {
   let repos: Repositories;
   let close: () => Promise<void> = async () => {};
 
   beforeAll(async () => {
-    const { createMysqlPool, createMysqlRepositories } = await import("../../src/shared/database/mysql/index.js");
-    const pool = createMysqlPool({ url: url as string, ssl: process.env.TEST_DATABASE_SSL === "true" });
-    repos = createMysqlRepositories(pool);
+    const { createPostgresPool, createPostgresRepositories } = await import(
+      "../../src/shared/database/postgres/index.js"
+    );
+    const pool = createPostgresPool({ url: url as string, ssl: process.env.TEST_DATABASE_SSL === "true" });
+    repos = createPostgresRepositories(pool);
     close = async () => {
       await pool.end();
     };
 
-    // Limpa na ordem inversa das FKs.
-    const tabelas = [
-      "notifications",
-      "audit_logs",
-      "user_permissions",
-      "faltas",
-      "notas",
-      "ocorrencia_historico",
-      "ocorrencias",
-      "alunos",
-      "turmas",
-      "users"
-    ];
-    await pool.query("SET FOREIGN_KEY_CHECKS = 0");
-    for (const tabela of tabelas) {
-      await pool.query(`TRUNCATE TABLE ${tabela}`);
-    }
-    await pool.query("SET FOREIGN_KEY_CHECKS = 1");
+    // TRUNCATE unico com CASCADE: o Postgres resolve a ordem das FKs sozinho,
+    // sem precisar desligar a checagem de chave estrangeira como no MySQL.
+    await pool.query(
+      "TRUNCATE TABLE notifications, audit_logs, faltas, notas, ocorrencia_historico, ocorrencias, alunos, turmas, users RESTART IDENTITY CASCADE"
+    );
   });
 
   afterAll(async () => {
@@ -91,7 +84,59 @@ describe.runIf(Boolean(url))("repositorios MySQL (contrato)", () => {
     expect(porEmail?.id).toBe(usuario.id);
   });
 
-  it("preserva acentuacao PT-BR em turmas, alunos e ocorrencias (utf8mb4)", async () => {
+  // DECIMAL(4,2) virou NUMERIC(4,2). O driver pg devolve NUMERIC como string por
+  // padrao, e o dominio tipa `valor: number` -- este teste guarda o parser de tipo
+  // registrado em postgres-client.ts. Sem ele, a quebra e silenciosa.
+  it("devolve nota NUMERIC como number, e nao string", async () => {
+    const now = agoraIso();
+    const usuario = novoUsuario();
+    await repos.users.create(usuario);
+
+    const turma: Turma = {
+      id: novoId(),
+      nome: `Turma Nota ${novoId().slice(0, 6)}`,
+      anoLetivo: 2026,
+      turno: "Manhã",
+      ativa: true,
+      criadoEm: now,
+      atualizadoEm: now
+    };
+    await repos.turmas.create(turma);
+
+    const aluno: Aluno = {
+      id: novoId(),
+      nome: "Aluno Nota",
+      matricula: `M-${novoId().slice(0, 8)}`,
+      turmaId: turma.id,
+      responsavelNome: "",
+      responsavelContato: "",
+      ativo: true,
+      criadoEm: now,
+      atualizadoEm: now
+    };
+    await repos.alunos.create(aluno);
+
+    await repos.notas.create({
+      id: novoId(),
+      alunoId: aluno.id,
+      disciplina: "Banco de Dados",
+      valor: 8.5,
+      etapa: "1º bimestre",
+      professorId: usuario.id,
+      data: "2026-03-10",
+      criadoEm: now
+    });
+
+    const notas = await repos.notas.listByAluno(aluno.id);
+    expect(notas).toHaveLength(1);
+    expect(typeof notas[0]?.valor).toBe("number");
+    expect(notas[0]?.valor).toBe(8.5);
+    // DATE e dia civil: precisa voltar exatamente como foi gravado, sem
+    // deslocamento de fuso ao passar por Date.
+    expect(notas[0]?.data).toBe("2026-03-10");
+  });
+
+  it("preserva acentuacao PT-BR em turmas, alunos e ocorrencias (UTF8)", async () => {
     const now = agoraIso();
     const usuario = novoUsuario();
     await repos.users.create(usuario);

@@ -154,23 +154,25 @@ function migrate(data: LegacyData): DatabaseState {
   return state;
 }
 
-async function insertIntoMysql(state: DatabaseState): Promise<void> {
+async function insertIntoPostgres(state: DatabaseState): Promise<void> {
   const url = process.env.DATABASE_URL;
   if (!url) {
-    throw new Error("DATABASE_URL e obrigatorio para inserir a migracao no MySQL.");
+    throw new Error("DATABASE_URL e obrigatorio para inserir a migracao no PostgreSQL.");
   }
 
-  const { createMysqlPool, createMysqlRepositories } = await import("../apps/api/src/shared/database/mysql/index.js");
-  const pool = createMysqlPool({
+  const { createPostgresPool, createPostgresRepositories } = await import(
+    "../apps/api/src/shared/database/postgres/index.js"
+  );
+  const pool = createPostgresPool({
     url,
     ssl: process.env.DATABASE_SSL === "true" || process.env.DATABASE_SSL === "1"
   });
-  const repos = createMysqlRepositories(pool);
+  const repos = createPostgresRepositories(pool);
 
   try {
     const existentes = await repos.users.list();
     if (existentes.length > 0) {
-      console.log("MySQL ja possui usuarios; insercao ignorada para nao duplicar dados.");
+      console.log("PostgreSQL ja possui usuarios; insercao ignorada para nao duplicar dados.");
       return;
     }
 
@@ -216,7 +218,7 @@ async function insertIntoMysql(state: DatabaseState): Promise<void> {
         `Atencao: ${alunosPulados} aluno(s) e ${ocorrenciasPuladas} ocorrencia(s) pulados por vinculos invalidos no legado. Revise manualmente.`
       );
     }
-    console.log("Dados legados inseridos no MySQL.");
+    console.log("Dados legados inseridos no PostgreSQL.");
   } finally {
     await pool.end();
   }
@@ -230,8 +232,8 @@ async function main(): Promise<void> {
   await fs.writeFile(outputPath, `${JSON.stringify(migrated, null, 2)}\n`, "utf8");
   console.log(`Migracao inicial gerada em ${outputPath}`);
 
-  if (process.env.DATABASE_PROVIDER === "mysql") {
-    await insertIntoMysql(migrated);
+  if (process.env.DATABASE_PROVIDER === "postgres") {
+    await insertIntoPostgres(migrated);
   }
 }
 

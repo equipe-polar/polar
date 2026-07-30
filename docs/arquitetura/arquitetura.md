@@ -14,13 +14,13 @@ flowchart LR
         VAL["Validação: Zod"]
     end
     subgraph Persistencia
-        MYSQL[("MySQL 8<br/>utf8mb4")]
+        PG[("PostgreSQL 15<br/>Supabase")]
     end
     WEB -- "HTTP/JSON (REST)" --> API
     API --- AUTH
     API --- RBAC
     API --- VAL
-    API -- "mysql2 (pool + transações)" --> MYSQL
+    API -- "pg (pool + transações)" --> PG
 ```
 
 Em **produção**, a API serve o build estático do React na mesma origem (1 serviço, 1 URL). Em **desenvolvimento**, Vite roda em `:5173` e a API em `:3000` com CORS restrito.
@@ -33,7 +33,7 @@ apps/
     src/modules/<dominio>/   # rotas + controller + service + schemas Zod por módulo
     src/shared/
       database/repositories/ # INTERFACES + implementação JSON (dev)
-      database/mysql/        # implementação MySQL (oficial)
+      database/postgres/     # implementação PostgreSQL (oficial)
       permissions/           # RBAC central
       middlewares/           # auth, rate-limit de login
       errors/                # erros tipados + contrato único de erro
@@ -42,7 +42,7 @@ apps/
     src/features/<tela>/     # páginas por funcionalidade
     src/components/          # design system (Button, Card, Table, ...)
     src/services/            # cliente HTTP tipado
-database/                    # schema.sql (DDL MySQL) + seed.ts
+database/                    # schema.sql (DDL PostgreSQL) + contas.ts + seed.ts
 docs/                        # esta documentação
 scripts/                     # migração de dados legados
 ```
@@ -52,16 +52,16 @@ scripts/                     # migração de dados legados
 | Padrão | Onde | Por quê |
 | --- | --- | --- |
 | **MVC por módulo** | `routes → controller → service` | Separação de transporte, orquestração e regra de negócio |
-| **Repository** | `shared/database/repositories/*` são **interfaces**; JSON e MySQL são implementações | Trocar persistência sem tocar em regra de negócio (foi exatamente assim que a migração JSON→MySQL aconteceu) |
+| **Repository** | `shared/database/repositories/*` são **interfaces**; JSON e PostgreSQL são implementações | Trocar persistência sem tocar em regra de negócio (foi assim nas duas migrações: JSON→MySQL e MySQL→PostgreSQL) |
 | **Injeção de dependência** | `shared/services.ts` monta o contêiner | Testes usam banco em memória sem mocks de rede |
 | **Máquina de estados** | `ocorrencias.service.ts` | O fluxo institucional não pode ser burlado |
 | **Append-only** | `ocorrencia_historico` | Auditoria: sem UPDATE/DELETE em nenhuma camada |
-| **Transações (TCL)** | `mysql/ocorrencia.repository.mysql.ts` | Status + histórico + auditoria gravados atomicamente |
+| **Transações (TCL)** | `postgres/ocorrencia.repository.postgres.ts` | Status + histórico + auditoria gravados atomicamente |
 
 ## Decisões registradas (ADRs)
 
 - [Migração da lógica principal para Node.js + TypeScript](decisao-migracao-node-typescript.md)
-- [Adoção do MySQL como banco oficial](decisao-mysql.md)
+- [PostgreSQL no Supabase e deploy na Vercel](decisao-postgres.md)
 
 ## Fluxo de uma requisição
 
@@ -70,8 +70,8 @@ sequenceDiagram
     participant P as Professor (browser)
     participant A as API Express
     participant S as OcorrenciasService
-    participant R as MysqlOcorrenciaRepository
-    participant DB as MySQL
+    participant R as PostgresOcorrenciaRepository
+    participant DB as PostgreSQL
 
     P->>A: POST /ocorrencias (JWT)
     A->>A: authenticate (JWT) + authorize (REGISTRAR_OCORRENCIA)

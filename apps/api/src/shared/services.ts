@@ -74,14 +74,15 @@ async function createRepositories(
   config: AppConfig,
   database?: DatabaseClient
 ): Promise<{ repositories: Repositories; close: () => Promise<void> }> {
-  if (!database && config.databaseProvider === "mysql") {
+  if (!database && config.databaseProvider === "postgres") {
     if (!config.databaseUrl) {
-      throw new Error("DATABASE_URL e obrigatorio quando DATABASE_PROVIDER=mysql.");
+      throw new Error("DATABASE_URL e obrigatorio quando DATABASE_PROVIDER=postgres.");
     }
-    const { createMysqlPool, createMysqlRepositories } = await import("./database/mysql/index.js");
-    const pool = createMysqlPool({ url: config.databaseUrl, ssl: config.databaseSsl });
+    // Import dinamico: mantem o driver pg fora do bundle quando o provider e JSON.
+    const { createPostgresPool, createPostgresRepositories } = await import("./database/postgres/index.js");
+    const pool = createPostgresPool({ url: config.databaseUrl, ssl: config.databaseSsl });
     return {
-      repositories: createMysqlRepositories(pool),
+      repositories: createPostgresRepositories(pool),
       close: async () => {
         await pool.end();
       }

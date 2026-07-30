@@ -1,16 +1,17 @@
-import type { Pool, RowDataPacket } from "mysql2/promise";
+import type { Pool } from "pg";
 import type { Nota } from "../../domain.js";
 import type { NotaRepository } from "../repositories/nota.repository.js";
-import { dateOnlyFromDb, dbDateTime, isoFromDbRequired } from "./mysql-client.js";
+import { dateOnlyFromDb, dbDateTime, isoFromDbRequired } from "./postgres-client.js";
 
-interface NotaRow extends RowDataPacket {
+interface NotaRow {
   id: string;
   aluno_id: string;
   disciplina: string;
+  // NUMERIC chega como number gracas ao parser registrado em postgres-client.
   valor: number;
   etapa: string;
   professor_id: string;
-  data: Date;
+  data: string;
   criado_em: Date;
 }
 
@@ -29,11 +30,11 @@ function toNota(row: NotaRow): Nota {
 
 const COLUNAS = "id, aluno_id, disciplina, valor, etapa, professor_id, data, criado_em";
 
-export class MysqlNotaRepository implements NotaRepository {
+export class PostgresNotaRepository implements NotaRepository {
   constructor(private readonly pool: Pool) {}
 
   async create(nota: Nota): Promise<Nota> {
-    await this.pool.execute(`INSERT INTO notas (${COLUNAS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [
+    await this.pool.query(`INSERT INTO notas (${COLUNAS}) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`, [
       nota.id,
       nota.alunoId,
       nota.disciplina,
@@ -47,8 +48,8 @@ export class MysqlNotaRepository implements NotaRepository {
   }
 
   async listByAluno(alunoId: string): Promise<Nota[]> {
-    const [rows] = await this.pool.query<NotaRow[]>(
-      `SELECT ${COLUNAS} FROM notas WHERE aluno_id = ? ORDER BY data DESC, criado_em DESC`,
+    const { rows } = await this.pool.query<NotaRow>(
+      `SELECT ${COLUNAS} FROM notas WHERE aluno_id = $1 ORDER BY data DESC, criado_em DESC`,
       [alunoId]
     );
     return rows.map(toNota);

@@ -4,7 +4,7 @@ import { buildTestContext, tokens } from "./helpers.js";
 
 async function criarOcorrencia(app: Awaited<ReturnType<typeof buildTestContext>>["app"], token: string, alunoId: string) {
   return request(app)
-    .post("/ocorrencias")
+    .post("/api/ocorrencias")
     .set("Authorization", `Bearer ${token}`)
     .send({
       alunoId,
@@ -24,7 +24,7 @@ describe("Ocorrencias", () => {
     expect(response.body.data.status).toBe("REGISTRADA");
 
     await request(app)
-      .post("/ocorrencias")
+      .post("/api/ocorrencias")
       .set("Authorization", `Bearer ${auth.professor}`)
       .send({ alunoId: ids.aluno, categoria: "Atraso", prioridade: "BAIXA", descricao: "" })
       .expect(400);
@@ -36,13 +36,13 @@ describe("Ocorrencias", () => {
     const created = await criarOcorrencia(app, auth.professor, ids.aluno);
 
     await request(app)
-      .patch(`/ocorrencias/${created.body.data.id}/status`)
+      .patch(`/api/ocorrencias/${created.body.data.id}/status`)
       .set("Authorization", `Bearer ${auth.professor}`)
       .send({ status: "EM_ANALISE" })
       .expect(403);
 
     await request(app)
-      .patch(`/ocorrencias/${created.body.data.id}/status`)
+      .patch(`/api/ocorrencias/${created.body.data.id}/status`)
       .set("Authorization", `Bearer ${auth.coordenador}`)
       .send({ status: "RESOLVIDA" })
       .expect(409);
@@ -55,25 +55,25 @@ describe("Ocorrencias", () => {
     const id = created.body.data.id as string;
 
     await request(app)
-      .patch(`/ocorrencias/${id}/status`)
+      .patch(`/api/ocorrencias/${id}/status`)
       .set("Authorization", `Bearer ${auth.coordenador}`)
       .send({ status: "EM_ANALISE" })
       .expect(200);
 
     await request(app)
-      .patch(`/ocorrencias/${id}/status`)
+      .patch(`/api/ocorrencias/${id}/status`)
       .set("Authorization", `Bearer ${auth.coordenador}`)
       .send({ status: "RESOLVIDA" })
       .expect(200);
 
     await request(app)
-      .patch(`/ocorrencias/${id}/status`)
+      .patch(`/api/ocorrencias/${id}/status`)
       .set("Authorization", `Bearer ${auth.diretor}`)
       .send({ status: "ENCERRADA" })
       .expect(200);
 
     const historico = await request(app)
-      .get(`/ocorrencias/${id}/historico`)
+      .get(`/api/ocorrencias/${id}/historico`)
       .set("Authorization", `Bearer ${auth.professor}`)
       .expect(200);
     expect(historico.body.data.map((item: { status: string }) => item.status)).toEqual([
@@ -84,7 +84,7 @@ describe("Ocorrencias", () => {
     ]);
 
     await request(app)
-      .patch(`/ocorrencias/${id}`)
+      .patch(`/api/ocorrencias/${id}`)
       .set("Authorization", `Bearer ${auth.professor}`)
       .send({ descricao: "Tentativa de alterar ocorrencia encerrada." })
       .expect(409);
@@ -96,13 +96,13 @@ describe("Ocorrencias", () => {
     const created = await criarOcorrencia(app, auth.professor, ids.aluno);
 
     await request(app)
-      .put(`/ocorrencias/${created.body.data.id}/historico/qualquer`)
+      .put(`/api/ocorrencias/${created.body.data.id}/historico/qualquer`)
       .set("Authorization", `Bearer ${auth.professor}`)
       .send({ status: "ENCERRADA" })
       .expect(405);
 
     await request(app)
-      .post("/ocorrencias")
+      .post("/api/ocorrencias")
       .set("Authorization", `Bearer ${auth.professor}`)
       .send({
         alunoId: ids.aluno,

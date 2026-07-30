@@ -13,7 +13,7 @@ const configSchema = z.object({
   corsOrigin: z.string().default("http://localhost:3000"),
   jwtSecret: z.string().min(32, "JWT_SECRET deve ter pelo menos 32 caracteres."),
   jwtExpiresIn: z.string().default("8h"),
-  databaseProvider: z.enum(["json", "mysql"]).default("json"),
+  databaseProvider: z.enum(["json", "postgres"]).default("json"),
   databaseJsonPath: z.string().default("apps/api/data/dev-db.json"),
   databaseUrl: z.string().optional(),
   databaseSsl: z
@@ -41,12 +41,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     bootstrapAdminPassword: env.BOOTSTRAP_ADMIN_PASSWORD
   });
 
-  if (parsed.databaseProvider === "mysql" && !parsed.databaseUrl) {
-    throw new Error("DATABASE_URL e obrigatorio quando DATABASE_PROVIDER=mysql.");
+  if (parsed.databaseProvider === "postgres" && !parsed.databaseUrl) {
+    throw new Error("DATABASE_URL e obrigatorio quando DATABASE_PROVIDER=postgres.");
   }
 
-  if (parsed.nodeEnv === "production" && parsed.databaseProvider !== "mysql") {
-    throw new Error("Producao exige DATABASE_PROVIDER=mysql. Persistencia JSON e apenas para desenvolvimento.");
+  if (parsed.nodeEnv === "production" && parsed.databaseProvider !== "postgres") {
+    throw new Error("Producao exige DATABASE_PROVIDER=postgres. Persistencia JSON e apenas para desenvolvimento.");
   }
 
   if (parsed.nodeEnv === "production" && parsed.bootstrapAdminPassword === "admin123") {

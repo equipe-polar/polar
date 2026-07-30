@@ -1,8 +1,8 @@
 // Seed de demonstracao do POLAR.
 // Cria usuarios (um por papel), turmas, alunos e ocorrencias nos 4 estados,
 // com historico coerente, notas e faltas. Funciona nos dois providers:
-//   DATABASE_PROVIDER=mysql -> insere no MySQL (schema.sql deve ter sido aplicado antes)
-//   DATABASE_PROVIDER=json  -> escreve no arquivo JSON de desenvolvimento
+//   DATABASE_PROVIDER=postgres -> insere no PostgreSQL (schema.sql deve ter sido aplicado antes)
+//   DATABASE_PROVIDER=json     -> escreve no arquivo JSON de desenvolvimento
 // Idempotente: nao faz nada se ja existirem usuarios.
 //
 // Executar da raiz: pnpm seed  (exige SEED_SENHA_PADRAO com pelo menos 8 caracteres)
@@ -24,6 +24,7 @@ import {
   type Usuario
 } from "../apps/api/src/shared/domain.js";
 import { novoId } from "../apps/api/src/shared/utils/ids.js";
+import { CONTAS } from "./contas.js";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 dotenv.config({ path: path.resolve(repoRoot, "apps/api/.env"), quiet: true });
@@ -47,20 +48,20 @@ interface SeedContext {
 async function criarContexto(): Promise<SeedContext> {
   const provider = process.env.DATABASE_PROVIDER ?? "json";
 
-  if (provider === "mysql") {
+  if (provider === "postgres") {
     const url = process.env.DATABASE_URL;
     if (!url) {
-      throw new Error("DATABASE_URL e obrigatorio quando DATABASE_PROVIDER=mysql.");
+      throw new Error("DATABASE_URL e obrigatorio quando DATABASE_PROVIDER=postgres.");
     }
-    const { createMysqlPool, createMysqlRepositories } = await import(
-      "../apps/api/src/shared/database/mysql/index.js"
+    const { createPostgresPool, createPostgresRepositories } = await import(
+      "../apps/api/src/shared/database/postgres/index.js"
     );
-    const pool = createMysqlPool({
+    const pool = createPostgresPool({
       url,
       ssl: process.env.DATABASE_SSL === "true" || process.env.DATABASE_SSL === "1"
     });
     return {
-      repos: createMysqlRepositories(pool),
+      repos: createPostgresRepositories(pool),
       close: async () => {
         await pool.end();
       }
@@ -201,23 +202,40 @@ async function main(): Promise<void> {
     // Guarda pelo e-mail sentinela do seed (nao por "banco vazio"): permite que
     // o seed rode mesmo depois do bootstrap ja ter criado um admin real, e
     // vice-versa. As duas rotinas coexistem em qualquer ordem de execucao.
-    const seedJaAplicado = await repos.users.findByEmailOrNome("admin@escola.demo");
+    const seedJaAplicado = await repos.users.findByEmailOrNome(CONTAS.adm.email);
     if (seedJaAplicado) {
-      console.log("Seed ja aplicado (admin@escola.demo existe); seed ignorado.");
+      console.log(`Seed ja aplicado (${CONTAS.adm.email} existe); seed ignorado.`);
       return;
     }
 
     const senhaHash = await bcrypt.hash(senha, 10);
 
-    // Usuarios: um por papel + um segundo professor.
-    const admin = usuario("Administrador Escolar", "admin@escola.demo", PapelUsuario.ADM, senhaHash, 40);
-    const profCarlos = usuario("Carlos Andrade", "professor@escola.demo", PapelUsuario.PROFESSOR, senhaHash, 40);
-    const profBeatriz = usuario("Beatriz Lima", "professora2@escola.demo", PapelUsuario.PROFESSOR, senhaHash, 40);
-    const coordMarcia = usuario("Márcia Souza", "coordenacao@escola.demo", PapelUsuario.COORDENADOR, senhaHash, 40);
-    const dirPaulo = usuario("Paulo Meneses", "direcao@escola.demo", PapelUsuario.DIRETOR, senhaHash, 40);
-    for (const u of [admin, profCarlos, profBeatriz, coordMarcia, dirPaulo]) {
+    // Contas fixas de controle e teste: uma por papel, sem excecao.
+    // Sao as unicas contas que o sistema cria; nao existem usuarios extras.
+    const admin = usuario(CONTAS.adm.nome, CONTAS.adm.email, PapelUsuario.ADM, senhaHash, 40);
+    const professor = usuario(CONTAS.professor.nome, CONTAS.professor.email, PapelUsuario.PROFESSOR, senhaHash, 40);
+    const coordenacao = usuario(
+      CONTAS.coordenacao.nome,
+      CONTAS.coordenacao.email,
+      PapelUsuario.COORDENADOR,
+      senhaHash,
+      40
+    );
+    const direcao = usuario(CONTAS.direcao.nome, CONTAS.direcao.email, PapelUsuario.DIRETOR, senhaHash, 40);
+    const contaAluno = usuario(CONTAS.aluno.nome, CONTAS.aluno.email, PapelUsuario.ALUNO, senhaHash, 40);
+    for (const u of [admin, professor, coordenacao, direcao, contaAluno]) {
       await repos.users.create(u);
     }
+
+    // As ocorrencias de demonstracao vinham de dois autores distintos, para
+    // exercitar o escopo por papel: o professor so enxerga o que ele registrou.
+    // Com uma unica conta de professor, o segundo autor passa a ser o ADM -- que
+    // tambem possui REGISTRAR_OCORRENCIA. Sem isso o professor seria autor de
+    // todas as 12 e o escopo ficaria invisivel na demonstracao.
+    const profCarlos = professor;
+    const profBeatriz = admin;
+    const coordMarcia = coordenacao;
+    const dirPaulo = direcao;
 
     // Turmas.
     const turma1A = turma("1ºA - Informática", "Manhã", 42);
@@ -515,19 +533,21 @@ async function main(): Promise<void> {
     }
 
     console.log("Seed concluído com sucesso.");
-    console.log("Credenciais de demonstração (senha única definida em SEED_SENHA_PADRAO):");
-    console.log("  ADM:         admin@escola.demo");
-    console.log("  PROFESSOR:   professor@escola.demo / professora2@escola.demo");
-    console.log("  COORDENADOR: coordenacao@escola.demo");
-    console.log("  DIRETOR:     direcao@escola.demo");
+    console.log("Contas de controle (senha única definida em SEED_SENHA_PADRAO):");
+    console.log(`  PROFESSOR:   ${CONTAS.professor.email}`);
+    console.log(`  COORDENADOR: ${CONTAS.coordenacao.email}`);
+    console.log(`  DIRETOR:     ${CONTAS.direcao.email}`);
+    console.log(`  ADM:         ${CONTAS.adm.email}`);
+    console.log(`  ALUNO:       ${CONTAS.aluno.email}`);
   } finally {
     await close();
   }
 }
 
 main().catch((error: unknown) => {
-  if (typeof error === "object" && error !== null && "code" in error && error.code === "ER_NO_SUCH_TABLE") {
-    console.error("Tabelas nao encontradas. Aplique o schema antes: mysql < database/schema.sql");
+  // 42P01 = undefined_table no PostgreSQL.
+  if (typeof error === "object" && error !== null && "code" in error && error.code === "42P01") {
+    console.error('Tabelas nao encontradas. Aplique o schema antes: psql "$DATABASE_URL" -f database/schema.sql');
   }
   console.error(error);
   process.exitCode = 1;

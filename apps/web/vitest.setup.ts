@@ -95,11 +95,15 @@ beforeEach(() => {
       const url = new URL(rawUrl, "http://localhost:3000");
       const method = init?.method ?? "GET";
 
-      if (url.pathname === "/auth/login" && method === "POST") {
+      // O client chama /api/*; as rotas abaixo sao casadas sem o prefixo, do mesmo
+      // jeito que a funcao serverless recebe o caminho depois do rewrite da Vercel.
+      const pathname = url.pathname.startsWith("/api/") ? url.pathname.slice(4) : url.pathname;
+
+      if (pathname === "/auth/login" && method === "POST") {
         return jsonResponse({ token: "test-token", user: { id: "u1", nome: "Teste", email: "teste@polar.local", papel: "ADM" } });
       }
 
-      if (url.pathname === "/dashboard/resumo" || url.pathname === "/dashboard") {
+      if (pathname === "/dashboard/resumo" || pathname === "/dashboard") {
         return jsonResponse({
           data: {
             totalOcorrencias: ocorrencias.length,
@@ -110,65 +114,65 @@ beforeEach(() => {
         });
       }
 
-      if (url.pathname === "/turmas" && method === "POST") {
+      if (pathname === "/turmas" && method === "POST") {
         return jsonResponse({ data: { id: "t3", nome: "1A", anoLetivo: 2026, turno: "Manha", ativa: true } }, 201);
       }
 
-      if (url.pathname.startsWith("/turmas/") && method === "PATCH") {
+      if (pathname.startsWith("/turmas/") && method === "PATCH") {
         return jsonResponse({ data: { ...turmas[0], nome: "8A atualizada" } });
       }
 
-      if (url.pathname === "/turmas") {
+      if (pathname === "/turmas") {
         return jsonResponse({ data: turmas });
       }
 
-      if (url.pathname === "/alunos" && method === "POST") {
+      if (pathname === "/alunos" && method === "POST") {
         return jsonResponse({ data: { id: "a3", nome: "Novo Aluno", matricula: "2026003", turmaId: "t1", ativo: true } }, 201);
       }
 
-      if (url.pathname === "/alunos") {
+      if (pathname === "/alunos") {
         return jsonResponse({ data: alunos });
       }
 
-      if (url.pathname.startsWith("/alunos/")) {
-        const id = url.pathname.split("/").at(-1);
+      if (pathname.startsWith("/alunos/")) {
+        const id = pathname.split("/").at(-1);
         return jsonResponse({ data: alunos.find((aluno) => aluno.id === id) ?? alunos[0] });
       }
 
-      if (url.pathname === "/ocorrencias" && method === "POST") {
+      if (pathname === "/ocorrencias" && method === "POST") {
         return jsonResponse({ data: { ...ocorrencias[0], id: "o3", status: "REGISTRADA" } }, 201);
       }
 
-      if (url.pathname === "/ocorrencias") {
+      if (pathname === "/ocorrencias") {
         return jsonResponse({ data: ocorrencias });
       }
 
-      if (url.pathname.endsWith("/historico")) {
+      if (pathname.endsWith("/historico")) {
         return jsonResponse({ data: historico });
       }
 
-      if (url.pathname.includes("/ocorrencias/") && url.pathname.endsWith("/status")) {
+      if (pathname.includes("/ocorrencias/") && pathname.endsWith("/status")) {
         return jsonResponse({ data: { ...ocorrencias[0], status: "RESOLVIDA" } });
       }
 
-      if (url.pathname.startsWith("/ocorrencias/")) {
-        const id = url.pathname.split("/").at(-1);
+      if (pathname.startsWith("/ocorrencias/")) {
+        const id = pathname.split("/").at(-1);
         return jsonResponse({ data: ocorrencias.find((ocorrencia) => ocorrencia.id === id) ?? ocorrencias[0] });
       }
 
-      if (url.pathname.startsWith("/notas/alunos/")) {
+      if (pathname.startsWith("/notas/alunos/")) {
         return jsonResponse({
           data: [{ id: "n1", alunoId: "a1", disciplina: "Matematica", valor: 8.5, etapa: "1 bimestre", professorId: "u1", data: "2026-05-10", criadoEm: "2026-05-10" }]
         });
       }
 
-      if (url.pathname.startsWith("/faltas/alunos/")) {
+      if (pathname.startsWith("/faltas/alunos/")) {
         return jsonResponse({
           data: [{ id: "f1", alunoId: "a1", data: "2026-05-17", justificativa: "Atestado entregue", registradaPorId: "u1", criadoEm: "2026-05-17" }]
         });
       }
 
-      if (url.pathname === "/relatorios/ocorrencias") {
+      if (pathname === "/relatorios/ocorrencias") {
         return jsonResponse({
           data: {
             total: ocorrencias.length,
@@ -180,15 +184,15 @@ beforeEach(() => {
         });
       }
 
-      if (url.pathname === "/usuarios" && method === "POST") {
+      if (pathname === "/usuarios" && method === "POST") {
         return jsonResponse({ data: { id: "u3", nome: "Novo Usuario", email: "novo@polar.local", papel: "PROFESSOR", ativo: true } }, 201);
       }
 
-      if (url.pathname.startsWith("/usuarios/") && method === "PATCH") {
+      if (pathname.startsWith("/usuarios/") && method === "PATCH") {
         return jsonResponse({ data: { id: "u1", nome: "Marina Almeida", email: "marina@polar.local", papel: "ADM", ativo: false } });
       }
 
-      if (url.pathname === "/usuarios") {
+      if (pathname === "/usuarios") {
         return jsonResponse({
           data: [
             { id: "u1", nome: "Marina Almeida", email: "marina@polar.local", papel: "ADM", ativo: true },

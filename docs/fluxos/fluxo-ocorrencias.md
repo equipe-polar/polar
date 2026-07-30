@@ -44,6 +44,9 @@ Cada evento (criação, edição, transição) insere um registro com ação, st
 | --- | --- |
 | PROFESSOR | Somente as ocorrências que ele registrou (lista, detalhe e histórico; alheias → `403`) |
 | COORDENADOR / DIRETOR / ADM | Todas |
+| ALUNO | Nenhuma — lista vazia, detalhe `403` (sem vínculo `Usuario` → `Aluno`, nega por padrão) |
+
+A decisão de escopo é única, em `escopoDeOcorrencias()` (`apps/api/src/modules/ocorrencias/ocorrencias.service.ts`), e vale igualmente para a listagem, o acesso por id e o **dashboard** — o agregado obedece ao mesmo recorte. Qualquer papel novo cai em "nenhuma" até ser decidido explicitamente.
 
 ## Permissões por etapa
 

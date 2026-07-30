@@ -1,6 +1,6 @@
-# Modelo Relacional do POLAR (MySQL 8)
+# Modelo Relacional do POLAR (PostgreSQL 15)
 
-Fonte da verdade: [database/schema.sql](../../database/schema.sql). Charset `utf8mb4` / collation `utf8mb4_unicode_ci` em todas as tabelas (acentuação PT-BR é requisito de negócio).
+Fonte da verdade: [database/schema.sql](../../database/schema.sql). Encoding UTF-8 (padrão do PostgreSQL), porque acentuação PT-BR é requisito de negócio.
 
 ## DER
 
@@ -12,7 +12,6 @@ erDiagram
     users ||--o{ faltas : "registra (registrada_por_id)"
     users ||--o{ audit_logs : "gera"
     users ||--o{ notifications : "recebe"
-    users ||--o{ user_permissions : "possui"
     turmas ||--o{ alunos : "agrupa"
     alunos ||--o{ ocorrencias : "sofre"
     alunos ||--o{ notas : "possui"
@@ -24,7 +23,7 @@ erDiagram
         char36 id PK
         varchar nome
         varchar email UK
-        enum papel "PROFESSOR|COORDENADOR|DIRETOR|ADM"
+        enum papel "PROFESSOR|COORDENADOR|DIRETOR|ADM|ALUNO"
         varchar senha_hash "bcrypt"
         tinyint ativo
         tinyint precisa_trocar_senha
@@ -107,7 +106,7 @@ erDiagram
 
 | Tabela | Papel no domínio | Chaves e restrições |
 | --- | --- | --- |
-| `users` | Contas que autenticam (aluno NUNCA está aqui) | PK `id`; UNIQUE `email`; `papel` ENUM; senha só em hash |
+| `users` | Contas que autenticam | PK `id`; UNIQUE `email`; `papel` do tipo `papel_usuario`; senha só em hash |
 | `turmas` | Agrupamento institucional | PK `id`; UNIQUE `nome`; inativação lógica (`ativa`) |
 | `alunos` | Entidade de dados (não autentica) | PK `id`; UNIQUE `matricula`; FK `turma_id`; inativação lógica |
 | `categorias_ocorrencia` | Tipos oficiais de ocorrência | PK `id`; UNIQUE `nome`; desativa sem excluir |
@@ -115,8 +114,7 @@ erDiagram
 | `ocorrencia_historico` | Trilha imutável | FKs; **append-only: só INSERT em todas as camadas** |
 | `notas` | Módulo acadêmico (bônus) | FK aluno/professor; CHECK `valor` 0–10 |
 | `faltas` | Módulo acadêmico (bônus) | UNIQUE `(aluno_id, data)` impede falta duplicada no dia |
-| `user_permissions` | Permissões extras por usuário | UNIQUE `(usuario_id, permissao)` |
-| `audit_logs` | Auditoria de ações sensíveis | `metadata` JSON; índice por entidade |
+| `audit_logs` | Auditoria de ações sensíveis | `metadata` JSONB; índice por entidade |
 | `notifications` | Avisos internos (sino) | FKs opcionais para destinatário/ocorrência |
 
 ## Índices
@@ -124,11 +122,12 @@ erDiagram
 - `ocorrencias`: `status`, `aluno_id`, `criado_por_id`, `criado_em` — cobrem a lista filtrada, o histórico por aluno (reincidência), a visão "minhas ocorrências" do professor e a ordenação temporal.
 - `ocorrencia_historico`: `ocorrencia_id` — timeline do detalhe.
 - `audit_logs`: `(entidade, entidade_id)` e `criado_em`.
+- Funcionais sobre `LOWER()` em `users(email)`, `users(nome)`, `alunos(matricula)` e `turmas(nome)`: no PostgreSQL a comparação é sensível a caixa, então as buscas usam `LOWER()` e sem estes índices virariam seq scan.
 
 ## Regras de integridade que o banco garante
 
 1. FKs impedem ocorrência sem aluno, aluno sem turma, histórico sem ocorrência.
-2. ENUMs impedem status/papel/prioridade fora do domínio (defesa em profundidade — o backend valida antes).
+2. Os tipos `status_ocorrencia`, `papel_usuario` e `prioridade_ocorrencia` impedem valores fora do domínio (defesa em profundidade — o backend valida antes).
 3. UNIQUEs impedem e-mail, matrícula e nome de turma duplicados, e falta duplicada por dia.
 4. CHECK impede nota fora de 0–10.
-5. Datas em `DATETIME(3)` UTC geradas pelo backend — o banco nunca inventa data de negócio.
+5. Datas em `TIMESTAMPTZ(3)` UTC geradas pelo backend — o banco nunca inventa data de negócio.

@@ -15,6 +15,7 @@ export interface TestContext {
     professor: string;
     coordenador: string;
     diretor: string;
+    estudante: string;
     turma: string;
     aluno: string;
   };
@@ -52,18 +53,21 @@ function usuario(nome: string, email: string, papel: PapelUsuario, senhaHash: st
 
 export async function buildTestContext(): Promise<TestContext> {
   const state = createInitialState();
-  const [admHash, professorHash, coordenadorHash, diretorHash] = await Promise.all([
+  const [admHash, professorHash, coordenadorHash, diretorHash, estudanteHash] = await Promise.all([
     bcrypt.hash("Adm12345!", 10),
     bcrypt.hash("Professor123!", 10),
     bcrypt.hash("Coord12345!", 10),
-    bcrypt.hash("Diretor123!", 10)
+    bcrypt.hash("Diretor123!", 10),
+    bcrypt.hash("Aluno12345!", 10)
   ]);
 
   const adm = usuario("Admin", "adm@pola.test", PapelUsuario.ADM, admHash);
   const professor = usuario("Professor", "professor@pola.test", PapelUsuario.PROFESSOR, professorHash);
   const coordenador = usuario("Coordenador", "coordenador@pola.test", PapelUsuario.COORDENADOR, coordenadorHash);
   const diretor = usuario("Diretor", "diretor@pola.test", PapelUsuario.DIRETOR, diretorHash);
-  state.usuarios.push(adm, professor, coordenador, diretor);
+  // Conta com papel ALUNO. "estudante" para nao colidir com o registro de Aluno abaixo.
+  const estudante = usuario("Estudante", "estudante@pola.test", PapelUsuario.ALUNO, estudanteHash);
+  state.usuarios.push(adm, professor, coordenador, diretor, estudante);
 
   const now = agoraIso();
   const turma = {
@@ -100,6 +104,7 @@ export async function buildTestContext(): Promise<TestContext> {
       professor: professor.id,
       coordenador: coordenador.id,
       diretor: diretor.id,
+      estudante: estudante.id,
       turma: turma.id,
       aluno: aluno.id
     }
@@ -107,7 +112,7 @@ export async function buildTestContext(): Promise<TestContext> {
 }
 
 export async function login(app: Express, email: string, senha: string): Promise<string> {
-  const response = await request(app).post("/auth/login").send({ email, senha }).expect(200);
+  const response = await request(app).post("/api/auth/login").send({ email, senha }).expect(200);
   return response.body.token as string;
 }
 
@@ -116,6 +121,7 @@ export async function tokens(app: Express) {
     adm: await login(app, "adm@pola.test", "Adm12345!"),
     professor: await login(app, "professor@pola.test", "Professor123!"),
     coordenador: await login(app, "coordenador@pola.test", "Coord12345!"),
-    diretor: await login(app, "diretor@pola.test", "Diretor123!")
+    diretor: await login(app, "diretor@pola.test", "Diretor123!"),
+    estudante: await login(app, "estudante@pola.test", "Aluno12345!")
   };
 }

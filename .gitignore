@@ -5,6 +5,10 @@ dist/
 **/dist/
 coverage/
 **/coverage/
+.vercel/
+
+# Residuo de compilacao dos testes: os .ts sao a fonte, os .js nunca entram.
+apps/api/tests/**/*.js
 
 .env
 .env.local

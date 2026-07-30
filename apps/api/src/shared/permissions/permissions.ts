@@ -47,7 +47,11 @@ const permissoesPorPapel: Record<PapelUsuario, ReadonlySet<Permissao>> = {
     Permissao.ENCERRAR_OCORRENCIA,
     Permissao.CONSULTAR_RELATORIOS
   ]),
-  [PapelUsuario.ADM]: new Set(Object.values(Permissao))
+  [PapelUsuario.ADM]: new Set(Object.values(Permissao)),
+  // Conta de aluno: somente leitura, e ainda assim o escopo em
+  // escopoDeOcorrencias() devolve lista vazia enquanto nao existir vinculo
+  // Usuario -> Aluno no modelo. A permissao abre a rota; o escopo decide o que sai.
+  [PapelUsuario.ALUNO]: new Set([Permissao.CONSULTAR_OCORRENCIAS, Permissao.CONSULTAR_HISTORICO])
 };
 
 export function possuiPermissao(papel: PapelUsuario, permissao: Permissao): boolean {

@@ -1,8 +1,12 @@
 # POLAR - imagem de producao: 1 servico (API Express servindo o build do React).
 #
+# O deploy oficial e a Vercel (ver docs/deploy/vercel.md): SPA estatico no CDN e a
+# API como funcao sob /api. Esta imagem continua mantida como rota de fuga -- um
+# servico so, API e SPA na mesma origem -- e roda em qualquer host com Docker.
+#
 # Estagio unico e deliberado: o monorepo pnpm usa symlinks e store compartilhado,
 # e copiar node_modules entre estagios e a principal fonte de builds quebrados.
-# A imagem fica maior (~600 MB), o que e irrelevante no plano gratuito do Render,
+# A imagem fica maior (~600 MB), o que e irrelevante nos planos gratuitos,
 # e em troca o build e reproduzivel e facil de depurar por qualquer membro da equipe.
 FROM node:20-slim
 
@@ -17,7 +21,7 @@ COPY . .
 RUN pnpm install --frozen-lockfile --prod=false
 RUN pnpm build
 
-# NODE_ENV so depois do build: em producao a API exige MySQL e passa a servir
+# NODE_ENV so depois do build: em producao a API exige PostgreSQL e passa a servir
 # o SPA de apps/web/dist.
 ENV NODE_ENV=production
 ENV PORT=3000

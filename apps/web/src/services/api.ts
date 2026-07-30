@@ -1,9 +1,9 @@
-// Em producao o frontend e servido pela propria API (mesma origem), entao o
+// A API vive sob /api em qualquer ambiente. Em producao o SPA e a funcao compartilham
+// origem (Vercel serve o build estatico e encaminha /api/* para a funcao), entao o
 // padrao e caminho relativo. Em desenvolvimento a API roda em outra porta.
-const API_URL = (import.meta.env.VITE_API_URL ?? (import.meta.env.PROD ? "" : "http://localhost:3000")).replace(
-  /\/$/,
-  ""
-);
+const API_URL = (
+  import.meta.env.VITE_API_URL ?? (import.meta.env.PROD ? "/api" : "http://localhost:3000/api")
+).replace(/\/$/, "");
 const TOKEN_KEY = "polar_token";
 
 export class ApiError extends Error {

@@ -21,15 +21,18 @@ export class AuthService {
   // Guarda por e-mail especifico (nao por "banco vazio"): permite que o admin
   // real coexista com os dados de demonstracao do seed, em qualquer ordem de boot.
   async bootstrapAdminIfNeeded(): Promise<void> {
-    const existente = await this.users.findByEmailOrNome(this.config.bootstrapAdminEmail);
-    if (existente) {
-      console.log(`bootstrap ignorado: usuario ${this.config.bootstrapAdminEmail} ja existe`);
-      return;
-    }
-
+    // A checagem da senha vem antes da consulta ao banco de proposito: em serverless
+    // este metodo roda a cada cold start, e sem BOOTSTRAP_ADMIN_PASSWORD definida ele
+    // nao tem nada a fazer -- nao vale gastar uma ida ao banco por invocacao.
     const password = this.config.bootstrapAdminPassword;
     if (!password) {
       console.log("bootstrap ignorado: BOOTSTRAP_ADMIN_PASSWORD nao definida");
+      return;
+    }
+
+    const existente = await this.users.findByEmailOrNome(this.config.bootstrapAdminEmail);
+    if (existente) {
+      console.log(`bootstrap ignorado: usuario ${this.config.bootstrapAdminEmail} ja existe`);
       return;
     }
 

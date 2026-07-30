@@ -1,4 +1,4 @@
-import type { Pool, PoolConnection, RowDataPacket } from "mysql2/promise";
+import type { Pool, PoolClient } from "pg";
 import type {
   Ocorrencia,
   OcorrenciaHistorico,
@@ -9,9 +9,9 @@ import type {
   OcorrenciaDuplicateParams,
   OcorrenciaRepository
 } from "../repositories/ocorrencia.repository.js";
-import { dbDateTime, isoFromDbRequired, withTransaction } from "./mysql-client.js";
+import { dbDateTime, isoFromDbRequired, withTransaction } from "./postgres-client.js";
 
-interface OcorrenciaRow extends RowDataPacket {
+interface OcorrenciaRow {
   id: string;
   aluno_id: string;
   categoria: string;
@@ -25,7 +25,7 @@ interface OcorrenciaRow extends RowDataPacket {
   atualizado_em: Date;
 }
 
-interface HistoricoRow extends RowDataPacket {
+interface HistoricoRow {
   id: string;
   ocorrencia_id: string;
   status: StatusOcorrencia;
@@ -67,60 +67,66 @@ const COLUNAS =
   "id, aluno_id, categoria, prioridade, descricao, local, testemunhas, status, criado_por_id, criado_em, atualizado_em";
 const COLUNAS_HISTORICO = "id, ocorrencia_id, status, acao, observacao, usuario_id, criado_em";
 
-async function insertHistorico(conn: Pool | PoolConnection, historico: OcorrenciaHistorico): Promise<void> {
-  await conn.execute(`INSERT INTO ocorrencia_historico (${COLUNAS_HISTORICO}) VALUES (?, ?, ?, ?, ?, ?, ?)`, [
-    historico.id,
-    historico.ocorrenciaId,
-    historico.status,
-    historico.acao,
-    historico.observacao,
-    historico.usuarioId,
-    dbDateTime(historico.criadoEm)
-  ]);
+async function insertHistorico(executor: Pool | PoolClient, historico: OcorrenciaHistorico): Promise<void> {
+  await executor.query(
+    `INSERT INTO ocorrencia_historico (${COLUNAS_HISTORICO}) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    [
+      historico.id,
+      historico.ocorrenciaId,
+      historico.status,
+      historico.acao,
+      historico.observacao,
+      historico.usuarioId,
+      dbDateTime(historico.criadoEm)
+    ]
+  );
 }
 
-export class MysqlOcorrenciaRepository implements OcorrenciaRepository {
+export class PostgresOcorrenciaRepository implements OcorrenciaRepository {
   constructor(private readonly pool: Pool) {}
 
   async list(): Promise<Ocorrencia[]> {
-    const [rows] = await this.pool.query<OcorrenciaRow[]>(`SELECT ${COLUNAS} FROM ocorrencias ORDER BY criado_em DESC`);
+    const { rows } = await this.pool.query<OcorrenciaRow>(
+      `SELECT ${COLUNAS} FROM ocorrencias ORDER BY criado_em DESC`
+    );
     return rows.map(toOcorrencia);
   }
 
   async listByCriadoPor(criadoPorId: string): Promise<Ocorrencia[]> {
-    const [rows] = await this.pool.query<OcorrenciaRow[]>(
-      `SELECT ${COLUNAS} FROM ocorrencias WHERE criado_por_id = ? ORDER BY criado_em DESC`,
+    const { rows } = await this.pool.query<OcorrenciaRow>(
+      `SELECT ${COLUNAS} FROM ocorrencias WHERE criado_por_id = $1 ORDER BY criado_em DESC`,
       [criadoPorId]
     );
     return rows.map(toOcorrencia);
   }
 
   async findById(id: string): Promise<Ocorrencia | null> {
-    const [rows] = await this.pool.query<OcorrenciaRow[]>(`SELECT ${COLUNAS} FROM ocorrencias WHERE id = ? LIMIT 1`, [
-      id
-    ]);
+    const { rows } = await this.pool.query<OcorrenciaRow>(
+      `SELECT ${COLUNAS} FROM ocorrencias WHERE id = $1 LIMIT 1`,
+      [id]
+    );
     const row = rows[0];
     return row ? toOcorrencia(row) : null;
   }
 
   async listHistorico(ocorrenciaId: string): Promise<OcorrenciaHistorico[]> {
-    const [rows] = await this.pool.query<HistoricoRow[]>(
-      `SELECT ${COLUNAS_HISTORICO} FROM ocorrencia_historico WHERE ocorrencia_id = ? ORDER BY criado_em`,
+    const { rows } = await this.pool.query<HistoricoRow>(
+      `SELECT ${COLUNAS_HISTORICO} FROM ocorrencia_historico WHERE ocorrencia_id = $1 ORDER BY criado_em`,
       [ocorrenciaId]
     );
     return rows.map(toHistorico);
   }
 
   async findDuplicate(params: OcorrenciaDuplicateParams): Promise<Ocorrencia | null> {
-    const [rows] = await this.pool.query<OcorrenciaRow[]>(
+    const { rows } = await this.pool.query<OcorrenciaRow>(
       `SELECT ${COLUNAS}
          FROM ocorrencias
-        WHERE aluno_id = ?
-          AND criado_por_id = ?
-          AND LOWER(categoria) = ?
-          AND LOWER(descricao) = ?
+        WHERE aluno_id = $1
+          AND criado_por_id = $2
+          AND LOWER(categoria) = $3
+          AND LOWER(descricao) = $4
           AND status <> 'ENCERRADA'
-          AND criado_em >= ?
+          AND criado_em >= $5
         LIMIT 1`,
       [
         params.alunoId,
@@ -136,21 +142,24 @@ export class MysqlOcorrenciaRepository implements OcorrenciaRepository {
 
   async create(ocorrencia: Ocorrencia, historico: OcorrenciaHistorico): Promise<Ocorrencia> {
     // Transacao real (TCL): ocorrencia e primeiro registro de historico sao atomicos.
-    return withTransaction(this.pool, async (conn) => {
-      await conn.execute(`INSERT INTO ocorrencias (${COLUNAS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
-        ocorrencia.id,
-        ocorrencia.alunoId,
-        ocorrencia.categoria,
-        ocorrencia.prioridade,
-        ocorrencia.descricao,
-        ocorrencia.local ?? "",
-        ocorrencia.testemunhas ?? "",
-        ocorrencia.status,
-        ocorrencia.criadoPorId,
-        dbDateTime(ocorrencia.criadoEm),
-        dbDateTime(ocorrencia.atualizadoEm)
-      ]);
-      await insertHistorico(conn, historico);
+    return withTransaction(this.pool, async (client) => {
+      await client.query(
+        `INSERT INTO ocorrencias (${COLUNAS}) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+        [
+          ocorrencia.id,
+          ocorrencia.alunoId,
+          ocorrencia.categoria,
+          ocorrencia.prioridade,
+          ocorrencia.descricao,
+          ocorrencia.local ?? "",
+          ocorrencia.testemunhas ?? "",
+          ocorrencia.status,
+          ocorrencia.criadoPorId,
+          dbDateTime(ocorrencia.criadoEm),
+          dbDateTime(ocorrencia.atualizadoEm)
+        ]
+      );
+      await insertHistorico(client, historico);
       return ocorrencia;
     });
   }
@@ -166,9 +175,9 @@ export class MysqlOcorrenciaRepository implements OcorrenciaRepository {
     historico?: OcorrenciaHistorico
   ): Promise<Ocorrencia | null> {
     // Transacao real (TCL): status novo + historico gravados juntos ou nada e gravado.
-    return withTransaction(this.pool, async (conn) => {
-      const [rows] = await conn.query<OcorrenciaRow[]>(
-        `SELECT ${COLUNAS} FROM ocorrencias WHERE id = ? LIMIT 1 FOR UPDATE`,
+    return withTransaction(this.pool, async (client) => {
+      const { rows } = await client.query<OcorrenciaRow>(
+        `SELECT ${COLUNAS} FROM ocorrencias WHERE id = $1 LIMIT 1 FOR UPDATE`,
         [id]
       );
       const row = rows[0];
@@ -177,10 +186,10 @@ export class MysqlOcorrenciaRepository implements OcorrenciaRepository {
       }
 
       const updated = updater(toOcorrencia(row));
-      await conn.execute(
+      await client.query(
         `UPDATE ocorrencias
-           SET categoria = ?, prioridade = ?, descricao = ?, local = ?, testemunhas = ?, status = ?, atualizado_em = ?
-         WHERE id = ?`,
+           SET categoria = $1, prioridade = $2, descricao = $3, local = $4, testemunhas = $5, status = $6, atualizado_em = $7
+         WHERE id = $8`,
         [
           updated.categoria,
           updated.prioridade,
@@ -193,7 +202,7 @@ export class MysqlOcorrenciaRepository implements OcorrenciaRepository {
         ]
       );
       if (historico) {
-        await insertHistorico(conn, historico);
+        await insertHistorico(client, historico);
       }
       return updated;
     });

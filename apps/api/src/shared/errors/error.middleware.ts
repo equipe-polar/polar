@@ -1,4 +1,4 @@
-import type { ErrorRequestHandler } from "express";
+import type { ErrorRequestHandler} from "express";
 import { ZodError } from "zod";
 import { AppError } from "./app-error.js";
 

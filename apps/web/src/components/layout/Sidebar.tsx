@@ -6,7 +6,7 @@ import { useAuth } from "../../app/providers";
 import "./layout.css";
 
 const navItems = [
-  { label: "Dashboard", to: "/", icon: Home, permission: "dashboard:view" as const },
+  { label: "Inicio", to: "/", icon: Home, permission: "dashboard:view" as const },
   { label: "Ocorrencias", to: "/ocorrencias", icon: ClipboardList, permission: "ocorrencias:view" as const },
   { label: "Alunos", to: "/alunos", icon: GraduationCap, permission: "alunos:view" as const },
   { label: "Turmas", to: "/turmas", icon: BookOpen, permission: "turmas:view" as const },
@@ -15,34 +15,36 @@ const navItems = [
   { label: "Configuracoes", to: "/configuracoes", icon: Settings, permission: "configuracoes:manage" as const }
 ];
 
-export function Sidebar() {
+export function Sidebar({ collapsed = false }: { collapsed?: boolean }) {
   const { user } = useAuth();
 
   return (
-    <aside className="sidebar" aria-label="Navegacao principal">
+    <aside className={`sidebar ${collapsed ? "is-collapsed" : ""}`.trim()} aria-label="Navegacao principal">
       <div className="sidebar__brand">
         <img src={logoPolar} alt="" />
-        <div>
+        <div className="sidebar__brand-text">
           <strong>P.O.L.A</strong>
           <span>Gestao escolar</span>
         </div>
       </div>
+
       <nav className="sidebar__nav">
         {navItems
           .filter((item) => canAccess(user?.papel, item.permission))
           .map((item) => {
             const Icon = item.icon;
             return (
-              <NavLink key={item.to} to={item.to} end={item.to === "/"}>
-                <Icon size={18} aria-hidden="true" />
-                <span>{item.label}</span>
+              <NavLink key={item.to} to={item.to} end={item.to === "/"} title={collapsed ? item.label : undefined}>
+                <Icon size={20} aria-hidden="true" />
+                <span className="sidebar__label">{item.label}</span>
               </NavLink>
             );
           })}
       </nav>
+
       <div className="sidebar__footer">
         <Shield size={18} aria-hidden="true" />
-        <span>Ambiente institucional</span>
+        <span className="sidebar__label">Ambiente institucional</span>
       </div>
     </aside>
   );

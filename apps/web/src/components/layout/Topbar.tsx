@@ -1,30 +1,36 @@
-import { LogOut, Menu } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../app/providers";
-import { Button } from "../ui/Button";
+import { ChevronLeft, Menu } from "lucide-react";
+import { PendenciasBell } from "./PendenciasBell";
+import { UserMenu } from "./UserMenu";
 import "./layout.css";
 
-export function Topbar({ onMenu }: { onMenu?: () => void }) {
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
-
-  function handleLogout() {
-    logout();
-    navigate("/login");
-  }
-
+export function Topbar({
+  onMenu,
+  onToggleSidebar,
+  sidebarCollapsed
+}: {
+  onMenu?: () => void;
+  onToggleSidebar?: () => void;
+  sidebarCollapsed?: boolean;
+}) {
   return (
     <header className="topbar">
       <button className="topbar__menu" onClick={onMenu} aria-label="Abrir menu">
         <Menu size={22} />
       </button>
-      <div className="topbar__user">
-        <strong>{user?.nome ?? "Usuario"}</strong>
-        <span>{user?.papel ?? "Perfil"}</span>
-      </div>
-      <Button variant="ghost" icon={<LogOut size={18} />} onClick={handleLogout}>
-        Sair
-      </Button>
+
+      <button
+        type="button"
+        className={`topbar__collapse ${sidebarCollapsed ? "is-collapsed" : ""}`.trim()}
+        onClick={onToggleSidebar}
+        aria-label={sidebarCollapsed ? "Expandir navegacao" : "Recolher navegacao"}
+      >
+        <ChevronLeft size={18} aria-hidden="true" />
+      </button>
+
+      <div className="topbar__spacer" />
+
+      <PendenciasBell />
+      <UserMenu />
     </header>
   );
 }

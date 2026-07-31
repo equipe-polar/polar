@@ -92,7 +92,11 @@ export function UsuariosPage() {
 
   return (
     <>
-      <PageHeader title="Usuarios" actions={<Button icon={<UserPlus size={18} />} onClick={() => setModalOpen(true)}>Novo usuario</Button>} />
+      <PageHeader
+        title="Usuarios"
+        breadcrumb={[{ label: "Inicio", to: "/" }, { label: "Usuarios" }]}
+        actions={<Button icon={<UserPlus size={18} />} onClick={() => setModalOpen(true)}>Novo usuario</Button>}
+      />
       {error ? <Card className="state-message state-message--danger">{error}</Card> : null}
       <Card title="Gestao de acessos">
         {loading ? (

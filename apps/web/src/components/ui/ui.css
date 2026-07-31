@@ -142,7 +142,7 @@
 .ui-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 680px;
+  min-width: 520px;
 }
 
 .ui-table th,

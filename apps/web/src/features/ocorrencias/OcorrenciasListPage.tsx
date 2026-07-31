@@ -10,6 +10,7 @@ import { Table } from "../../components/ui/Table";
 import type { OcorrenciaDetalhada } from "../../services/domain";
 import { useAuth } from "../../app/providers";
 import { listOcorrenciasDetalhadas } from "./ocorrencias.service";
+import { DiasEmAberto } from "./DiasEmAberto";
 import { PrioridadeBadge, StatusBadge } from "./status";
 
 export function OcorrenciasListPage() {
@@ -62,7 +63,7 @@ export function OcorrenciasListPage() {
     <>
       <PageHeader
         title={user?.papel === "PROFESSOR" ? "Minhas ocorrencias" : "Ocorrencias"}
-        breadcrumb={[{ label: "Dashboard", to: "/" }, { label: "Ocorrencias" }]}
+        breadcrumb={[{ label: "Inicio", to: "/" }, { label: "Ocorrencias" }]}
         actions={
           <Link to="/ocorrencias/nova">
             <Button icon={<Plus size={18} />}>Nova ocorrencia</Button>
@@ -103,6 +104,15 @@ export function OcorrenciasListPage() {
         <Card title="Lista">
           {loading ? (
             <p className="muted">Carregando ocorrencias...</p>
+          ) : filtered.length === 0 ? (
+            <div className="empty-state">
+              <strong>{ocorrencias.length === 0 ? "Nenhuma ocorrencia no seu escopo." : "Nenhum resultado para estes filtros."}</strong>
+              <span>
+                {ocorrencias.length === 0
+                  ? "Assim que houver registros visiveis para o seu perfil, eles aparecem aqui."
+                  : "Ajuste ou limpe os filtros acima para ver mais registros."}
+              </span>
+            </div>
           ) : (
             <Table
               data={filtered}
@@ -111,6 +121,11 @@ export function OcorrenciasListPage() {
                 { key: "categoria", header: "Categoria", render: (item) => item.categoria },
                 { key: "status", header: "Status", render: (item) => <StatusBadge status={item.status} /> },
                 { key: "prioridade", header: "Prioridade", render: (item) => <PrioridadeBadge prioridade={item.prioridade} /> },
+                {
+                  key: "aberta",
+                  header: "Em aberto",
+                  render: (item) => <DiasEmAberto desde={item.criadoEm} status={item.status} />
+                },
                 {
                   key: "acao",
                   header: "Acao",

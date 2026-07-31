@@ -43,7 +43,11 @@ export function RelatoriosPage() {
 
   return (
     <>
-      <PageHeader title="Relatorios" actions={<Button variant="secondary" icon={<Download size={18} />}>Exportacao futura</Button>} />
+      <PageHeader
+        title="Relatorios"
+        breadcrumb={[{ label: "Inicio", to: "/" }, { label: "Relatorios" }]}
+        actions={<Button variant="secondary" icon={<Download size={18} />}>Exportacao futura</Button>}
+      />
       <div className="page-grid">
         <Card title="Filtros">
           <div className="form-grid">

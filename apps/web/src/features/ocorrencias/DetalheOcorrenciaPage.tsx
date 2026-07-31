@@ -85,7 +85,7 @@ export function DetalheOcorrenciaPage() {
   if (loading && !ocorrencia) {
     return (
       <>
-        <PageHeader title="Detalhe da ocorrencia" breadcrumb={[{ label: "Ocorrencias", to: "/ocorrencias" }, { label: "Carregando" }]} />
+        <PageHeader title="Detalhe da ocorrencia" breadcrumb={[{ label: "Inicio", to: "/" }, { label: "Ocorrencias", to: "/ocorrencias" }, { label: "Carregando" }]} />
         <Card>
           <p className="muted">Carregando ocorrencia...</p>
         </Card>
@@ -96,7 +96,7 @@ export function DetalheOcorrenciaPage() {
   if (!ocorrencia) {
     return (
       <>
-        <PageHeader title="Detalhe da ocorrencia" breadcrumb={[{ label: "Ocorrencias", to: "/ocorrencias" }, { label: "Nao encontrada" }]} />
+        <PageHeader title="Detalhe da ocorrencia" breadcrumb={[{ label: "Inicio", to: "/" }, { label: "Ocorrencias", to: "/ocorrencias" }, { label: "Nao encontrada" }]} />
         <Card className="state-message state-message--danger">{error || "Ocorrencia nao encontrada."}</Card>
       </>
     );
@@ -104,7 +104,7 @@ export function DetalheOcorrenciaPage() {
 
   return (
     <>
-      <PageHeader title="Detalhe da ocorrencia" breadcrumb={[{ label: "Ocorrencias", to: "/ocorrencias" }, { label: ocorrencia.id }]} />
+      <PageHeader title="Detalhe da ocorrencia" breadcrumb={[{ label: "Inicio", to: "/" }, { label: "Ocorrencias", to: "/ocorrencias" }, { label: ocorrencia.id }]} />
       <div className="page-grid">
         {error ? <Card className="state-message state-message--danger">{error}</Card> : null}
         <div className="grid-2">

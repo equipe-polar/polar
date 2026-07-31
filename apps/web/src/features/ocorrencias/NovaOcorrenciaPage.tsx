@@ -111,7 +111,7 @@ export function NovaOcorrenciaPage() {
 
   return (
     <>
-      <PageHeader title="Nova ocorrencia" breadcrumb={[{ label: "Ocorrencias", to: "/ocorrencias" }, { label: "Nova" }]} />
+      <PageHeader title="Nova ocorrencia" breadcrumb={[{ label: "Inicio", to: "/" }, { label: "Ocorrencias", to: "/ocorrencias" }, { label: "Nova" }]} />
       <Card>
         {apiError ? <p className="text-danger">{apiError}</p> : null}
         <form className="form-grid" onSubmit={handleSubmit} noValidate>

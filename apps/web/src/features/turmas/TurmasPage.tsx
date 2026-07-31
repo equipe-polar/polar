@@ -112,7 +112,11 @@ export function TurmasPage() {
 
   return (
     <>
-      <PageHeader title="Turmas" actions={canManage ? <Button onClick={openCreate}>Nova turma</Button> : null} />
+      <PageHeader
+        title="Turmas"
+        breadcrumb={[{ label: "Inicio", to: "/" }, { label: "Turmas" }]}
+        actions={canManage ? <Button onClick={openCreate}>Nova turma</Button> : null}
+      />
       {error ? <Card className="state-message state-message--danger">{error}</Card> : null}
       <Card title="Turmas cadastradas">
         {loading ? (

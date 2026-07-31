@@ -7,7 +7,7 @@ import { Input } from "../../components/ui/Input";
 export function ConfiguracoesPage() {
   return (
     <>
-      <PageHeader title="Configuracoes" />
+      <PageHeader title="Configuracoes" breadcrumb={[{ label: "Inicio", to: "/" }, { label: "Configuracoes" }]} />
       <Card title="Dados institucionais">
         <div className="form-grid">
           <Input label="Nome da instituicao" defaultValue="Escola P.O.L.A" />

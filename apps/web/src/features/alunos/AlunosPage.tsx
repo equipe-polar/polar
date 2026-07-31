@@ -103,7 +103,11 @@ export function AlunosPage() {
 
   return (
     <>
-      <PageHeader title="Alunos" description="Consulta e acompanhamento escolar." />
+      <PageHeader
+        title="Alunos"
+        description="Consulta e acompanhamento escolar."
+        breadcrumb={[{ label: "Inicio", to: "/" }, { label: "Alunos" }]}
+      />
       <div className="page-grid">
         <Card title="Filtros">
           <div className="form-grid">

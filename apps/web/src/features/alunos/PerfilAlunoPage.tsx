@@ -54,7 +54,7 @@ export function PerfilAlunoPage() {
   if (loading && !aluno) {
     return (
       <>
-        <PageHeader title="Historico do aluno" breadcrumb={[{ label: "Alunos", to: "/alunos" }, { label: "Carregando" }]} />
+        <PageHeader title="Historico do aluno" breadcrumb={[{ label: "Inicio", to: "/" }, { label: "Alunos", to: "/alunos" }, { label: "Carregando" }]} />
         <Card>
           <p className="muted">Carregando historico...</p>
         </Card>
@@ -65,7 +65,7 @@ export function PerfilAlunoPage() {
   if (!aluno) {
     return (
       <>
-        <PageHeader title="Historico do aluno" breadcrumb={[{ label: "Alunos", to: "/alunos" }, { label: "Nao encontrado" }]} />
+        <PageHeader title="Historico do aluno" breadcrumb={[{ label: "Inicio", to: "/" }, { label: "Alunos", to: "/alunos" }, { label: "Nao encontrado" }]} />
         <Card className="state-message state-message--danger">{error || "Aluno nao encontrado."}</Card>
       </>
     );
@@ -73,7 +73,7 @@ export function PerfilAlunoPage() {
 
   return (
     <>
-      <PageHeader title={aluno.nome} breadcrumb={[{ label: "Alunos", to: "/alunos" }, { label: aluno.nome }]} />
+      <PageHeader title={aluno.nome} breadcrumb={[{ label: "Inicio", to: "/" }, { label: "Alunos", to: "/alunos" }, { label: aluno.nome }]} />
       <div className="page-grid">
         {error ? <Card className="state-message state-message--danger">{error}</Card> : null}
         <Card title="Dados do aluno">

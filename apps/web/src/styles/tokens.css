@@ -1,24 +1,49 @@
 :root {
-  --color-bg: #eef3f8;
+  /* Superficies. O fundo do conteudo e cinza-claro e os cards sao brancos:
+     e o contraste que a Sala do Futuro usa para separar painel de conteudo. */
+  --color-bg: #f4f5f7;
   --color-surface: #ffffff;
   --color-surface-muted: #f7fafc;
-  --color-primary: #1d5fa7;
-  --color-primary-strong: #124b84;
-  --color-primary-soft: #dcecff;
+  --color-shell: #ffffff;
+
+  /* Azul institucional. O tom forte e o do texto ativo na navegacao. */
+  --color-primary: #1351b4;
+  --color-primary-strong: #0c3d8d;
+  --color-primary-soft: #e8f1fb;
+
+  /* Ciano do painel de apresentacao do login. */
+  --color-brand-teal: #1a9ec4;
+  --color-brand-teal-deep: #10748f;
+
   --color-text: #1f2937;
   --color-text-muted: #667085;
-  --color-border: #d9e2ec;
+  --color-text-soft: #98a2b3;
+  --color-border: #e4e7ec;
+
   --color-success: #16844a;
   --color-success-soft: #e4f7ed;
   --color-warning: #b86b00;
   --color-warning-soft: #fff3d6;
   --color-danger: #c73636;
   --color-danger-soft: #fde7e7;
+
+  /* Faixas de destaque no topo dos cards de indicador. Cada numero do painel
+     recebe uma cor propria para ser localizavel de relance, sem depender do rotulo. */
+  --accent-blue: #2d9cdb;
+  --accent-orange: #f2a33c;
+  --accent-red: #eb5757;
+  --accent-green: #27ae60;
+
   --shadow-soft: 0 8px 24px rgba(31, 41, 55, 0.08);
-  --shadow-subtle: 0 2px 10px rgba(31, 41, 55, 0.06);
+  --shadow-subtle: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-raised: 0 12px 32px rgba(16, 24, 40, 0.12);
+
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -26,5 +51,10 @@
   --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
+  --space-10: 40px;
+
+  --sidebar-width: 280px;
+  --sidebar-width-collapsed: 84px;
+
   --font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }

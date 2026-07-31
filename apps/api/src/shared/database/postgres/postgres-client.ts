@@ -1,4 +1,5 @@
 import pg, { type Pool, type PoolClient } from "pg";
+import { SUPABASE_ROOT_CA } from "./supabase-ca.js";
 
 // Parsers de tipo registrados uma unica vez, no import do modulo.
 //
@@ -30,7 +31,11 @@ export function createPostgresPool(options: PostgresOptions): Pool {
     // Serverless: nao segurar conexao ociosa entre invocacoes.
     idleTimeoutMillis: process.env.VERCEL ? 10_000 : 30_000,
     connectionTimeoutMillis: 10_000,
-    ...(options.ssl ? { ssl: { minVersion: "TLSv1.2", rejectUnauthorized: true } } : {})
+    // A verificacao continua ligada: a CA do Supabase entra como ancora extra
+    // porque nao esta no trust store do Node (ver supabase-ca.ts).
+    ...(options.ssl
+      ? { ssl: { minVersion: "TLSv1.2" as const, rejectUnauthorized: true, ca: SUPABASE_ROOT_CA } }
+      : {})
   });
 }
 

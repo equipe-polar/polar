@@ -38,8 +38,7 @@ export interface OcorrenciaUpdateInput {
 
 /**
  * Escopo de leitura de ocorrencias por papel. Decisao unica, reusada pela listagem,
- * pelo acesso direto por id e pelo dashboard -- foi a duplicacao dessa regra que
- * deixou o dashboard entregar o agregado global para o professor.
+ * pelo acesso direto por id e pelo dashboard.
  *
  * - `global`: coordenacao, direcao e ADM leem a escola inteira.
  * - `autor`:  professor le apenas o que ele mesmo registrou.

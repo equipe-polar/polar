@@ -5,7 +5,6 @@
 ## Preparação (véspera)
 
 - [ ] Sistema no ar: `https://SEU-PROJETO.vercel.app/api/health` responde `ok`.
-- [ ] Keepalive ativo (serviço não hiberna durante a apresentação).
 - [ ] Banco com dados do seed (12 ocorrências nos 4 estados).
 - [ ] 3 abas/perfis de navegador preparados (professor, coordenação, direção) — ou logins anotados.
 - [ ] Plano B: PostgreSQL local via Docker + `pnpm dev` no notebook (ver docs/deploy/supabase.md), caso a internet da escola falhe.

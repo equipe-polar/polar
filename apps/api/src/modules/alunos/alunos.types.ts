@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// Os limites maximos espelham as colunas de database/schema.sql.
 export const createAlunoSchema = z.object({
   nome: z.string().trim().min(2).max(120),
   matricula: z.string().trim().min(1).max(40),

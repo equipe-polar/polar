@@ -112,18 +112,6 @@ export interface Falta {
   criadoEm: string;
 }
 
-export interface CategoriaOcorrencia {
-  id: string;
-  nome: string;
-  ativa: boolean;
-}
-
-export interface UserPermission {
-  id: string;
-  usuarioId: string;
-  permissao: string;
-}
-
 export interface AuditLog {
   id: string;
   usuarioId: string | null;
@@ -131,17 +119,6 @@ export interface AuditLog {
   entidade: string;
   entidadeId: string | null;
   metadata: Record<string, unknown>;
-  criadoEm: string;
-}
-
-export interface Notification {
-  id: string;
-  titulo: string;
-  mensagem: string;
-  destinatarioId: string | null;
-  ocorrenciaId: string | null;
-  lida: boolean;
-  criadoPorId: string;
   criadoEm: string;
 }
 
@@ -153,10 +130,7 @@ export interface DatabaseState {
   ocorrenciaHistorico: OcorrenciaHistorico[];
   notas: Nota[];
   faltas: Falta[];
-  categoriasOcorrencia: CategoriaOcorrencia[];
-  userPermissions: UserPermission[];
   auditLogs: AuditLog[];
-  notifications: Notification[];
 }
 
 export function usuarioPublico(usuario: Usuario): UsuarioPublico {

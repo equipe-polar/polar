@@ -4,8 +4,6 @@
 //   DATABASE_PROVIDER=postgres -> insere no PostgreSQL (schema.sql deve ter sido aplicado antes)
 //   DATABASE_PROVIDER=json     -> escreve no arquivo JSON de desenvolvimento
 // Idempotente: nao faz nada se ja existirem usuarios.
-//
-// Executar da raiz: pnpm seed  (exige SEED_SENHA_PADRAO com pelo menos 8 caracteres)
 
 import bcrypt from "bcryptjs";
 import path from "node:path";
@@ -227,17 +225,6 @@ async function main(): Promise<void> {
       await repos.users.create(u);
     }
 
-    // As ocorrencias de demonstracao vinham de dois autores distintos, para
-    // exercitar o escopo por papel: o professor so enxerga o que ele registrou.
-    // Com uma unica conta de professor, o segundo autor passa a ser o ADM -- que
-    // tambem possui REGISTRAR_OCORRENCIA. Sem isso o professor seria autor de
-    // todas as 12 e o escopo ficaria invisivel na demonstracao.
-    const profCarlos = professor;
-    const profBeatriz = admin;
-    const coordMarcia = coordenacao;
-    const dirPaulo = direcao;
-
-    // Turmas.
     const turma1A = turma("1ºA - Informática", "Manhã", 42);
     const turma2B = turma("2ºB - Desenvolvimento de Sistemas", "Tarde", 42);
     const turma3B = turma("3ºB - Desenvolvimento de Sistemas", "Manhã", 42);
@@ -245,7 +232,6 @@ async function main(): Promise<void> {
       await repos.turmas.create(t);
     }
 
-    // Alunos (nomes ficticios).
     const alunos = [
       aluno("Ana Clara Ribeiro", "2026001", turma1A.id, "Cláudia Ribeiro", "(11) 98801-0001"),
       aluno("Bruno Ferreira", "2026002", turma1A.id, "Marcos Ferreira", "(11) 98801-0002"),
@@ -274,7 +260,9 @@ async function main(): Promise<void> {
       return encontrado;
     };
 
-    // Ocorrencias: 4 REGISTRADA, 3 EM_ANALISE, 3 RESOLVIDA, 2 ENCERRADA.
+    // 4 REGISTRADA, 3 EM_ANALISE, 3 RESOLVIDA, 2 ENCERRADA, divididas entre dois
+    // autores (professor e ADM, que tambem possui REGISTRAR_OCORRENCIA). Com um
+    // autor so, o escopo por papel ficaria invisivel na demonstracao.
     const ocorrencias: OcorrenciaSeed[] = [
       {
         alunoId: alunoPorIndice(0).id,
@@ -283,7 +271,7 @@ async function main(): Promise<void> {
         descricao: "Aluna chegou 25 minutos atrasada na primeira aula sem justificativa dos responsáveis.",
         local: "Sala 12",
         testemunhas: "",
-        criadoPorId: profCarlos.id,
+        criadoPorId: professor.id,
         registradaDias: 1,
         registradaHora: 7,
         transicoes: []
@@ -295,7 +283,7 @@ async function main(): Promise<void> {
         descricao: "Não entregou a atividade avaliativa de Banco de Dados pela segunda semana consecutiva.",
         local: "Laboratório 2",
         testemunhas: "",
-        criadoPorId: profBeatriz.id,
+        criadoPorId: admin.id,
         registradaDias: 1,
         registradaHora: 14,
         transicoes: []
@@ -307,7 +295,7 @@ async function main(): Promise<void> {
         descricao: "Respondeu de forma desrespeitosa à professora ao ser orientado a guardar o celular durante a explicação.",
         local: "Sala 8",
         testemunhas: "Monitora de corredor",
-        criadoPorId: profBeatriz.id,
+        criadoPorId: admin.id,
         registradaDias: 2,
         registradaHora: 9,
         transicoes: []
@@ -319,7 +307,7 @@ async function main(): Promise<void> {
         descricao: "Terceiro atraso na mesma semana; aluno informou problema no transporte público.",
         local: "Portaria",
         testemunhas: "",
-        criadoPorId: profCarlos.id,
+        criadoPorId: professor.id,
         registradaDias: 3,
         registradaHora: 7,
         transicoes: []
@@ -331,11 +319,11 @@ async function main(): Promise<void> {
         descricao: "Discussão exaltada com colega durante o intervalo, com ofensas verbais de ambas as partes.",
         local: "Pátio",
         testemunhas: "Inspetora Renata",
-        criadoPorId: profCarlos.id,
+        criadoPorId: professor.id,
         registradaDias: 4,
         registradaHora: 10,
         transicoes: [
-          { status: StatusOcorrencia.EM_ANALISE, autorId: coordMarcia.id, dias: 4, hora: 13, observacao: null }
+          { status: StatusOcorrencia.EM_ANALISE, autorId: coordenacao.id, dias: 4, hora: 13, observacao: null }
         ]
       },
       {
@@ -345,11 +333,11 @@ async function main(): Promise<void> {
         descricao: "Uso de celular durante avaliação, recolhido pelo professor conforme o regimento interno.",
         local: "Sala 5",
         testemunhas: "",
-        criadoPorId: profBeatriz.id,
+        criadoPorId: admin.id,
         registradaDias: 5,
         registradaHora: 15,
         transicoes: [
-          { status: StatusOcorrencia.EM_ANALISE, autorId: coordMarcia.id, dias: 5, hora: 17, observacao: null }
+          { status: StatusOcorrencia.EM_ANALISE, autorId: coordenacao.id, dias: 5, hora: 17, observacao: null }
         ]
       },
       {
@@ -359,11 +347,11 @@ async function main(): Promise<void> {
         descricao: "Recusou-se a participar da atividade em grupo e debochou da orientação do professor.",
         local: "Quadra",
         testemunhas: "",
-        criadoPorId: profCarlos.id,
+        criadoPorId: professor.id,
         registradaDias: 6,
         registradaHora: 11,
         transicoes: [
-          { status: StatusOcorrencia.EM_ANALISE, autorId: coordMarcia.id, dias: 6, hora: 14, observacao: null }
+          { status: StatusOcorrencia.EM_ANALISE, autorId: coordenacao.id, dias: 6, hora: 14, observacao: null }
         ]
       },
       {
@@ -373,14 +361,14 @@ async function main(): Promise<void> {
         descricao: "Acúmulo de três atividades não entregues no bimestre na disciplina de Programação Front-End.",
         local: "Sala 12",
         testemunhas: "",
-        criadoPorId: profBeatriz.id,
+        criadoPorId: admin.id,
         registradaDias: 12,
         registradaHora: 9,
         transicoes: [
-          { status: StatusOcorrencia.EM_ANALISE, autorId: coordMarcia.id, dias: 11, hora: 10, observacao: null },
+          { status: StatusOcorrencia.EM_ANALISE, autorId: coordenacao.id, dias: 11, hora: 10, observacao: null },
           {
             status: StatusOcorrencia.RESOLVIDA,
-            autorId: coordMarcia.id,
+            autorId: coordenacao.id,
             dias: 10,
             hora: 16,
             observacao: "Conversa individual com o aluno e plano de reposição das atividades acordado com a professora."
@@ -394,14 +382,14 @@ async function main(): Promise<void> {
         descricao: "Atrasos recorrentes no retorno do intervalo, registrados em três dias distintos.",
         local: "Sala 7",
         testemunhas: "",
-        criadoPorId: profCarlos.id,
+        criadoPorId: professor.id,
         registradaDias: 14,
         registradaHora: 13,
         transicoes: [
-          { status: StatusOcorrencia.EM_ANALISE, autorId: coordMarcia.id, dias: 13, hora: 9, observacao: null },
+          { status: StatusOcorrencia.EM_ANALISE, autorId: coordenacao.id, dias: 13, hora: 9, observacao: null },
           {
             status: StatusOcorrencia.RESOLVIDA,
-            autorId: coordMarcia.id,
+            autorId: coordenacao.id,
             dias: 12,
             hora: 11,
             observacao: "Responsáveis comunicados por telefone; aluna se comprometeu com a pontualidade."
@@ -415,14 +403,14 @@ async function main(): Promise<void> {
         descricao: "Saiu da sala sem autorização durante a troca de professores e retornou apenas na aula seguinte.",
         local: "Corredor Bloco B",
         testemunhas: "Inspetor Jorge",
-        criadoPorId: profBeatriz.id,
+        criadoPorId: admin.id,
         registradaDias: 16,
         registradaHora: 10,
         transicoes: [
-          { status: StatusOcorrencia.EM_ANALISE, autorId: coordMarcia.id, dias: 15, hora: 14, observacao: null },
+          { status: StatusOcorrencia.EM_ANALISE, autorId: coordenacao.id, dias: 15, hora: 14, observacao: null },
           {
             status: StatusOcorrencia.RESOLVIDA,
-            autorId: coordMarcia.id,
+            autorId: coordenacao.id,
             dias: 14,
             hora: 15,
             observacao: "Advertência verbal aplicada e registro comunicado à família."
@@ -436,21 +424,21 @@ async function main(): Promise<void> {
         descricao: "Quebrou o vidro da porta do laboratório ao arremessar uma mochila durante discussão.",
         local: "Laboratório 1",
         testemunhas: "Técnico de laboratório",
-        criadoPorId: profCarlos.id,
+        criadoPorId: professor.id,
         registradaDias: 25,
         registradaHora: 9,
         transicoes: [
-          { status: StatusOcorrencia.EM_ANALISE, autorId: coordMarcia.id, dias: 24, hora: 10, observacao: null },
+          { status: StatusOcorrencia.EM_ANALISE, autorId: coordenacao.id, dias: 24, hora: 10, observacao: null },
           {
             status: StatusOcorrencia.RESOLVIDA,
-            autorId: coordMarcia.id,
+            autorId: coordenacao.id,
             dias: 22,
             hora: 15,
             observacao: "Reunião com os responsáveis realizada; família assumiu o custo do reparo."
           },
           {
             status: StatusOcorrencia.ENCERRADA,
-            autorId: dirPaulo.id,
+            autorId: direcao.id,
             dias: 20,
             hora: 11,
             observacao: "Caso encerrado após reparo concluído e termo de compromisso assinado."
@@ -464,21 +452,21 @@ async function main(): Promise<void> {
         descricao: "Ofensas dirigidas a colega em rede social da turma, com prints apresentados pela família.",
         local: "Fora da escola (grupo online da turma)",
         testemunhas: "",
-        criadoPorId: profBeatriz.id,
+        criadoPorId: admin.id,
         registradaDias: 30,
         registradaHora: 8,
         transicoes: [
-          { status: StatusOcorrencia.EM_ANALISE, autorId: coordMarcia.id, dias: 29, hora: 9, observacao: null },
+          { status: StatusOcorrencia.EM_ANALISE, autorId: coordenacao.id, dias: 29, hora: 9, observacao: null },
           {
             status: StatusOcorrencia.RESOLVIDA,
-            autorId: coordMarcia.id,
+            autorId: coordenacao.id,
             dias: 27,
             hora: 14,
             observacao: "Mediação de conflito realizada entre os alunos com pedido de desculpas formal."
           },
           {
             status: StatusOcorrencia.ENCERRADA,
-            autorId: dirPaulo.id,
+            autorId: direcao.id,
             dias: 26,
             hora: 10,
             observacao: "Encerrado pela direção após acompanhamento de uma semana sem reincidência."
@@ -491,7 +479,6 @@ async function main(): Promise<void> {
       await inserirOcorrencia(repos, seedOcorrencia);
     }
 
-    // Notas de exemplo.
     const notas = [
       { aluno: 11, disciplina: "Programação Back-End", valor: 7.5, etapa: "2º Bimestre", dias: 20 },
       { aluno: 11, disciplina: "Banco de Dados", valor: 8.0, etapa: "2º Bimestre", dias: 18 },
@@ -507,13 +494,13 @@ async function main(): Promise<void> {
         disciplina: n.disciplina,
         valor: n.valor,
         etapa: n.etapa,
-        professorId: profBeatriz.id,
+        professorId: admin.id,
         data: dataOnly(n.dias),
         criadoEm: diasAtras(n.dias, 12)
       });
     }
 
-    // Faltas de exemplo (aluno + data unicos).
+    // Aluno + data sao unicos (uq_faltas_aluno_data).
     const faltas = [
       { aluno: 7, dias: 3, justificativa: "Atestado médico apresentado." },
       { aluno: 7, dias: 10, justificativa: null },
@@ -527,7 +514,7 @@ async function main(): Promise<void> {
         alunoId: alunoPorIndice(f.aluno).id,
         data: dataOnly(f.dias),
         justificativa: f.justificativa,
-        registradaPorId: profCarlos.id,
+        registradaPorId: professor.id,
         criadoEm: diasAtras(f.dias, 8)
       });
     }

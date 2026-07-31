@@ -21,14 +21,7 @@ export function createInitialState(): DatabaseState {
     ocorrenciaHistorico: [],
     notas: [],
     faltas: [],
-    categoriasOcorrencia: [
-      { id: "categoria-desrespeito", nome: "Desrespeito", ativa: true },
-      { id: "categoria-agressao-verbal", nome: "Agressao verbal", ativa: true },
-      { id: "categoria-atraso", nome: "Atraso", ativa: true }
-    ],
-    userPermissions: [],
-    auditLogs: [],
-    notifications: []
+    auditLogs: []
   };
 }
 
@@ -48,12 +41,7 @@ function normalizeState(input: Partial<DatabaseState> | null): DatabaseState {
       : base.ocorrenciaHistorico,
     notas: Array.isArray(input.notas) ? input.notas : base.notas,
     faltas: Array.isArray(input.faltas) ? input.faltas : base.faltas,
-    categoriasOcorrencia: Array.isArray(input.categoriasOcorrencia)
-      ? input.categoriasOcorrencia
-      : base.categoriasOcorrencia,
-    userPermissions: Array.isArray(input.userPermissions) ? input.userPermissions : base.userPermissions,
-    auditLogs: Array.isArray(input.auditLogs) ? input.auditLogs : base.auditLogs,
-    notifications: Array.isArray(input.notifications) ? input.notifications : base.notifications
+    auditLogs: Array.isArray(input.auditLogs) ? input.auditLogs : base.auditLogs
   };
 }
 

@@ -11,13 +11,11 @@ erDiagram
     users ||--o{ notas : "lanca (professor_id)"
     users ||--o{ faltas : "registra (registrada_por_id)"
     users ||--o{ audit_logs : "gera"
-    users ||--o{ notifications : "recebe"
     turmas ||--o{ alunos : "agrupa"
     alunos ||--o{ ocorrencias : "sofre"
     alunos ||--o{ notas : "possui"
     alunos ||--o{ faltas : "possui"
     ocorrencias ||--o{ ocorrencia_historico : "gera (append-only)"
-    ocorrencias ||--o{ notifications : "origina"
 
     users {
         char36 id PK
@@ -89,18 +87,9 @@ erDiagram
         char36 entidade_id
         json metadata
     }
-    notifications {
-        char36 id PK
-        varchar titulo
-        text mensagem
-        char36 destinatario_id FK
-        char36 ocorrencia_id FK
-        tinyint lida
-        char36 criado_por_id FK
-    }
 ```
 
-(Tabela auxiliar `categorias_ocorrencia` — id, nome único, ativa — alimenta o formulário; a ocorrência guarda o nome da categoria como texto para preservar o valor histórico mesmo se a categoria for renomeada depois.)
+(Tabela auxiliar `categorias_ocorrencia` — id, nome único, ativa — é o catálogo de referência das categorias oficiais. Hoje o formulário aceita texto livre e a ocorrência guarda o nome da categoria como texto, o que preserva o valor histórico mesmo se a categoria for renomeada depois.)
 
 ## Dicionário de dados (resumo por tabela)
 
@@ -115,7 +104,6 @@ erDiagram
 | `notas` | Módulo acadêmico (bônus) | FK aluno/professor; CHECK `valor` 0–10 |
 | `faltas` | Módulo acadêmico (bônus) | UNIQUE `(aluno_id, data)` impede falta duplicada no dia |
 | `audit_logs` | Auditoria de ações sensíveis | `metadata` JSONB; índice por entidade |
-| `notifications` | Avisos internos (sino) | FKs opcionais para destinatário/ocorrência |
 
 ## Índices
 

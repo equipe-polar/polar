@@ -4,10 +4,6 @@
 -- IDs: CHAR(36) UUID gerados pela aplicacao (novoId()). Nao usamos o tipo UUID nativo
 -- porque o dominio trafega id como string em todas as camadas.
 -- Datas: TIMESTAMPTZ(3) em UTC, geradas pela aplicacao (backend e a autoridade de data).
---
--- DDL deste arquivo cobre as 10 tabelas do sistema.
--- Executar com: psql "$DATABASE_URL" -f database/schema.sql
--- Ou colar inteiro no SQL Editor do Supabase.
 
 -- Tipos enumerados. DO $$ ... $$ porque o Postgres nao tem CREATE TYPE IF NOT EXISTS.
 DO $$ BEGIN
@@ -160,26 +156,8 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 CREATE INDEX IF NOT EXISTS idx_audit_logs_entidade ON audit_logs (entidade, entidade_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_criado_em ON audit_logs (criado_em);
 
-CREATE TABLE IF NOT EXISTS notifications (
-  id CHAR(36) NOT NULL,
-  titulo VARCHAR(160) NOT NULL,
-  mensagem TEXT NOT NULL,
-  destinatario_id CHAR(36) NULL,
-  ocorrencia_id CHAR(36) NULL,
-  lida BOOLEAN NOT NULL DEFAULT FALSE,
-  criado_por_id CHAR(36) NOT NULL,
-  criado_em TIMESTAMPTZ(3) NOT NULL,
-  CONSTRAINT pk_notifications PRIMARY KEY (id),
-  CONSTRAINT fk_notifications_destinatario FOREIGN KEY (destinatario_id) REFERENCES users (id),
-  CONSTRAINT fk_notifications_ocorrencia FOREIGN KEY (ocorrencia_id) REFERENCES ocorrencias (id),
-  CONSTRAINT fk_notifications_criado_por FOREIGN KEY (criado_por_id) REFERENCES users (id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_notifications_destinatario ON notifications (destinatario_id);
-
--- Indices funcionais: no MySQL a collation utf8mb4_unicode_ci ja era case-insensitive,
--- entao o LOWER() das queries era redundante. No Postgres a comparacao e sensivel a caixa,
--- o LOWER() passa a ser obrigatorio e sem estes indices as buscas viram seq scan.
+-- Indices funcionais: no Postgres a comparacao e sensivel a caixa, entao o LOWER()
+-- das queries e obrigatorio -- e sem estes indices as buscas viram seq scan.
 CREATE INDEX IF NOT EXISTS idx_users_lower_email ON users (LOWER(email));
 CREATE INDEX IF NOT EXISTS idx_users_lower_nome ON users (LOWER(nome));
 CREATE INDEX IF NOT EXISTS idx_alunos_lower_matricula ON alunos (LOWER(matricula));

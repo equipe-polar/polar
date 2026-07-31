@@ -7,8 +7,6 @@ export class DashboardService {
   constructor(private readonly ocorrencias: OcorrenciaRepository) {}
 
   // O agregado obedece ao mesmo escopo por papel da listagem de ocorrencias.
-  // Antes este metodo chamava list() direto e entregava os numeros da escola
-  // inteira ao professor, contradizendo a regra que o proprio sistema declara.
   async resumo(actor: AuthenticatedUser) {
     const ocorrencias = await this.carregarNoEscopo(actor);
     const porStatus: Record<string, number> = {};

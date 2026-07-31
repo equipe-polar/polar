@@ -25,7 +25,7 @@ A criação leva 1 a 2 minutos.
 
 O arquivo é idempotente (`CREATE TABLE IF NOT EXISTS`, `CREATE TYPE` dentro de bloco `DO`, `ON CONFLICT` no INSERT das categorias), então rodar duas vezes não quebra nada.
 
-Ao final você deve ter 10 tabelas em **Table Editor**: `users`, `turmas`, `alunos`, `categorias_ocorrencia`, `ocorrencias`, `ocorrencia_historico`, `notas`, `faltas`, `audit_logs`, `notifications`.
+Ao final você deve ter 9 tabelas em **Table Editor**: `users`, `turmas`, `alunos`, `categorias_ocorrencia`, `ocorrencias`, `ocorrencia_historico`, `notas`, `faltas`, `audit_logs`.
 
 ## 3. Pegar a connection string
 
@@ -84,7 +84,7 @@ DATABASE_URL='...' DATABASE_SSL=true SEED_SENHA_PADRAO='...' pnpm reset:usuarios
 Depois do reset, `pnpm seed` não roda: o guard do seed é a existência de `adm@escola.polar`, que o reset acabou de recriar. É o comportamento certo — o reset serve para quando você quer só as contas limpas. Para voltar a ter também os dados de demonstração, limpe tudo e rode o seed:
 
 ```sql
-TRUNCATE notifications, audit_logs, faltas, notas, ocorrencia_historico,
+TRUNCATE audit_logs, faltas, notas, ocorrencia_historico,
          ocorrencias, alunos, turmas, users RESTART IDENTITY CASCADE;
 ```
 

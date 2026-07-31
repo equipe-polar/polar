@@ -11,13 +11,11 @@ export enum Permissao {
   GERENCIAR_USUARIOS = "gerenciar_usuarios",
   GERENCIAR_TURMAS = "gerenciar_turmas",
   GERENCIAR_ALUNOS = "gerenciar_alunos",
-  GERENCIAR_PERMISSOES = "gerenciar_permissoes",
   GERENCIAR_CONFIGURACOES = "gerenciar_configuracoes",
   ACESSAR_AUDITORIA = "acessar_auditoria",
   CONSULTAR_RELATORIOS = "consultar_relatorios",
   REGISTRAR_NOTAS = "registrar_notas",
-  REGISTRAR_FALTAS = "registrar_faltas",
-  GERENCIAR_NOTIFICACOES = "gerenciar_notificacoes"
+  REGISTRAR_FALTAS = "registrar_faltas"
 }
 
 const permissoesPorPapel: Record<PapelUsuario, ReadonlySet<Permissao>> = {
@@ -37,8 +35,7 @@ const permissoesPorPapel: Record<PapelUsuario, ReadonlySet<Permissao>> = {
     Permissao.RESOLVER_OCORRENCIA,
     Permissao.CONSULTAR_RELATORIOS,
     Permissao.REGISTRAR_NOTAS,
-    Permissao.REGISTRAR_FALTAS,
-    Permissao.GERENCIAR_NOTIFICACOES
+    Permissao.REGISTRAR_FALTAS
   ]),
   [PapelUsuario.DIRETOR]: new Set([
     Permissao.CONSULTAR_OCORRENCIAS,

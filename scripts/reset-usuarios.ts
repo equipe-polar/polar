@@ -5,12 +5,9 @@
 // nao expoe delete de usuario de proposito -- e o sistema nunca deve apagar usuario
 // pela API. Este script e uma ferramenta de operacao, nao um caminho da aplicacao.
 //
-// Executar da raiz:
-//   DATABASE_URL=... DATABASE_SSL=true SEED_SENHA_PADRAO=... pnpm reset:usuarios
-//
 // As tabelas que referenciam users por FK sao limpas junto, na ordem das dependencias.
-// Isso significa que ocorrencias, historico, notas, faltas, notificacoes e auditoria
-// tambem sao apagados: e um reset de base de teste, nao uma migracao de dados.
+// Isso significa que ocorrencias, historico, notas, faltas e auditoria tambem sao
+// apagados: e um reset de base de teste, nao uma migracao de dados.
 
 import bcrypt from "bcryptjs";
 import path from "node:path";
@@ -28,7 +25,6 @@ const TABELAS_DEPENDENTES = [
   "ocorrencia_historico",
   "notas",
   "faltas",
-  "notifications",
   "audit_logs",
   "ocorrencias"
 ];

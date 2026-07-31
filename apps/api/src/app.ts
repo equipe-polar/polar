@@ -18,7 +18,6 @@ import { faltasRoutes } from "./modules/faltas/faltas.routes.js";
 import { dashboardRoutes } from "./modules/dashboard/dashboard.routes.js";
 import { relatoriosRoutes } from "./modules/relatorios/relatorios.routes.js";
 import { auditoriaRoutes } from "./modules/auditoria/auditoria.routes.js";
-import { notificationsRoutes } from "./modules/notifications/notifications.routes.js";
 
 export interface CreateAppOptions {
   config?: AppConfig;
@@ -85,14 +84,8 @@ export async function createApp(options: CreateAppOptions = {}) {
   app.get("/health", health);
   app.get("/api/health", health);
 
-  // Toda a API vive sob /api. Antes os routers ficavam na raiz (/alunos, /turmas,
-  // /usuarios...), colidindo por nome com as rotas do React, e a desambiguacao era
-  // um truque de ordenacao baseado no header Accept: text/html. Roteamento de CDN
-  // e por caminho e nao consegue replicar esse discriminador -- com o prefixo, o
-  // SPA pode ser servido estaticamente e a API deixa de disputar caminho com ele.
-  //
-  // Rotas em portugues. Os aliases legados em ingles foram removidos:
-  // a padronizacao PT-BR e decisao registrada do projeto.
+  // Toda a API vive sob /api: roteamento de CDN e por caminho, entao o prefixo e o
+  // que permite servir o SPA estaticamente sem disputar caminho com a API.
   app.use("/api/auth", authRoutes(container.services, config));
   app.use("/api/usuarios", usersRoutes(container.services, config));
   app.use("/api/turmas", turmasRoutes(container.services, config));
@@ -103,10 +96,8 @@ export async function createApp(options: CreateAppOptions = {}) {
   app.use("/api/dashboard", dashboardRoutes(container.services, config));
   app.use("/api/relatorios", relatoriosRoutes(container.services, config));
   app.use("/api/auditoria", auditoriaRoutes(container.services, config));
-  app.use("/api/notificacoes", notificationsRoutes(container.services, config));
 
   if (serveSpa) {
-    // Assets do build (JS/CSS/imagens).
     app.use(express.static(webDist));
 
     // Qualquer outro GET de navegacao devolve o index.html, para que um F5 em

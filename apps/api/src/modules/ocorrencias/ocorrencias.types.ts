@@ -24,7 +24,6 @@ function semCaracteresDeControle(value: string): boolean {
 }
 
 function removerHtml(value: string): string {
-  // Descricao e texto puro: tags HTML sao descartadas antes de persistir.
   return value.replace(/<[^>]*>/g, "").trim();
 }
 

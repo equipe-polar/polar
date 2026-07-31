@@ -18,14 +18,8 @@ api/.env
 logs/
 *.log
 
-banco_dados.local.json
 apps/api/data/*.json
 !apps/api/data/.gitkeep
-
-__pycache__/
-**/__pycache__/
-*.pyc
-*.pyo
 
 *.tmp
 *.tsbuildinfo

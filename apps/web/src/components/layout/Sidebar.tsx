@@ -1,4 +1,4 @@
-import { BarChart3, BookOpen, ClipboardList, FileText, GraduationCap, Home, Settings, Shield, Users } from "lucide-react";
+import { BarChart3, BookOpen, ClipboardList, GraduationCap, Home, Settings, Shield, Users } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import logoPolar from "../../assets/logo-polar.svg";
 import { canAccess } from "../../app/permissions";

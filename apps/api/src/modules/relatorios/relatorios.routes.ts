@@ -12,9 +12,7 @@ export function relatoriosRoutes(services: Services, config: AppConfig): Router 
 
   router.use(authenticate(config));
   router.get("/ocorrencias", authorize(Permissao.CONSULTAR_RELATORIOS), asyncHandler(controller.ocorrencias));
-  router.get("/occurrences", authorize(Permissao.CONSULTAR_RELATORIOS), asyncHandler(controller.ocorrencias));
   router.get("/alunos/:id", authorize(Permissao.CONSULTAR_RELATORIOS), asyncHandler(controller.aluno));
-  router.get("/student/:id", authorize(Permissao.CONSULTAR_RELATORIOS), asyncHandler(controller.aluno));
 
   return router;
 }

@@ -141,7 +141,7 @@ export class PostgresOcorrenciaRepository implements OcorrenciaRepository {
   }
 
   async create(ocorrencia: Ocorrencia, historico: OcorrenciaHistorico): Promise<Ocorrencia> {
-    // Transacao real (TCL): ocorrencia e primeiro registro de historico sao atomicos.
+    // Ocorrencia e primeiro registro de historico sao gravados atomicamente.
     return withTransaction(this.pool, async (client) => {
       await client.query(
         `INSERT INTO ocorrencias (${COLUNAS}) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
@@ -174,7 +174,7 @@ export class PostgresOcorrenciaRepository implements OcorrenciaRepository {
     updater: (ocorrencia: Ocorrencia) => Ocorrencia,
     historico?: OcorrenciaHistorico
   ): Promise<Ocorrencia | null> {
-    // Transacao real (TCL): status novo + historico gravados juntos ou nada e gravado.
+    // Status novo e historico: gravados juntos ou nada e gravado.
     return withTransaction(this.pool, async (client) => {
       const { rows } = await client.query<OcorrenciaRow>(
         `SELECT ${COLUNAS} FROM ocorrencias WHERE id = $1 LIMIT 1 FOR UPDATE`,

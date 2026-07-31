@@ -36,8 +36,6 @@ O prefixo existe porque a API e o SPA compartilham origem: sem ele, `/alunos` se
 | GET | `/api/relatorios/ocorrencias` | Relatorio agregado | `CONSULTAR_RELATORIOS` | - | agregacoes |
 | GET | `/api/relatorios/alunos/:id` | Relatorio do aluno (reincidencia) | `CONSULTAR_RELATORIOS` | - | aluno + ocorrencias |
 | GET | `/api/auditoria` | Logs de auditoria | `ACESSAR_AUDITORIA` | - | `data[]` |
-| GET | `/api/notificacoes` | Lista notificacoes | `CONSULTAR_OCORRENCIAS` | - | `data[]` |
-| POST | `/api/notificacoes` | Cria notificacao | `GERENCIAR_NOTIFICACOES` | `titulo`, `mensagem` | `data` |
 | GET | `/api/health` | Health check (tambem responde em `/health`) | Publico | - | `status`, `timestamp` |
 | GET | `/api` | Identificacao da API | Publico | - | `name`, `version` |
 

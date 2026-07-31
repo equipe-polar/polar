@@ -37,7 +37,7 @@ Cada ação gera histórico **imutável** (append-only). O valor central é o hi
 - **Máquina de estados fechada**: 4 status, 3 transições, cada uma restrita a um papel. Pular etapa é rejeitado (`409`).
 - **Histórico append-only**: toda ação (criação, edição, transição) gera um registro imutável, com observação opcional do responsável.
 - **Visibilidade por papel**: professor vê só o que registrou; coordenação, direção e administração veem tudo.
-- **Notas, faltas, dashboard, relatórios e notificações** internas por turma e aluno.
+- **Notas, faltas, dashboard e relatórios** por turma e aluno.
 - **Auditoria completa** de login, criação/edição de entidades e mudanças de status.
 
 ## Stack técnico
@@ -152,7 +152,6 @@ Passo a passo: [docs/deploy/supabase.md](docs/deploy/supabase.md) (banco, primei
 
 ```text
 [Browser] → Vercel (CDN: build React  |  função: API Express em /api) → Supabase (PostgreSQL)
-                    ↑ GitHub Actions keepalive a cada 10 min
 ```
 
 ## Regras de negócio inegociáveis
@@ -178,7 +177,7 @@ Passo a passo: [docs/deploy/supabase.md](docs/deploy/supabase.md) (banco, primei
 
 ```text
 apps/api/       Express + TS (módulos: auth, usuarios, turmas, alunos, ocorrencias,
-                notas, faltas, dashboard, relatorios, auditoria, notificacoes)
+                notas, faltas, dashboard, relatorios, auditoria)
 apps/web/       React + TS (13 telas)
 database/       schema.sql (DDL PostgreSQL) + contas.ts + seed.ts (dados de demonstração)
 docs/           documentação completa (produto, arquitetura, banco, testes, segurança, deploy)
@@ -202,7 +201,6 @@ scripts/        migração de dados legados
 | [docs/deploy/supabase.md](docs/deploy/supabase.md) | Passo a passo do banco no Supabase |
 | [docs/deploy/vercel.md](docs/deploy/vercel.md) | Passo a passo do deploy na Vercel |
 | [docs/demo/roteiro-apresentacao.md](docs/demo/roteiro-apresentacao.md) | Roteiro ensaiável da banca |
-| 5 relatórios técnicos em [docs/relatorios/](docs/relatorios/) | Histórico da reestruturação Python/JSON → Node/TypeScript |
 
 ## Roadmap
 

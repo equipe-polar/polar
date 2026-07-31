@@ -10,10 +10,6 @@ import {
 import { JsonNotaRepository, type NotaRepository } from "./database/repositories/nota.repository.js";
 import { JsonFaltaRepository, type FaltaRepository } from "./database/repositories/falta.repository.js";
 import { JsonAuditRepository, type AuditRepository } from "./database/repositories/audit.repository.js";
-import {
-  JsonNotificationRepository,
-  type NotificationRepository
-} from "./database/repositories/notification.repository.js";
 import { AuthService } from "../modules/auth/auth.service.js";
 import { UsersService } from "../modules/users/users.service.js";
 import { TurmasService } from "../modules/turmas/turmas.service.js";
@@ -24,7 +20,6 @@ import { FaltasService } from "../modules/faltas/faltas.service.js";
 import { DashboardService } from "../modules/dashboard/dashboard.service.js";
 import { RelatoriosService } from "../modules/relatorios/relatorios.service.js";
 import { AuditoriaService } from "../modules/auditoria/auditoria.service.js";
-import { NotificationsService } from "../modules/notifications/notifications.service.js";
 
 export interface Repositories {
   users: UserRepository;
@@ -34,7 +29,6 @@ export interface Repositories {
   notas: NotaRepository;
   faltas: FaltaRepository;
   audit: AuditRepository;
-  notifications: NotificationRepository;
 }
 
 export interface Services {
@@ -48,7 +42,6 @@ export interface Services {
   dashboard: DashboardService;
   relatorios: RelatoriosService;
   auditoria: AuditoriaService;
-  notifications: NotificationsService;
 }
 
 export interface ServiceContainer {
@@ -65,8 +58,7 @@ export function createJsonRepositories(db: DatabaseClient): Repositories {
     ocorrencias: new JsonOcorrenciaRepository(db),
     notas: new JsonNotaRepository(db),
     faltas: new JsonFaltaRepository(db),
-    audit: new JsonAuditRepository(db),
-    notifications: new JsonNotificationRepository(db)
+    audit: new JsonAuditRepository(db)
   };
 }
 
@@ -110,8 +102,7 @@ export async function createServiceContainer(config: AppConfig, database?: Datab
     faltas: new FaltasService(repositories.faltas, repositories.alunos, repositories.audit),
     dashboard: new DashboardService(repositories.ocorrencias),
     relatorios: new RelatoriosService(repositories.ocorrencias, repositories.alunos),
-    auditoria: new AuditoriaService(repositories.audit),
-    notifications: new NotificationsService(repositories.notifications, repositories.audit)
+    auditoria: new AuditoriaService(repositories.audit)
   };
 
   await auth.bootstrapAdminIfNeeded();

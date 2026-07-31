@@ -42,7 +42,7 @@ describe.runIf(Boolean(url))("repositorios PostgreSQL (contrato)", () => {
     // TRUNCATE unico com CASCADE: o Postgres resolve a ordem das FKs sozinho,
     // sem precisar desligar a checagem de chave estrangeira como no MySQL.
     await pool.query(
-      "TRUNCATE TABLE notifications, audit_logs, faltas, notas, ocorrencia_historico, ocorrencias, alunos, turmas, users RESTART IDENTITY CASCADE"
+      "TRUNCATE TABLE audit_logs, faltas, notas, ocorrencia_historico, ocorrencias, alunos, turmas, users RESTART IDENTITY CASCADE"
     );
   });
 

@@ -13,7 +13,7 @@
 // encaminha /api/* para esta funcao (ver vercel.json).
 
 import type { IncomingMessage, ServerResponse } from "node:http";
-// @ts-expect-error -- resolvido apos `pnpm build`; nao existe tipo antes disso.
+
 import { createApp } from "../apps/api/dist/app.js";
 
 type Handler = (req: IncomingMessage, res: ServerResponse) => void;

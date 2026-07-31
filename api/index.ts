@@ -12,9 +12,11 @@
 // O SPA nao passa por aqui: a Vercel serve apps/web/dist direto do CDN e so
 // encaminha /api/* para esta funcao (ver vercel.json).
 //
-// A extensao e .mts, e nao .ts, de proposito: o package.json da raiz nao declara
-// "type": "module", entao a Vercel compilaria este arquivo como CommonJS e o
-// require() do build ESM de apps/api quebraria em runtime com ERR_REQUIRE_ESM.
+// O package.json ao lado deste arquivo existe so para declarar "type": "module".
+// Sem ele a Vercel compila esta funcao como CommonJS (o package.json da raiz nao
+// declara type) e o require() do build ESM de apps/api quebra em runtime com
+// ERR_REQUIRE_ESM. Declarar na raiz resolveria a funcao, mas quebraria a
+// resolucao de dependencias de database/ e scripts/ sob o pnpm.
 
 import type { IncomingMessage, ServerResponse } from "node:http";
 

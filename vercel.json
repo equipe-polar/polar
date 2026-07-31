@@ -5,7 +5,7 @@
   "outputDirectory": "apps/web/dist",
   "framework": null,
   "functions": {
-    "api/index.mts": {
+    "api/index.ts": {
       "runtime": "@vercel/node@5.1.0",
       "memory": 1024,
       "maxDuration": 15

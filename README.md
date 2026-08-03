@@ -14,7 +14,7 @@
 ![Express](https://img.shields.io/badge/Express_5-000000?logo=express&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL_15-4169E1?logo=postgresql&logoColor=white)
 
-[Documentação completa](docs/visao-geral.md) · [Como rodar localmente](#rodar-em-desenvolvimento) · [Sistema ao vivo]([#rodar-em-desenvolvimento](https://polar-kappa.vercel.app/login))
+[Documentação completa](docs/visao-geral.md) · [Como rodar localmente](#rodar-em-desenvolvimento) · [Sistema ao vivo](https://polar-kappa.vercel.app/login)
 
 </div>
 

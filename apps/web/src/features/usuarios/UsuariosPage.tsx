@@ -23,9 +23,6 @@ export function UsuariosPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
-  *adicionado por Kauã*
-  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<Usuario | null>(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
   const [form, setForm] = useState(initialUserForm);
@@ -83,25 +80,16 @@ export function UsuariosPage() {
     }
   }
 
- *alterado por Kauã*
   async function toggleStatus(usuario: Usuario) {
     setError("");
     try {
-        await updateUsuario(usuario.id, { ativo: !usuario.ativo });
-        await refreshData();
+      await updateUsuario(usuario.id, { ativo: !usuario.ativo });
+      await refreshData();
     } catch (err) {
-        setError(err instanceof Error ? err.message : "Nao foi possivel atualizar o usuario.");
+      setError(err instanceof Error ? err.message : "Nao foi possivel atualizar o usuario.");
     }
-}
+  }
 
-async function handleConfirmToggle() {
-    if (!selectedUser) return;
-
-    await toggleStatus(selectedUser);
-
-    setConfirmModalOpen(false);
-    setSelectedUser(null);
-}
   return (
     <>
       <PageHeader
@@ -125,16 +113,9 @@ async function handleConfirmToggle() {
                 key: "acao",
                 header: "Acao",
                 render: (item) => (
-                  *alterado por Kauã*
-             <Button
-             variant="ghost"
-             onClick={() => {
-              setSelectedUser(item);
-              setConfirmModalOpen(true);
-          }}
-         >
-    {item.ativo ? "Desativar" : "Ativar"}
-</Button>
+                  <Button variant="ghost" onClick={() => void toggleStatus(item)}>
+                    {item.ativo ? "Desativar" : "Ativar"}
+                  </Button>
                 )
               }
             ]}
@@ -164,36 +145,6 @@ async function handleConfirmToggle() {
           </div>
         </form>
       </Modal>
-      *adicionado por Kauã*
-      <Modal
-  title="Confirmar alteração"
-  open={confirmModalOpen}
-  onClose={() => {
-    setConfirmModalOpen(false);
-    setSelectedUser(null);
-  }}
->
-  <p>
-    Tem certeza que deseja{" "}
-    {selectedUser?.ativo ? "desativar" : "ativar"} este usuário?
-  </p>
-
-  <div className="actions-row span-2">
-    <Button
-      variant="ghost"
-      onClick={() => {
-        setConfirmModalOpen(false);
-        setSelectedUser(null);
-      }}
-    >
-      Cancelar
-    </Button>
-
-    <Button onClick={() => void handleConfirmToggle()}>
-      Confirmar
-    </Button>
-  </div>
-</Modal>
     </>
   );
 }

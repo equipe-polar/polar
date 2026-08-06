@@ -7,23 +7,25 @@ assignees: ''
 ---
 
 
-## Resumo da Tarefa
+## O quê: 
+— uma frase
 
 
-
-## Descrição Da Tarefa
-
-
-
-## Objetivo Da Tarefa
+## Critério de aceite: 
+- criterio para a tarefa ser aceita
 
 
+## Arquivos exato: local onde deve ser trabalhado
 
-## Checklist
 
-- [ ] 
-- [ ] 
-- [ ] 
+## Exemplo pronto: 
+-algo que ja foi feito no projeto
 
-## Observações
+
+## Validador nomeado: -
+-pessoa que aceita ou nao a tarefa
+
+
+## Esforço:
+-o quao dificil para realizar a tarefa.
 

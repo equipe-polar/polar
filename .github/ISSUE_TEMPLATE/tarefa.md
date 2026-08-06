@@ -7,6 +7,11 @@ assignees: ''
 ---
 
 
+## Validador nomeado: 
+-pessoa que aceita ou nao a tarefa
+
+
+
 ## O quê: 
 — uma frase
 
@@ -15,15 +20,14 @@ assignees: ''
 - criterio para a tarefa ser aceita
 
 
-## Arquivos exato: local onde deve ser trabalhado
+## Arquivos exato: 
+-local onde deve ser trabalhado
+
 
 
 ## Exemplo pronto: 
 -algo que ja foi feito no projeto
 
-
-## Validador nomeado: -
--pessoa que aceita ou nao a tarefa
 
 
 ## Esforço:

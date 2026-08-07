@@ -1,3 +1,10 @@
+---
+name: Tarefa
+about: Criar uma nova tarefa para o projeto
+title: "[TAREFA] "
+labels: ""
+assignees: ""
+---
 # Template de Issue — Tarefa
 
 ## Responsável

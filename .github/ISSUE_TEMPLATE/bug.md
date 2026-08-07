@@ -21,5 +21,5 @@ assignees: ""
 
 ## Evidencia
 
-<!-- quem encontrou o Bug -->
+<!-- -->
 

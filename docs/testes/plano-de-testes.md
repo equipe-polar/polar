@@ -23,12 +23,12 @@ Automação: T02–T09 possuem equivalentes automatizados em `apps/api/tests/int
 
 | ID | Cenário | Resultado esperado | Resultado obtido | Responsável | Evidência |
 |---|---|---|---|---|---|
-| T11 | Professor B lista/acessa ocorrência do professor A | Lista não mostra; detalhe/histórico → 403 | Caso não validado devido à ausência de uma segunda conta de professor para teste. | PH Barros | |
-| T12 | Acentuação PT-BR | Registrar com categoria "Não fez atividade" e descrição com ã/ç/é | Foram identificadas inconsistências na persistência de caracteres acentuados. | PH Barros | |
+| T11 | Professor B lista/acessa ocorrência do professor A | Lista não mostra; detalhe/histórico → 403 | Caso não validado devido à ausência de uma segunda conta de professor para teste. | PH Barros | docs/testes/Evidências/T11.png |
+| T12 | Acentuação PT-BR | Registrar com categoria "Não fez atividade" e descrição com ã/ç/é | Foram identificadas inconsistências na persistência de caracteres acentuados. | PH Barros | docs/testes/Evidências/T12.png |
 | T13 | Edição pelo autor em `REGISTRADA` | 200 + histórico "Ocorrencia editada pelo autor" | Caso não executado, pois a funcionalidade não está disponível. | PH Barros | |
 | T14 | Edição por terceiro (ADM) | 403 | Caso não executado, pois a funcionalidade não está disponível. | PH Barros | |
 | T15 | Editar histórico (PUT/PATCH) | 405 | Caso não executado, pois a funcionalidade não está disponível. | PH Barros | |
-| T16 | Dupla sessão simultânea | Coordenador e professor logados ao mesmo tempo operam sem interferência | Foi identificada interferência entre sessões simultâneas. Uma das sessões é encerrada enquanto a outra permanece autenticada. | PH Barros | |
+| T16 | Dupla sessão simultânea | Coordenador e professor logados ao mesmo tempo operam sem interferência | Foi identificada interferência entre sessões simultâneas. Uma das sessões é encerrada enquanto a outra permanece autenticada. | PH Barros | docs/testes/Evidências/T16.png |
 
 ## Ambiente de referência
 

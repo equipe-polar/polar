@@ -1,4 +1,4 @@
-import { Eye } from "lucide-react";
+import { Eye, SearchX, UsersRound } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { canAccess } from "../../app/permissions";
@@ -124,6 +124,26 @@ export function AlunosPage() {
         <Card title="Lista de alunos" action={canManage ? <Button variant="secondary" onClick={() => setModalOpen(true)}>Novo aluno</Button> : null}>
           {loading ? (
             <p className="muted">Carregando alunos...</p>
+          ) : data.length === 0 ? (
+            <div className="empty-state">
+              {alunos.length === 0 ? (
+                <UsersRound size={32} aria-hidden="true" />
+              ) : (
+                <SearchX size={32} aria-hidden="true" />
+              )}
+
+              <strong>
+                {alunos.length === 0
+                  ? "Nenhum aluno cadastrado."
+                  : "Nenhum resultado para esta busca."}
+              </strong>
+
+              <span>
+                {alunos.length === 0
+                  ? "Assim que houver alunos cadastrados, eles aparecerão aqui."
+                  : "Ajuste ou limpe os filtros acima para visualizar outros alunos."}
+              </span>
+            </div>
           ) : (
             <Table
               data={data}

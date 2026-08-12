@@ -169,6 +169,16 @@ export function DetalheOcorrenciaPage() {
                 <span className="muted">
                   {item.status} por {item.usuarioId}
                 </span>
+                {/* Data inserida e formatada conforme a regra do projeto */}
+                <span className="muted">
+                  Em: {new Date(item.criadoEm).toLocaleString("pt-BR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                  })}
+                </span>
                 {item.observacao ? <span className="muted">Observacao: {item.observacao}</span> : null}
               </li>
             ))}

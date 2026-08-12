@@ -3,9 +3,11 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   js.configs.recommended,
-  ...tseslint.configs.recommended,
+  ...tseslint.configs.recommended,A
   {
-    files: ["**/*.ts"],
+    {
+  basePath: "../..",
+  files: ["apps/api/**/*.ts", "database/**/*.ts", "scripts/**/*.ts"],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "module"

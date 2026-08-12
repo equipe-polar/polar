@@ -5,13 +5,14 @@ import { canAccess } from "../../app/permissions";
 import { useAuth } from "../../app/providers";
 import { PageHeader } from "../../components/layout/PageHeader";
 import { Button } from "../../components/ui/Button";
+import { Badge } from "../../components/ui/Badge";
 import { Card } from "../../components/ui/Card";
 import { Input } from "../../components/ui/Input";
 import { Modal } from "../../components/ui/Modal";
 import { Select } from "../../components/ui/Select";
 import { Table } from "../../components/ui/Table";
 import type { AlunoDetalhado, Turma } from "../../services/domain";
-import { createAluno, listAlunosDetalhados, listTurmas } from "../../services/school.service";
+import { createAluno, listAlunosDetalhados, listTurmas, updateAluno } from "../../services/school.service";
 
 const initialAlunoForm = {
   nome: "",
@@ -33,6 +34,8 @@ export function AlunosPage() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
   const [form, setForm] = useState(initialAlunoForm);
+  const [confirmAluno, setConfirmAluno] = useState<AlunoDetalhado | null>(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
   const canManage = canAccess(user?.papel, "alunos:manage");
 
   async function refreshData() {
@@ -101,6 +104,21 @@ export function AlunosPage() {
     }
   }
 
+  async function handleConfirmAlunoStatus() {
+    if (!confirmAluno) return;
+    setConfirmLoading(true);
+    setError("");
+    try {
+      await updateAluno(confirmAluno.id, { ativo: !confirmAluno.ativo });
+      setConfirmAluno(null);
+      await refreshData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Nao foi possivel atualizar o aluno.");
+    } finally {
+      setConfirmLoading(false);
+    }
+  }
+
   return (
     <>
       <PageHeader
@@ -128,18 +146,26 @@ export function AlunosPage() {
             <Table
               data={data}
               columns={[
-                { key: "nome", header: "Nome", render: (item) => item.nome },
+                  { key: "nome", header: "Nome", render: (item) => item.nome },
                 { key: "matricula", header: "Matricula", render: (item) => item.matricula },
                 { key: "turma", header: "Turma", render: (item) => item.turma },
+                { key: "status", header: "Status", render: (item) => <Badge tone={item.ativo ? "success" : "default"}>{item.ativo ? "Ativo" : "Inativo"}</Badge> },
                 {
                   key: "acao",
                   header: "Acao",
                   render: (item) => (
-                    <Link to={`/alunos/${item.id}`}>
-                      <Button variant="ghost" icon={<Eye size={18} />}>
-                        Historico
-                      </Button>
-                    </Link>
+                    <div className="actions-row">
+                      <Link to={`/alunos/${item.id}`}>
+                        <Button variant="ghost" icon={<Eye size={18} />}>
+                          Historico
+                        </Button>
+                      </Link>
+                      {canManage ? (
+                        <Button variant="ghost" onClick={() => setConfirmAluno(item)}>
+                          {item.ativo ? "Desativar" : "Ativar"}
+                        </Button>
+                      ) : null}
+                    </div>
                   )
                 }
               ]}
@@ -164,6 +190,23 @@ export function AlunosPage() {
             <Button type="submit" disabled={saving}>{saving ? "Salvando..." : "Salvar aluno"}</Button>
           </div>
         </form>
+      </Modal>
+      <Modal
+        title={confirmAluno?.ativo ? "Confirmar desativacao" : "Confirmar ativacao"}
+        open={!!confirmAluno}
+        onClose={() => setConfirmAluno(null)}
+      >
+        <p>
+          Tem certeza que deseja {confirmAluno?.ativo ? "desativar" : "ativar"} o aluno <strong>{confirmAluno?.nome}</strong>?
+        </p>
+        <div className="actions-row">
+          <Button variant="secondary" onClick={() => setConfirmAluno(null)}>
+            Cancelar
+          </Button>
+          <Button variant="danger" onClick={() => void handleConfirmAlunoStatus()} disabled={confirmLoading}>
+            {confirmLoading ? "Aguarde..." : confirmAluno?.ativo ? "Desativar" : "Ativar"}
+          </Button>
+        </div>
       </Modal>
     </>
   );

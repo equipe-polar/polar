@@ -29,6 +29,9 @@ export function TurmasPage() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
   const [form, setForm] = useState(initialTurmaForm);
+  const [confirmTurma, setConfirmTurma] = useState<Turma | null>(null);
+  const [editingTurmaAtiva, setEditingTurmaAtiva] = useState<boolean | null>(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
   const canManage = canAccess(user?.papel, "turmas:manage");
 
   async function refreshData() {
@@ -62,6 +65,7 @@ export function TurmasPage() {
   function openCreate() {
     setForm(initialTurmaForm);
     setFormError("");
+    setEditingTurmaAtiva(null);
     setModalOpen(true);
   }
 
@@ -74,6 +78,7 @@ export function TurmasPage() {
       ativa: turma.ativa
     });
     setFormError("");
+    setEditingTurmaAtiva(turma.ativa);
     setModalOpen(true);
   }
 
@@ -81,13 +86,7 @@ export function TurmasPage() {
     setForm((current) => ({ ...current, [field]: value }));
   }
 
-  async function handleSave(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!form.nome.trim() || !form.anoLetivo || !form.turno.trim()) {
-      setFormError("Nome, ano letivo e turno sao obrigatorios.");
-      return;
-    }
-
+  async function persistTurma() {
     setSaving(true);
     setFormError("");
     try {
@@ -102,12 +101,35 @@ export function TurmasPage() {
         await createTurma(payload);
       }
       setModalOpen(false);
+      setConfirmTurma(null);
+      setEditingTurmaAtiva(null);
       await refreshData();
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Nao foi possivel salvar a turma.");
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleSave(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!form.nome.trim() || !form.anoLetivo || !form.turno.trim()) {
+      setFormError("Nome, ano letivo e turno sao obrigatorios.");
+      return;
+    }
+
+    if (form.id && editingTurmaAtiva && !form.ativa) {
+      setConfirmTurma({
+        id: form.id,
+        nome: form.nome,
+        anoLetivo: Number(form.anoLetivo),
+        turno: form.turno,
+        ativa: form.ativa
+      });
+      return;
+    }
+
+    await persistTurma();
   }
 
   return (
@@ -175,6 +197,23 @@ export function TurmasPage() {
             <Button type="submit" disabled={saving}>{saving ? "Salvando..." : "Salvar turma"}</Button>
           </div>
         </form>
+      </Modal>
+      <Modal
+        title="Confirmar desativacao"
+        open={!!confirmTurma}
+        onClose={() => setConfirmTurma(null)}
+      >
+        <p>
+          Tem certeza que deseja desativar a turma <strong>{confirmTurma?.nome}</strong>?
+        </p>
+        <div className="actions-row">
+          <Button variant="secondary" onClick={() => setConfirmTurma(null)}>
+            Cancelar
+          </Button>
+          <Button variant="danger" onClick={() => void persistTurma()} disabled={confirmLoading || saving}>
+            {confirmLoading || saving ? "Aguarde..." : "Desativar turma"}
+          </Button>
+        </div>
       </Modal>
     </>
   );

@@ -26,6 +26,8 @@ export function UsuariosPage() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
   const [form, setForm] = useState(initialUserForm);
+  const [confirmUsuario, setConfirmUsuario] = useState<Usuario | null>(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
   async function refreshData() {
     setUsuarios(await listUsuarios());
@@ -81,12 +83,21 @@ export function UsuariosPage() {
   }
 
   async function toggleStatus(usuario: Usuario) {
+    setConfirmUsuario(usuario);
+  }
+
+  async function handleConfirmUsuarioStatus() {
+    if (!confirmUsuario) return;
+    setConfirmLoading(true);
     setError("");
     try {
-      await updateUsuario(usuario.id, { ativo: !usuario.ativo });
+      await updateUsuario(confirmUsuario.id, { ativo: !confirmUsuario.ativo });
+      setConfirmUsuario(null);
       await refreshData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nao foi possivel atualizar o usuario.");
+    } finally {
+      setConfirmLoading(false);
     }
   }
 
@@ -144,6 +155,23 @@ export function UsuariosPage() {
             <Button type="submit" disabled={saving}>{saving ? "Salvando..." : "Salvar usuario"}</Button>
           </div>
         </form>
+      </Modal>
+      <Modal
+        title={confirmUsuario?.ativo ? "Confirmar desativacao" : "Confirmar ativacao"}
+        open={!!confirmUsuario}
+        onClose={() => setConfirmUsuario(null)}
+      >
+        <p>
+          Tem certeza que deseja {confirmUsuario?.ativo ? "desativar" : "ativar"} o usuario <strong>{confirmUsuario?.nome}</strong>?
+        </p>
+        <div className="actions-row">
+          <Button variant="secondary" onClick={() => setConfirmUsuario(null)}>
+            Cancelar
+          </Button>
+          <Button variant="danger" onClick={() => void handleConfirmUsuarioStatus()} disabled={confirmLoading}>
+            {confirmLoading ? "Aguarde..." : confirmUsuario?.ativo ? "Desativar" : "Ativar"}
+          </Button>
+        </div>
       </Modal>
     </>
   );

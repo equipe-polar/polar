@@ -125,6 +125,15 @@ export interface CreateAlunoPayload {
   responsavelContato?: string;
 }
 
+export interface UpdateAlunoPayload {
+  nome?: string;
+  matricula?: string;
+  turmaId?: string;
+  responsavelNome?: string;
+  responsavelContato?: string;
+  ativo?: boolean;
+}
+
 export interface CreateTurmaPayload {
   nome: string;
   anoLetivo: number;

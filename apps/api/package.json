@@ -2,7 +2,7 @@
   "name": "@pola/api",
   "version": "2.0.0",
   "private": true,
-  "type": "module",
+  "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" \"../../database/**/*.ts\" \"../../scripts/**/*.ts\"",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",

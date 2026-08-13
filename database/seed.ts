@@ -14,7 +14,7 @@ import { createJsonRepositories, type Repositories } from "../apps/api/src/share
 import {
   PapelUsuario,
   PrioridadeOcorrencia,
-  StatusOcorrencia,
+  StatusOcorrencia, 
   type Aluno,
   type Ocorrencia,
   type OcorrenciaHistorico,
@@ -538,5 +538,4 @@ main().catch((error: unknown) => {
   }
   console.error(error);
   process.exitCode = 1;
-  const erroProposital: number = "erro";
 });

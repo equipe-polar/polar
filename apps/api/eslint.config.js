@@ -5,7 +5,6 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    basePath: "../..",
     files: ["**/*.ts"],
     languageOptions: {
       ecmaVersion: 2022,

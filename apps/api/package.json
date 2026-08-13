@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "node dist/server.js",
-    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" \"../../database/**/*.ts\" \"../../scripts/**/*.ts\"",
+    "lint": "cd ../.. && eslint --config apps/api/eslint.config.js \"apps/api/src/**/*.ts\" \"apps/api/tests/**/*.ts\" \"database/**/*.ts\" \"scripts/**/*.ts\"",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "build": "tsc -p tsconfig.json"

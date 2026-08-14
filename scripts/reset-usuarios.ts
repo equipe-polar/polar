@@ -18,6 +18,7 @@ import { novoId } from "../apps/api/src/shared/utils/ids.js";
 import { CONTAS, type Conta } from "../database/contas.js";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+dotenv.config({ path: path.resolve(repoRoot, ".env"), quiet: true });
 dotenv.config({ path: path.resolve(repoRoot, "apps/api/.env"), quiet: true });
 
 // Ordem importa: filhas antes das pais.

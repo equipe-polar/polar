@@ -7,6 +7,7 @@ import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { Input } from "../../components/ui/Input";
 import { Modal } from "../../components/ui/Modal";
+import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { Select } from "../../components/ui/Select";
 import { Table } from "../../components/ui/Table";
 import type { Turma } from "../../services/domain";
@@ -30,6 +31,10 @@ export function TurmasPage() {
   const [formError, setFormError] = useState("");
   const [form, setForm] = useState(initialTurmaForm);
   const canManage = canAccess(user?.papel, "turmas:manage");
+
+  // Estado do modal de confirmação de inativação
+  const [confirmTarget, setConfirmTarget] = useState<{ id: string; nome: string } | null>(null);
+  const [inativando, setInativando] = useState(false);
 
   async function refreshData() {
     setTurmas(await listTurmas());
@@ -110,6 +115,27 @@ export function TurmasPage() {
     }
   }
 
+  // Abre o modal de confirmação — não inativa nada ainda
+  function handleInativarClick(id: string, nome: string) {
+    setConfirmTarget({ id, nome });
+  }
+
+  // Só executa a inativação de fato após clique em "Confirmar" no modal
+  async function handleConfirmInativar() {
+    if (!confirmTarget) return;
+    setInativando(true);
+    setError("");
+    try {
+      await updateTurma(confirmTarget.id, { ativa: false });
+      await refreshData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Nao foi possivel inativar a turma.");
+    } finally {
+      setInativando(false);
+      setConfirmTarget(null);
+    }
+  }
+
   return (
     <>
       <PageHeader
@@ -133,9 +159,16 @@ export function TurmasPage() {
                 header: "Acao",
                 render: (item) =>
                   canManage ? (
-                    <Button variant="ghost" icon={<Edit size={18} />} onClick={() => openEdit(item)}>
-                      Editar
-                    </Button>
+                    <div className="actions-row">
+                      <Button variant="ghost" icon={<Edit size={18} />} onClick={() => openEdit(item)}>
+                        Editar
+                      </Button>
+                      {item.ativa ? (
+                        <Button variant="danger" onClick={() => handleInativarClick(item.id, item.nome)}>
+                          Inativar
+                        </Button>
+                      ) : null}
+                    </div>
                   ) : (
                     <span className="muted">Consulta</span>
                   )
@@ -176,6 +209,14 @@ export function TurmasPage() {
           </div>
         </form>
       </Modal>
+      <ConfirmDialog
+        open={!!confirmTarget}
+        title="Inativar turma"
+        message={`Tem certeza que deseja inativar a turma "${confirmTarget?.nome}"? Essa ação pode ser revertida depois.`}
+        onConfirm={handleConfirmInativar}
+        onCancel={() => setConfirmTarget(null)}
+        loading={inativando}
+      />
     </>
   );
 }

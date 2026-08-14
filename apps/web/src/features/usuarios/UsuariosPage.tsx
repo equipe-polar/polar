@@ -6,6 +6,7 @@ import { Card } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/Badge";
 import { Input } from "../../components/ui/Input";
 import { Modal } from "../../components/ui/Modal";
+import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { Select } from "../../components/ui/Select";
 import { Table } from "../../components/ui/Table";
 import type { PapelUsuario, Usuario } from "../../services/domain";
@@ -26,6 +27,10 @@ export function UsuariosPage() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
   const [form, setForm] = useState(initialUserForm);
+
+  // Estado do modal de confirmação de inativação
+  const [confirmTarget, setConfirmTarget] = useState<Usuario | null>(null);
+  const [inativando, setInativando] = useState(false);
 
   async function refreshData() {
     setUsuarios(await listUsuarios());
@@ -80,13 +85,39 @@ export function UsuariosPage() {
     }
   }
 
-  async function toggleStatus(usuario: Usuario) {
+  // Ativar continua direto (não é destrutivo).
+  // Inativar agora abre o modal de confirmação em vez de executar na hora.
+  function toggleStatus(usuario: Usuario) {
+    if (usuario.ativo) {
+      setConfirmTarget(usuario);
+      return;
+    }
+    void ativarDireto(usuario);
+  }
+
+  async function ativarDireto(usuario: Usuario) {
     setError("");
     try {
-      await updateUsuario(usuario.id, { ativo: !usuario.ativo });
+      await updateUsuario(usuario.id, { ativo: true });
       await refreshData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nao foi possivel atualizar o usuario.");
+    }
+  }
+
+  // Só executa a inativação de fato após clique em "Confirmar" no modal
+  async function handleConfirmInativar() {
+    if (!confirmTarget) return;
+    setInativando(true);
+    setError("");
+    try {
+      await updateUsuario(confirmTarget.id, { ativo: false });
+      await refreshData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Nao foi possivel inativar o usuario.");
+    } finally {
+      setInativando(false);
+      setConfirmTarget(null);
     }
   }
 
@@ -113,7 +144,7 @@ export function UsuariosPage() {
                 key: "acao",
                 header: "Acao",
                 render: (item) => (
-                  <Button variant="ghost" onClick={() => void toggleStatus(item)}>
+                  <Button variant={item.ativo ? "danger" : "ghost"} onClick={() => toggleStatus(item)}>
                     {item.ativo ? "Desativar" : "Ativar"}
                   </Button>
                 )
@@ -145,6 +176,14 @@ export function UsuariosPage() {
           </div>
         </form>
       </Modal>
+      <ConfirmDialog
+        open={!!confirmTarget}
+        title="Inativar usuário"
+        message={`Tem certeza que deseja inativar o usuário "${confirmTarget?.nome}"? Essa ação pode ser revertida depois.`}
+        onConfirm={handleConfirmInativar}
+        onCancel={() => setConfirmTarget(null)}
+        loading={inativando}
+      />
     </>
   );
 }

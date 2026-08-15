@@ -108,7 +108,7 @@ export async function createServiceContainer(config: AppConfig, database?: Datab
     faltas: new FaltasService(repositories.faltas, repositories.alunos, repositories.audit),
     dashboard: new DashboardService(repositories.ocorrencias),
     relatorios: new RelatoriosService(repositories.ocorrencias, repositories.alunos),
-    auditoria: new AuditoriaService(repositories.audit)
+    auditoria: new AuditoriaService(repositories.audit),
   };
 
   await auth.bootstrapAdminIfNeeded();

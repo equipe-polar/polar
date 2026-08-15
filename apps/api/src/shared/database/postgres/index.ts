@@ -3,6 +3,7 @@ import type { Repositories } from "../../services.js";
 import { PostgresUserRepository } from "./user.repository.postgres.js";
 import { PostgresTurmaRepository } from "./turma.repository.postgres.js";
 import { PostgresAlunoRepository } from "./aluno.repository.postgres.js";
+import { PostgresAlunoTurmaHistoricoRepository } from "./aluno-turma-historico.repository.postgres.js";
 import { PostgresOcorrenciaRepository } from "./ocorrencia.repository.postgres.js";
 import { PostgresNotaRepository } from "./nota.repository.postgres.js";
 import { PostgresFaltaRepository } from "./falta.repository.postgres.js";
@@ -15,6 +16,7 @@ export function createPostgresRepositories(pool: Pool): Repositories {
     users: new PostgresUserRepository(pool),
     turmas: new PostgresTurmaRepository(pool),
     alunos: new PostgresAlunoRepository(pool),
+    alunosTurmasHistorico: new PostgresAlunoTurmaHistoricoRepository(pool),
     ocorrencias: new PostgresOcorrenciaRepository(pool),
     notas: new PostgresNotaRepository(pool),
     faltas: new PostgresFaltaRepository(pool),

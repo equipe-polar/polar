@@ -4,6 +4,10 @@ import { JsonUserRepository, type UserRepository } from "./database/repositories
 import { JsonTurmaRepository, type TurmaRepository } from "./database/repositories/turma.repository.js";
 import { JsonAlunoRepository, type AlunoRepository } from "./database/repositories/aluno.repository.js";
 import {
+  JsonAlunoTurmaHistoricoRepository,
+  type AlunoTurmaHistoricoRepository
+} from "./database/repositories/aluno-turma-historico.repository.js";
+import {
   JsonOcorrenciaRepository,
   type OcorrenciaRepository
 } from "./database/repositories/ocorrencia.repository.js";
@@ -25,6 +29,7 @@ export interface Repositories {
   users: UserRepository;
   turmas: TurmaRepository;
   alunos: AlunoRepository;
+  alunosTurmasHistorico: AlunoTurmaHistoricoRepository;
   ocorrencias: OcorrenciaRepository;
   notas: NotaRepository;
   faltas: FaltaRepository;
@@ -55,6 +60,7 @@ export function createJsonRepositories(db: DatabaseClient): Repositories {
     users: new JsonUserRepository(db),
     turmas: new JsonTurmaRepository(db),
     alunos: new JsonAlunoRepository(db),
+    alunosTurmasHistorico: new JsonAlunoTurmaHistoricoRepository(db),
     ocorrencias: new JsonOcorrenciaRepository(db),
     notas: new JsonNotaRepository(db),
     faltas: new JsonFaltaRepository(db),
@@ -95,7 +101,7 @@ export async function createServiceContainer(config: AppConfig, database?: Datab
   const services: Services = {
     auth,
     users: new UsersService(repositories.users, repositories.audit),
-    turmas: new TurmasService(repositories.turmas, repositories.alunos, repositories.audit),
+    turmas: new TurmasService(repositories.turmas, repositories.alunos, repositories.alunosTurmasHistorico, repositories.audit),
     alunos: new AlunosService(repositories.alunos, repositories.turmas, repositories.ocorrencias, repositories.audit),
     ocorrencias: new OcorrenciasService(repositories.ocorrencias, repositories.alunos, repositories.audit),
     notas: new NotasService(repositories.notas, repositories.alunos, repositories.audit),

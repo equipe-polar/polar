@@ -2,6 +2,7 @@ import { conflict, notFound } from "../../shared/errors/app-error.js";
 import type { Turma } from "../../shared/domain.js";
 import type { TurmaRepository } from "../../shared/database/repositories/turma.repository.js";
 import type { AlunoRepository } from "../../shared/database/repositories/aluno.repository.js";
+import type { AlunoTurmaHistoricoRepository } from "../../shared/database/repositories/aluno-turma-historico.repository.js";
 import type { AuditRepository } from "../../shared/database/repositories/audit.repository.js";
 import { agoraIso, novoId } from "../../shared/utils/ids.js";
 
@@ -9,6 +10,7 @@ export class TurmasService {
   constructor(
     private readonly turmas: TurmaRepository,
     private readonly alunos: AlunoRepository,
+    private readonly alunosTurmasHistorico: AlunoTurmaHistoricoRepository,
     private readonly audit: AuditRepository
   ) {}
 

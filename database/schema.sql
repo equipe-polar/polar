@@ -72,6 +72,34 @@ CREATE TABLE IF NOT EXISTS categorias_ocorrencia (
   CONSTRAINT uq_categorias_nome UNIQUE (nome)
 );
 
+CREATE TABLE IF NOT EXISTS alunos_turmas_historico (
+  id CHAR(36) NOT NULL,
+  aluno_id CHAR(36) NOT NULL,
+  turma_id CHAR(36) NOT NULL,
+  ano_letivo INTEGER NOT NULL,
+  criado_em TIMESTAMPTZ(3) NOT NULL,
+
+  CONSTRAINT pk_alunos_turmas_historico PRIMARY KEY (id),
+
+  CONSTRAINT fk_historico_aluno
+    FOREIGN KEY (aluno_id) REFERENCES alunos (id),
+
+  CONSTRAINT fk_historico_turma
+    FOREIGN KEY (turma_id) REFERENCES turmas (id),
+
+  CONSTRAINT uq_historico_aluno_ano
+    UNIQUE (aluno_id, ano_letivo)
+);
+
+CREATE INDEX IF NOT EXISTS idx_historico_aluno_id
+  ON alunos_turmas_historico (aluno_id);
+
+CREATE INDEX IF NOT EXISTS idx_historico_turma_id
+  ON alunos_turmas_historico (turma_id);
+
+CREATE INDEX IF NOT EXISTS idx_historico_ano_letivo
+  ON alunos_turmas_historico (ano_letivo);
+
 CREATE TABLE IF NOT EXISTS ocorrencias (
   id CHAR(36) NOT NULL,
   aluno_id CHAR(36) NOT NULL,

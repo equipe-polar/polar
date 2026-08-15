@@ -17,6 +17,7 @@ export function createInitialState(): DatabaseState {
     usuarios: [],
     turmas: [],
     alunos: [],
+    alunosTurmasHistorico: [],
     ocorrencias: [],
     ocorrenciaHistorico: [],
     notas: [],
@@ -35,6 +36,7 @@ function normalizeState(input: Partial<DatabaseState> | null): DatabaseState {
     usuarios: Array.isArray(input.usuarios) ? input.usuarios : base.usuarios,
     turmas: Array.isArray(input.turmas) ? input.turmas : base.turmas,
     alunos: Array.isArray(input.alunos) ? input.alunos : base.alunos,
+    alunosTurmasHistorico: Array.isArray(input.alunosTurmasHistorico) ? input.alunosTurmasHistorico : base.alunosTurmasHistorico,
     ocorrencias: Array.isArray(input.ocorrencias) ? input.ocorrencias : base.ocorrencias,
     ocorrenciaHistorico: Array.isArray(input.ocorrenciaHistorico)
       ? input.ocorrenciaHistorico

@@ -40,6 +40,14 @@ export interface Aluno {
   atualizadoEm?: string;
 }
 
+export interface AlunoTurmaHistorico {
+  id: string;
+  alunoId: string;
+  turmaId: string;
+  anoLetivo: number;
+  criadoEm: string;
+}
+
 export interface AlunoDetalhado extends Aluno {
   turma: string;
 }

@@ -68,6 +68,14 @@ export interface Aluno {
   atualizadoEm: string;
 }
 
+export interface AlunoTurmaHistorico {
+  id: string;
+  alunoId: string;
+  turmaId: string;
+  anoLetivo: number;
+  criadoEm: string;
+}
+
 export interface Ocorrencia {
   id: string;
   alunoId: string;
@@ -126,6 +134,7 @@ export interface DatabaseState {
   usuarios: Usuario[];
   turmas: Turma[];
   alunos: Aluno[];
+  alunosTurmasHistorico: AlunoTurmaHistorico[];
   ocorrencias: Ocorrencia[];
   ocorrenciaHistorico: OcorrenciaHistorico[];
   notas: Nota[];

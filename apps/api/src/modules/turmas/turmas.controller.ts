@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
 import type { Services } from "../../shared/services.js";
-import { createTurmaSchema, updateTurmaSchema } from "./turmas.types.js";
+import { createTurmaSchema, updateTurmaSchema, copiarAnoSchema} from "./turmas.types.js";
 
 const idParamSchema = z.object({ id: z.string().min(1) });
 
@@ -16,6 +16,17 @@ export class TurmasController {
     const body = createTurmaSchema.parse(req.body);
     const turma = await this.services.turmas.create(body, req.usuario?.id ?? "sistema");
     return res.status(201).json({ data: turma });
+  };
+
+  copiarAno = async (req: Request, res: Response): Promise<Response> => {
+    const body = copiarAnoSchema.parse(req.body);
+
+    const turmas = await this.services.turmas.copiarAno(
+      body,
+      req.usuario?.id ?? "sistema"
+    );
+
+    return res.status(201).json({ data: turmas });
   };
 
   update = async (req: Request, res: Response): Promise<Response> => {

@@ -12,6 +12,7 @@ export function alunosRoutes(services: Services, config: AppConfig): Router {
 
   router.use(authenticate(config));
   router.get("/", authorize(Permissao.CONSULTAR_ALUNOS), asyncHandler(controller.list));
+  router.get("/:id/historico-turmas", authorize(Permissao.CONSULTAR_ALUNOS), asyncHandler(controller.historicoTurmas));
   router.get("/:id", authorize(Permissao.CONSULTAR_ALUNOS), asyncHandler(controller.get));
   router.post("/", authorize(Permissao.GERENCIAR_ALUNOS), asyncHandler(controller.create));
   router.patch("/:id", authorize(Permissao.GERENCIAR_ALUNOS), asyncHandler(controller.update));

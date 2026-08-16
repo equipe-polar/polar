@@ -1,3 +1,4 @@
+import { PostgresViradaAnoRepository } from "./virada-ano.repository.postgres.js";
 import type { Pool } from "pg";
 import type { Repositories } from "../../services.js";
 import { PostgresUserRepository } from "./user.repository.postgres.js";
@@ -17,6 +18,7 @@ export function createPostgresRepositories(pool: Pool): Repositories {
     turmas: new PostgresTurmaRepository(pool),
     alunos: new PostgresAlunoRepository(pool),
     alunosTurmasHistorico: new PostgresAlunoTurmaHistoricoRepository(pool),
+    viradaAno: new PostgresViradaAnoRepository(pool),
     ocorrencias: new PostgresOcorrenciaRepository(pool),
     notas: new PostgresNotaRepository(pool),
     faltas: new PostgresFaltaRepository(pool),

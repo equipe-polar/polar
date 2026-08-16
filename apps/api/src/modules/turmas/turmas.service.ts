@@ -1,19 +1,20 @@
 import { badRequest, conflict, notFound } from "../../shared/errors/app-error.js";
-import type { Turma } from "../../shared/domain.js";
+import type { Aluno, Turma } from "../../shared/domain.js";
 import type { TurmaRepository } from "../../shared/database/repositories/turma.repository.js";
 import type { AlunoRepository } from "../../shared/database/repositories/aluno.repository.js";
 import type { AlunoTurmaHistoricoRepository } from "../../shared/database/repositories/aluno-turma-historico.repository.js";
+import type { ViradaAnoRepository } from "../../shared/database/repositories/virada-ano.repository.js";
 import type { AuditRepository } from "../../shared/database/repositories/audit.repository.js";
 import { agoraIso, novoId } from "../../shared/utils/ids.js";
 
-interface CopiarAnoTurmaInput {
+export interface CopiarAnoTurmaInput {
   origemId: string;
   nome: string;
   turno: string;
   alunos: string[];
 }
 
-interface CopiarAnoInput {
+export interface CopiarAnoInput {
   anoOrigem: number;
   anoDestino: number;
   turmas: CopiarAnoTurmaInput[];
@@ -24,6 +25,7 @@ export class TurmasService {
     private readonly turmas: TurmaRepository,
     private readonly alunos: AlunoRepository,
     private readonly alunosTurmasHistorico: AlunoTurmaHistoricoRepository,
+    private readonly viradaAno: ViradaAnoRepository,
     private readonly audit: AuditRepository
   ) {}
 
@@ -171,17 +173,15 @@ export class TurmasService {
       }
     }
 
-    const alunosSelecionados = new Set<string>();
+    const alunosPorId = new Map<string, Aluno>();
 
     for (const turmaInput of input.turmas) {
       for (const alunoId of turmaInput.alunos) {
-        if (alunosSelecionados.has(alunoId)) {
+        if (alunosPorId.has(alunoId)) {
           throw badRequest(
             `O aluno ${alunoId} foi colocado em mais de uma turma.`
           );
         }
-
-        alunosSelecionados.add(alunoId);
 
         const aluno = await this.alunos.findById(alunoId);
 
@@ -213,18 +213,6 @@ export class TurmasService {
           );
         }
 
-        const historicoOrigem =
-          await this.alunosTurmasHistorico.findByAlunoEAno(
-            aluno.id,
-            input.anoOrigem
-          );
-
-        if (historicoOrigem) {
-          throw conflict(
-            `O aluno ${aluno.nome} ja possui historico para o ano ${input.anoOrigem}.`
-          );
-        }
-
         const historicoDestino =
           await this.alunosTurmasHistorico.findByAlunoEAno(
             aluno.id,
@@ -236,117 +224,69 @@ export class TurmasService {
             `O aluno ${aluno.nome} ja possui historico para o ano ${input.anoDestino}.`
           );
         }
+
+        alunosPorId.set(aluno.id, aluno);
       }
     }
 
-    const novasTurmas: Turma[] = [];
-
-    for (const turmaInput of input.turmas) {
-      const now = agoraIso();
-
-      const novaTurma: Turma = {
-        id: novoId(),
-        nome: turmaInput.nome.trim(),
-        anoLetivo: input.anoDestino,
-        turno: turmaInput.turno.trim(),
-        ativa: true,
-        criadoEm: now,
-        atualizadoEm: now
-      };
-
-      await this.turmas.create(novaTurma);
-
-      await this.audit.create({
-        id: novoId(),
-        usuarioId: actorId,
-        acao: "TURMA_CRIADA",
-        entidade: "turmas",
-        entidadeId: novaTurma.id,
-        metadata: {
-          viradaAno: true,
-          anoOrigem: input.anoOrigem,
-          anoDestino: input.anoDestino
-        },
-        criadoEm: now
-      });
-
-      novasTurmas.push(novaTurma);
-    }
-
-    for (const turmaInput of input.turmas) {
-      const novaTurma = novasTurmas.find(
-        (turma) =>
-          turma.nome === turmaInput.nome.trim()
-      );
-
-      if (!novaTurma) {
-        throw notFound(
-          `Turma de destino "${turmaInput.nome}" nao encontrada.`
-        );
-      }
-
-      for (const alunoId of turmaInput.alunos) {
-        const aluno = await this.alunos.findById(alunoId);
-
-        if (!aluno) {
-          throw notFound(
-            `Aluno ${alunoId} nao encontrado.`
-          );
-        }
-
-        const turmaAnterior = aluno.turmaId;
+    const novasTurmas: Turma[] = input.turmas.map(
+      (turmaInput) => {
         const now = agoraIso();
 
-        await this.alunosTurmasHistorico.create({
+        return {
           id: novoId(),
-          alunoId: aluno.id,
-          turmaId: turmaAnterior,
-          anoLetivo: input.anoOrigem,
-          criadoEm: now
-        });
+          nome: turmaInput.nome.trim(),
+          anoLetivo: input.anoDestino,
+          turno: turmaInput.turno.trim(),
+          ativa: true,
+          criadoEm: now,
+          atualizadoEm: now
+        };
+      }
+    );
 
-        const atualizado = await this.alunos.update(
-          aluno.id,
-          (current) => ({
-            ...current,
-            turmaId: novaTurma.id,
-            atualizadoEm: now
-          })
+    const dadosVirada = input.turmas.map(
+      (turmaInput, index) => {
+        const turmaOrigem = turmasOrigem.find(
+          (turma) => turma.id === turmaInput.origemId
         );
 
-        if (!atualizado) {
-          throw notFound(
-            `Nao foi possivel atualizar o aluno ${aluno.nome}.`
+        const turmaDestino = novasTurmas[index];
+
+        if (!turmaOrigem || !turmaDestino) {
+          throw new Error(
+            "Nao foi possivel montar os dados da virada."
           );
         }
 
-        await this.alunosTurmasHistorico.create({
-          id: novoId(),
-          alunoId: aluno.id,
-          turmaId: novaTurma.id,
-          anoLetivo: input.anoDestino,
-          criadoEm: agoraIso()
-        });
+        const alunos = turmaInput.alunos.map(
+          (alunoId) => {
+            const aluno = alunosPorId.get(alunoId);
 
-        await this.audit.create({
-          id: novoId(),
-          usuarioId: actorId,
-          acao: "ALUNO_ATUALIZADO",
-          entidade: "alunos",
-          entidadeId: aluno.id,
-          metadata: {
-            viradaAno: true,
-            anoOrigem: input.anoOrigem,
-            anoDestino: input.anoDestino,
-            turmaAnteriorId: turmaAnterior,
-            novaTurmaId: novaTurma.id
-          },
-          criadoEm: agoraIso()
-        });
+            if (!aluno) {
+              throw new Error(
+                `Aluno ${alunoId} nao encontrado durante a montagem da virada.`
+              );
+            }
+
+            return aluno;
+          }
+        );
+
+        return {
+          turmaOrigem,
+          turmaDestino,
+          alunos
+        };
       }
-    }
+    );
 
-    return novasTurmas;
+    return this.viradaAno.executar(
+      input.anoOrigem,
+      input.anoDestino,
+      dadosVirada,
+      actorId
+    );
   }
 
   async update(

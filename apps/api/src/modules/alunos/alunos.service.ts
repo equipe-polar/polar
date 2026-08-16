@@ -1,6 +1,7 @@
 import { badRequest, conflict, notFound } from "../../shared/errors/app-error.js";
 import type { Aluno } from "../../shared/domain.js";
 import type { AlunoRepository } from "../../shared/database/repositories/aluno.repository.js";
+import type { AlunoTurmaHistoricoRepository } from "../../shared/database/repositories/aluno-turma-historico.repository.js";
 import type { TurmaRepository } from "../../shared/database/repositories/turma.repository.js";
 import type { OcorrenciaRepository } from "../../shared/database/repositories/ocorrencia.repository.js";
 import type { AuditRepository } from "../../shared/database/repositories/audit.repository.js";
@@ -19,6 +20,7 @@ export interface AlunoInput {
 export class AlunosService {
   constructor(
     private readonly alunos: AlunoRepository,
+    private readonly alunosTurmasHistorico: AlunoTurmaHistoricoRepository,
     private readonly turmas: TurmaRepository,
     private readonly ocorrencias: OcorrenciaRepository,
     private readonly audit: AuditRepository
@@ -34,6 +36,18 @@ export class AlunosService {
       throw notFound("Aluno nao encontrado.");
     }
     return aluno;
+  }
+
+  async historicoTurmas(alunoId: string) {
+    const aluno = await this.alunos.findById(alunoId);
+
+    if (!aluno) {
+      throw notFound("Aluno nao encontrado.");
+    }
+
+    const historico = await this.alunosTurmasHistorico.listByAluno(alunoId);
+
+    return historico;
   }
 
   async create(input: AlunoInput, actorId: string): Promise<Aluno> {

@@ -17,6 +17,14 @@ export class AlunosController {
     return res.json({ data: await this.services.alunos.get(params.id) });
   };
 
+  historicoTurmas = async (req: Request, res: Response): Promise<Response> => {
+    const params = idParamSchema.parse(req.params);
+
+    return res.json({
+      data: await this.services.alunos.historicoTurmas(params.id)
+    });
+  };
+
   create = async (req: Request, res: Response): Promise<Response> => {
     const body = createAlunoSchema.parse(req.body);
     const aluno = await this.services.alunos.create(body, req.usuario?.id ?? "sistema");

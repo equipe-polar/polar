@@ -1,4 +1,4 @@
-import type { Pool } from "pg";
+import type { Pool, PoolClient } from "pg";
 import type { AuditLog } from "../../domain.js";
 import type { AuditRepository } from "../repositories/audit.repository.js";
 import { dbDateTime, isoFromDbRequired } from "./postgres-client.js";
@@ -34,6 +34,27 @@ export class PostgresAuditRepository implements AuditRepository {
   async list(): Promise<AuditLog[]> {
     const { rows } = await this.pool.query<AuditRow>(`SELECT ${COLUNAS} FROM audit_logs ORDER BY criado_em DESC`);
     return rows.map(toAuditLog);
+  }
+
+  async createWithClient(
+    client: PoolClient,
+    log: AuditLog
+  ): Promise<AuditLog> {
+    await client.query(
+      `INSERT INTO audit_logs (${COLUNAS})
+      VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [
+        log.id,
+        log.usuarioId,
+        log.acao,
+        log.entidade,
+        log.entidadeId,
+        JSON.stringify(log.metadata ?? {}),
+        dbDateTime(log.criadoEm)
+      ]
+    );
+
+    return log;
   }
 
   async create(log: AuditLog): Promise<AuditLog> {

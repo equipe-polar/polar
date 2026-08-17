@@ -229,3 +229,32 @@
   margin-right: var(--space-2);
   color: #98a2b3;
 }
+
+@media (max-width: 720px) {
+  .ui-table thead {
+    display: none;
+  }
+
+  .ui-table tbody,
+  .ui-table tr,
+  .ui-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .ui-table tr {
+    margin-bottom: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 0.75rem;
+    background: #fff;
+  }
+
+  .ui-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: #374151;
+  }
+}

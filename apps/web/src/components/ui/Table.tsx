@@ -25,7 +25,9 @@ export function Table<T>({ columns, data, empty = "Nenhum registro encontrado." 
             data.map((item, index) => (
               <tr key={index}>
                 {columns.map((column) => (
-                  <td key={column.key}>{column.render(item)}</td>
+                  <td key={column.key} data-label={column.header}>
+                    {column.render(item)}
+                  </td>
                 ))}
               </tr>
             ))

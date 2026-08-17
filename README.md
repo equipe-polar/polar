@@ -130,9 +130,9 @@ pnpm dev
 ```
 
 - Web: <http://localhost:5173> — API: <http://localhost:3000/health>
-- Contas de controle (uma por papel): `professor@escola.polar`, `coordenacao@escola.polar`, `direcao@escola.polar`, `adm@escola.polar` e `aluno@escola.polar` — senha = `SEED_SENHA_PADRAO`.
+- Contas de controle (uma por papel): `professor@`, `coordenacao@`, `direcao@`, `adm@` e `aluno@escola.polar` — senha = `SEED_SENHA_PADRAO`.
 
-> Sem Docker? defina `DATABASE_PROVIDER=json` no mesmo `apps/api/.env`, execute `pnpm seed` e depois `pnpm dev`. O seed e a API usam o mesmo arquivo definido por `DATABASE_JSON_PATH` (por padrão, `apps/api/data/dev-db.json`). Essa persistência é apenas para desenvolvimento; produção exige PostgreSQL (o boot falha sem ele).
+> Sem Docker? `DATABASE_PROVIDER=json` roda a API com persistência em arquivo — **apenas** para desenvolvimento; produção exige PostgreSQL (o boot falha sem ele).
 
 ## Qualidade
 

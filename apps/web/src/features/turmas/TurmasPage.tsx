@@ -1,4 +1,4 @@
-import { Edit, SearchX } from "lucide-react";
+import { Edit } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { canAccess } from "../../app/permissions";
 import { useAuth } from "../../app/providers";
@@ -147,16 +147,6 @@ export function TurmasPage() {
       <Card title="Turmas cadastradas">
         {loading ? (
           <p className="muted">Carregando turmas...</p>
-        ) : turmas.length === 0 ? (
-          <div className="empty-state">
-            <SearchX size={32} aria-hidden="true" />
-
-            <strong>Nenhuma turma cadastrada.</strong>
-
-            <span>
-              Assim que houver turmas cadastradas, elas aparecerão aqui.
-            </span>
-          </div>
         ) : (
           <Table
             data={turmas}

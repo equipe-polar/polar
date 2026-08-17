@@ -50,6 +50,8 @@ export interface AlunoTurmaHistorico {
 
 export interface AlunoDetalhado extends Aluno {
   turma: string;
+  totalOcorrencias: number;
+  temOcorrenciaGrave: boolean;
 }
 
 export interface Ocorrencia {

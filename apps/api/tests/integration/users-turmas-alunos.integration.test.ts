@@ -90,4 +90,28 @@ describe("Users, turmas e alunos", () => {
       .expect(200);
     expect(historico.body.data).toHaveLength(1);
   });
+
+  it("lista o resumo de ocorrencias de cada aluno", async () => {
+    const { app, ids } = await buildTestContext();
+    const auth = await tokens(app);
+
+    await request(app)
+      .post("/api/ocorrencias")
+      .set("Authorization", `Bearer ${auth.professor}`)
+      .send({
+        alunoId: ids.aluno,
+        categoria: "Desrespeito",
+        prioridade: "ALTA",
+        descricao: "Aluno desrespeitou orientacao institucional em sala."
+      })
+      .expect(201);
+
+    const response = await request(app)
+      .get("/api/alunos")
+      .set("Authorization", `Bearer ${auth.coordenador}`)
+      .expect(200);
+    const aluno = response.body.data.find((item: { id: string }) => item.id === ids.aluno);
+
+    expect(aluno).toMatchObject({ totalOcorrencias: 1, temOcorrenciaGrave: true });
+  });
 });

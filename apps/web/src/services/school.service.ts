@@ -16,6 +16,7 @@ import type {
   RelatorioOcorrencias,
   StatusOcorrencia,
   Turma,
+  UpdateAlunoPayload,
   UpdateTurmaPayload,
   UpdateUsuarioPayload,
   Usuario
@@ -70,6 +71,14 @@ export async function listAlunos(): Promise<Aluno[]> {
 export async function createAluno(payload: CreateAlunoPayload): Promise<Aluno> {
   const response = await apiRequest<ApiData<Aluno>>("/alunos", {
     method: "POST",
+    body: JSON.stringify(payload)
+  });
+  return response.data;
+}
+
+export async function updateAluno(id: string, payload: UpdateAlunoPayload): Promise<Aluno> {
+  const response = await apiRequest<ApiData<Aluno>>(`/alunos/${id}`, {
+    method: "PATCH",
     body: JSON.stringify(payload)
   });
   return response.data;

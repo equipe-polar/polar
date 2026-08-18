@@ -70,6 +70,13 @@ describe("Users, turmas e alunos", () => {
       .send({ nome: "Sem Turma", matricula: "2026003", turmaId: "turma-inexistente" })
       .expect(400);
 
+    const updated = await request(app)
+      .patch(`/api/alunos/${ids.aluno}`)
+      .set("Authorization", `Bearer ${auth.adm}`)
+      .send({ responsavelContato: "(11) 98888-0000" })
+      .expect(200);
+    expect(updated.body.data.responsavelContato).toBe("(11) 98888-0000");
+
     const ocorrencia = await request(app)
       .post("/api/ocorrencias")
       .set("Authorization", `Bearer ${auth.professor}`)

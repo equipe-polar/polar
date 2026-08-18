@@ -1,0 +1,58 @@
+{
+  "usuarios": [
+    {
+      "id": "2a430713-ccc3-460e-8992-6e70f7516023",
+      "nome": "Administrador",
+      "email": "admin@pola.local",
+      "papel": "ADM",
+      "senhaHash": "$2b$10$6SFxRaibGm/CupnLR7j8NeXVf45tqwpZtitK3Y7/tz82YmKycyyFu",
+      "ativo": true,
+      "precisaTrocarSenha": true,
+      "tentativasLoginInvalidas": 0,
+      "bloqueadoAte": null,
+      "ultimoLoginEm": "2026-08-18T14:33:57.860Z",
+      "criadoEm": "2026-08-18T14:20:55.303Z",
+      "atualizadoEm": "2026-08-18T14:33:57.860Z"
+    }
+  ],
+  "turmas": [],
+  "alunos": [],
+  "alunosTurmasHistorico": [],
+  "ocorrencias": [],
+  "ocorrenciaHistorico": [],
+  "notas": [],
+  "faltas": [],
+  "auditLogs": [
+    {
+      "id": "27b908a9-03d3-4504-ae75-fb50c8fd0e70",
+      "usuarioId": "2a430713-ccc3-460e-8992-6e70f7516023",
+      "acao": "BOOTSTRAP_ADMIN_CRIADO",
+      "entidade": "usuarios",
+      "entidadeId": "2a430713-ccc3-460e-8992-6e70f7516023",
+      "metadata": {
+        "email": "admin@pola.local"
+      },
+      "criadoEm": "2026-08-18T14:20:55.303Z"
+    },
+    {
+      "id": "2c7845fa-8b0e-4444-98b1-ffad22caf1af",
+      "usuarioId": "2a430713-ccc3-460e-8992-6e70f7516023",
+      "acao": "LOGIN_FALHA",
+      "entidade": "usuarios",
+      "entidadeId": "2a430713-ccc3-460e-8992-6e70f7516023",
+      "metadata": {
+        "tentativas": 1
+      },
+      "criadoEm": "2026-08-18T14:33:21.894Z"
+    },
+    {
+      "id": "32cf2a53-d031-44da-8106-5db7e4a31c75",
+      "usuarioId": "2a430713-ccc3-460e-8992-6e70f7516023",
+      "acao": "LOGIN_SUCESSO",
+      "entidade": "usuarios",
+      "entidadeId": "2a430713-ccc3-460e-8992-6e70f7516023",
+      "metadata": {},
+      "criadoEm": "2026-08-18T14:33:57.860Z"
+    }
+  ]
+}

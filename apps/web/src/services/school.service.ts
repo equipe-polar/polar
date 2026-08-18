@@ -1,7 +1,9 @@
 import { apiRequest } from "./api";
 import type {
   Aluno,
+  AlunoComResumoOcorrencias,
   AlunoDetalhado,
+  AlunoDetalhadoComResumoOcorrencias,
   ApiData,
   CreateAlunoPayload,
   CreateOcorrenciaPayload,
@@ -26,7 +28,7 @@ function turmaName(turmas: Turma[], turmaId: string): string {
   return turmas.find((turma) => turma.id === turmaId)?.nome ?? "Turma nao encontrada";
 }
 
-function alunoDetalhado(aluno: Aluno, turmas: Turma[]): AlunoDetalhado {
+function alunoDetalhado<T extends Aluno>(aluno: T, turmas: Turma[]): T & { turma: string } {
   return {
     ...aluno,
     turma: turmaName(turmas, aluno.turmaId)
@@ -63,8 +65,8 @@ export async function updateTurma(id: string, payload: UpdateTurmaPayload): Prom
   return response.data;
 }
 
-export async function listAlunos(): Promise<Aluno[]> {
-  const response = await apiRequest<ApiData<Aluno[]>>("/alunos");
+export async function listAlunos(): Promise<AlunoComResumoOcorrencias[]> {
+  const response = await apiRequest<ApiData<AlunoComResumoOcorrencias[]>>("/alunos");
   return response.data;
 }
 
@@ -89,7 +91,7 @@ export async function getAluno(id: string): Promise<Aluno> {
   return response.data;
 }
 
-export async function listAlunosDetalhados(): Promise<AlunoDetalhado[]> {
+export async function listAlunosDetalhados(): Promise<AlunoDetalhadoComResumoOcorrencias[]> {
   const [alunos, turmas] = await Promise.all([listAlunos(), listTurmas()]);
   return alunos.map((aluno) => alunoDetalhado(aluno, turmas));
 }

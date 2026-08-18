@@ -2,7 +2,7 @@ export type PapelUsuario = "PROFESSOR" | "COORDENADOR" | "DIRETOR" | "ADM" | "AL
 
 export type StatusOcorrencia = "REGISTRADA" | "EM_ANALISE" | "RESOLVIDA" | "ENCERRADA";
 
-export type PrioridadeOcorrencia = "BAIXA" | "MEDIA" | "ALTA";
+export type PrioridadeOcorrencia = "BAIXA" | "MEDIA" | "ALTA" | "URGENTE";
 
 export interface ApiData<T> {
   data: T;

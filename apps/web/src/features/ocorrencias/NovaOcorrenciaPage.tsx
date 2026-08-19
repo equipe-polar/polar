@@ -8,7 +8,7 @@ import { Card } from "../../components/ui/Card";
 import { Input } from "../../components/ui/Input";
 import { Select } from "../../components/ui/Select";
 import { listAlunosDetalhados, listTurmas } from "../../services/school.service";
-import type { AlunoDetalhado, PrioridadeOcorrencia, Turma } from "../../services/domain";
+import { PRIORIDADES_OCORRENCIA, type AlunoDetalhado, type PrioridadeOcorrencia, type Turma } from "../../services/domain";
 import { createOcorrencia } from "./ocorrencias.service";
 
 const schema = z.object({
@@ -137,11 +137,7 @@ export function NovaOcorrenciaPage() {
             value={form.prioridade}
             onChange={(event) => setField("prioridade", event.target.value)}
             error={errors.prioridade}
-            options={[
-              { label: "BAIXA", value: "BAIXA" },
-              { label: "MEDIA", value: "MEDIA" },
-              { label: "ALTA", value: "ALTA" }
-            ]}
+            options={PRIORIDADES_OCORRENCIA.map(({ label, value }) => ({ label, value }))}
           />
           <Input label="Local" value={form.local} onChange={(event) => setField("local", event.target.value)} error={errors.local} />
           <Input label="Testemunhas" value={form.testemunhas} onChange={(event) => setField("testemunhas", event.target.value)} />

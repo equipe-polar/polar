@@ -135,6 +135,8 @@ export interface RelatorioOcorrencias {
   byPriority: Partial<Record<PrioridadeOcorrencia, number>>;
   byCategory: Record<string, number>;
   recent: Ocorrencia[];
+  byTurma?: { nome: string; total: number }[];     // NOVO
+  byPeriodo?: { periodo: string; total: number }[]; // NOVO
 }
 
 export interface CreateOcorrenciaPayload {

@@ -1,0 +1,38 @@
+{
+  "usuarios": [
+    {
+      "id": "2be20893-d6ba-43de-8674-83e02a691820",
+      "nome": "Administrador",
+      "email": "admin@pola.local",
+      "papel": "ADM",
+      "senhaHash": "$2b$10$Mz9BL5wzrDuTdBZ1Rn5qWuSnz/WPkIIQk87xe.U4FZJ8B9GlnJjBK",
+      "ativo": true,
+      "precisaTrocarSenha": true,
+      "tentativasLoginInvalidas": 0,
+      "bloqueadoAte": null,
+      "ultimoLoginEm": null,
+      "criadoEm": "2026-08-19T14:04:21.355Z",
+      "atualizadoEm": "2026-08-19T14:04:21.355Z"
+    }
+  ],
+  "turmas": [],
+  "alunos": [],
+  "alunosTurmasHistorico": [],
+  "ocorrencias": [],
+  "ocorrenciaHistorico": [],
+  "notas": [],
+  "faltas": [],
+  "auditLogs": [
+    {
+      "id": "374b4b66-8bab-4e6a-adc8-9714dfc9c25f",
+      "usuarioId": "2be20893-d6ba-43de-8674-83e02a691820",
+      "acao": "BOOTSTRAP_ADMIN_CRIADO",
+      "entidade": "usuarios",
+      "entidadeId": "2be20893-d6ba-43de-8674-83e02a691820",
+      "metadata": {
+        "email": "admin@pola.local"
+      },
+      "criadoEm": "2026-08-19T14:04:21.355Z"
+    }
+  ]
+}

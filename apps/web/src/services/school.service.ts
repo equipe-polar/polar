@@ -2,6 +2,7 @@ import { apiRequest } from "./api";
 import type {
   Aluno,
   AlunoDetalhado,
+  AlunoTurmaHistorico,
   ApiData,
   CreateAlunoPayload,
   CreateOcorrenciaPayload,
@@ -32,6 +33,8 @@ function alunoDetalhado(aluno: Aluno, turmas: Turma[]): AlunoDetalhado {
   };
 }
 
+
+
 function ocorrenciaDetalhada(ocorrencia: Ocorrencia, alunos: Aluno[], turmas: Turma[]): OcorrenciaDetalhada {
   const aluno = alunos.find((item) => item.id === ocorrencia.alunoId);
   return {
@@ -39,6 +42,40 @@ function ocorrenciaDetalhada(ocorrencia: Ocorrencia, alunos: Aluno[], turmas: Tu
     aluno: aluno?.nome ?? "Aluno nao encontrado",
     turma: aluno ? turmaName(turmas, aluno.turmaId) : "Turma nao encontrada"
   };
+}
+
+export interface CopiarAnoTurmaPayload {
+  origemId: string;
+  nome: string;
+  turno: string;
+  alunos: string[];
+}
+
+export interface CopiarAnoLetivoPayload {
+  anoOrigem: number;
+  anoDestino: number;
+  turmas: CopiarAnoTurmaPayload[];
+}
+
+export async function copiarAnoLetivo(
+  payload: CopiarAnoLetivoPayload
+): Promise<Turma[]> {
+  const response = await apiRequest<ApiData<Turma[]>>("/turmas/copiar-ano", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+
+  return response.data;
+}
+
+export async function listHistoricoTurmas(
+  alunoId: string
+): Promise<AlunoTurmaHistorico[]> {
+  const response = await apiRequest<ApiData<AlunoTurmaHistorico[]>>(
+    `/alunos/${alunoId}/historico-turmas`
+  );
+
+  return response.data;
 }
 
 export async function listTurmas(): Promise<Turma[]> {
@@ -72,6 +109,18 @@ export async function createAluno(payload: CreateAlunoPayload): Promise<Aluno> {
     method: "POST",
     body: JSON.stringify(payload)
   });
+  return response.data;
+}
+
+export async function updateAluno(
+  id: string,
+  payload: Partial<CreateAlunoPayload> & { ativo?: boolean }
+): Promise<Aluno> {
+  const response = await apiRequest<ApiData<Aluno>>(`/alunos/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload)
+  });
+
   return response.data;
 }
 

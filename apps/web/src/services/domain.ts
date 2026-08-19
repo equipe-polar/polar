@@ -4,6 +4,20 @@ export type StatusOcorrencia = "REGISTRADA" | "EM_ANALISE" | "RESOLVIDA" | "ENCE
 
 export type PrioridadeOcorrencia = "BAIXA" | "MEDIA" | "ALTA";
 
+export const PRIORIDADES_OCORRENCIA = [
+  { value: "BAIXA", label: "Baixa", peso: 1 },
+  { value: "MEDIA", label: "Media", peso: 2 },
+  { value: "ALTA", label: "Alta", peso: 3 }
+] as const satisfies ReadonlyArray<{ value: PrioridadeOcorrencia; label: string; peso: number }>;
+
+export const PRIORIDADE_LABEL: Record<PrioridadeOcorrencia, string> = Object.fromEntries(
+  PRIORIDADES_OCORRENCIA.map(({ value, label }) => [value, label])
+) as Record<PrioridadeOcorrencia, string>;
+
+export const PRIORIDADE_PESO: Record<PrioridadeOcorrencia, number> = Object.fromEntries(
+  PRIORIDADES_OCORRENCIA.map(({ value, peso }) => [value, peso])
+) as Record<PrioridadeOcorrencia, number>;
+
 export interface ApiData<T> {
   data: T;
 }

@@ -179,3 +179,24 @@ export function DashboardPage() {
     </>
   );
 }
+export function MovimentacoesRecentesPanel() {
+  const exemploMovimentacoes = [
+    { usuario: 'Ana Beatriz', statusAnterior: 'Aberta', statusNovo: 'Em andamento', data: '2026-08-10T09:00:00Z' },
+    { usuario: 'José', statusAnterior: 'Em andamento', statusNovo: 'Resolvida', data: '2026-08-11T14:30:00Z' },
+  ];
+
+  return (
+    <aside>
+      <h3>Movimentações recentes</h3>
+      <ul>
+        {exemploMovimentacoes.map((item, index) => (
+          <li key={index}>
+            <strong>{item.usuario}</strong>
+            <span>{item.statusAnterior} → {item.statusNovo}</span>
+            <small>{new Date(item.data).toLocaleString()}</small>
+          </li>
+        ))}
+      </ul>
+    </aside>
+  );
+}

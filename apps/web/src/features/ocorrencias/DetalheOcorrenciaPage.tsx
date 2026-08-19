@@ -167,7 +167,7 @@ export function DetalheOcorrenciaPage() {
               <li key={item.id}>
                 <strong>{item.acao}</strong>
                 <span className="muted">
-                  {item.status} por {item.usuarioId}
+                  {item.status} por {item.usuarioNome}
                 </span>
                 {item.observacao ? <span className="muted">Observacao: {item.observacao}</span> : null}
               </li>

@@ -30,6 +30,22 @@ describe("Ocorrencias", () => {
       .expect(400);
   });
 
+  it("rejeita prioridade fora dos niveis permitidos", async () => {
+    const { app, ids } = await buildTestContext();
+    const auth = await tokens(app);
+
+    await request(app)
+      .post("/api/ocorrencias")
+      .set("Authorization", `Bearer ${auth.professor}`)
+      .send({
+        alunoId: ids.aluno,
+        categoria: "Atraso",
+        prioridade: "URGENTE",
+        descricao: "Aluno chegou depois do inicio da atividade escolar."
+      })
+      .expect(400);
+  });
+
   it("bloqueia alteracao de status por professor e salto de etapas", async () => {
     const { app, ids } = await buildTestContext();
     const auth = await tokens(app);

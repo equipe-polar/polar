@@ -7,7 +7,11 @@ import { Card } from "../../components/ui/Card";
 import { Input } from "../../components/ui/Input";
 import { Select } from "../../components/ui/Select";
 import { Table } from "../../components/ui/Table";
-import type { OcorrenciaDetalhada } from "../../services/domain";
+import {
+  PRIORIDADES_OCORRENCIA,
+  PRIORIDADE_PESO,
+  type OcorrenciaDetalhada
+} from "../../services/domain";
 import { useAuth } from "../../app/providers";
 import { listOcorrenciasDetalhadas } from "./ocorrencias.service";
 import { DiasEmAberto } from "./DiasEmAberto";
@@ -18,6 +22,7 @@ export function OcorrenciasListPage() {
   const [aluno, setAluno] = useState("");
   const [status, setStatus] = useState("");
   const [prioridade, setPrioridade] = useState("");
+  const [ordemPrioridade, setOrdemPrioridade] = useState("");
   const [categoria, setCategoria] = useState("");
   const [ocorrencias, setOcorrencias] = useState<OcorrenciaDetalhada[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,14 +54,20 @@ export function OcorrenciasListPage() {
 
   const filtered = useMemo(
     () =>
-      ocorrencias.filter(
-        (item) =>
-          item.aluno.toLowerCase().includes(aluno.toLowerCase()) &&
-          (!status || item.status === status) &&
-          (!prioridade || item.prioridade === prioridade) &&
-          (!categoria || item.categoria.toLowerCase().includes(categoria.toLowerCase()))
-      ),
-    [aluno, categoria, ocorrencias, prioridade, status]
+      ocorrencias
+        .filter(
+          (item) =>
+            item.aluno.toLowerCase().includes(aluno.toLowerCase()) &&
+            (!status || item.status === status) &&
+            (!prioridade || item.prioridade === prioridade) &&
+            (!categoria || item.categoria.toLowerCase().includes(categoria.toLowerCase()))
+        )
+        .sort((a, b) => {
+          if (!ordemPrioridade) return 0;
+          const diferenca = PRIORIDADE_PESO[b.prioridade] - PRIORIDADE_PESO[a.prioridade];
+          return ordemPrioridade === "MAIOR" ? diferenca : -diferenca;
+        }),
+    [aluno, categoria, ocorrencias, ordemPrioridade, prioridade, status]
   );
 
   return (
@@ -92,9 +103,17 @@ export function OcorrenciasListPage() {
               onChange={(event) => setPrioridade(event.target.value)}
               options={[
                 { label: "Todas", value: "" },
-                { label: "BAIXA", value: "BAIXA" },
-                { label: "MEDIA", value: "MEDIA" },
-                { label: "ALTA", value: "ALTA" }
+                ...PRIORIDADES_OCORRENCIA.map(({ label, value }) => ({ label, value }))
+              ]}
+            />
+            <Select
+              label="Ordenar por prioridade"
+              value={ordemPrioridade}
+              onChange={(event) => setOrdemPrioridade(event.target.value)}
+              options={[
+                { label: "Mais recentes", value: "" },
+                { label: "Alta para baixa", value: "MAIOR" },
+                { label: "Baixa para alta", value: "MENOR" }
               ]}
             />
             <Input label="Categoria" value={categoria} onChange={(event) => setCategoria(event.target.value)} />

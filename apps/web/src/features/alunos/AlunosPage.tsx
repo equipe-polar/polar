@@ -11,8 +11,9 @@ import { Modal } from "../../components/ui/Modal";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { Select } from "../../components/ui/Select";
 import { Table } from "../../components/ui/Table";
-import type { AlunoDetalhado, Turma } from "../../services/domain";
+import type { AlunoDetalhadoComResumoOcorrencias, Turma } from "../../services/domain";
 import { createAluno, listAlunosDetalhados, listTurmas, updateAluno } from "../../services/school.service";
+import { calcularIndicadorAluno } from "../../services/domain";
 
 const initialAlunoForm = {
   nome: "",
@@ -26,7 +27,7 @@ export function AlunosPage() {
   const { user } = useAuth();
   const [busca, setBusca] = useState("");
   const [turma, setTurma] = useState("");
-  const [alunos, setAlunos] = useState<AlunoDetalhado[]>([]);
+  const [alunos, setAlunos] = useState<AlunoDetalhadoComResumoOcorrencias[]>([]);
   const [turmas, setTurmas] = useState<Turma[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -157,6 +158,18 @@ export function AlunosPage() {
                 { key: "nome", header: "Nome", render: (item) => item.nome },
                 { key: "matricula", header: "Matricula", render: (item) => item.matricula },
                 { key: "turma", header: "Turma", render: (item) => item.turma },
+                {
+                  key: "indicador",
+                  header: "Ocorrências",
+                  render: (item) => {
+                    const indicador = calcularIndicadorAluno(item.totalOcorrencias, item.temOcorrenciaGrave);
+                    return (
+                      <span className={`status-dot status-dot--${indicador.cor}`}>
+                        {indicador.texto}
+                      </span>
+                    );
+                  }
+                },
                 {
                   key: "acao",
                   header: "Acao",

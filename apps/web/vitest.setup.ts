@@ -130,6 +130,13 @@ beforeEach(() => {
         return jsonResponse({ data: { id: "a3", nome: "Novo Aluno", matricula: "2026003", turmaId: "t1", ativo: true } }, 201);
       }
 
+      if (pathname.startsWith("/alunos/") && method === "PATCH") {
+        const id = pathname.split("/").at(-1);
+        const aluno = alunos.find((item) => item.id === id) ?? alunos[0];
+        const payload = typeof init?.body === "string" ? JSON.parse(init.body) : {};
+        return jsonResponse({ data: { ...aluno, ...payload } });
+      }
+
       if (pathname === "/alunos") {
         return jsonResponse({ data: alunos });
       }

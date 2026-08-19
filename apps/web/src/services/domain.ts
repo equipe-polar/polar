@@ -66,6 +66,13 @@ export interface AlunoDetalhado extends Aluno {
   turma: string;
 }
 
+export interface AlunoComResumoOcorrencias extends Aluno {
+  totalOcorrencias: number;
+  temOcorrenciaGrave: boolean;
+}
+
+export interface AlunoDetalhadoComResumoOcorrencias extends AlunoDetalhado, AlunoComResumoOcorrencias {}
+
 export interface Ocorrencia {
   id: string;
   alunoId: string;
@@ -147,6 +154,15 @@ export interface CreateAlunoPayload {
   responsavelContato?: string;
 }
 
+export interface UpdateAlunoPayload {
+  nome?: string;
+  matricula?: string;
+  turmaId?: string;
+  responsavelNome?: string;
+  responsavelContato?: string;
+  ativo?: boolean;
+}
+
 export interface CreateTurmaPayload {
   nome: string;
   anoLetivo: number;
@@ -172,4 +188,23 @@ export interface UpdateUsuarioPayload {
   email?: string;
   papel?: PapelUsuario;
   ativo?: boolean;
+}
+
+
+export interface IndicadorAluno {
+  cor: "verde" | "amarelo" | "vermelho";
+  texto: string;
+}
+
+export function calcularIndicadorAluno(
+  totalOcorrencias: number,
+  temOcorrenciaGrave: boolean
+): IndicadorAluno {
+  if (totalOcorrencias === 0) {
+    return { cor: "verde", texto: "Sem ocorrências" };
+  }
+  if (temOcorrenciaGrave || totalOcorrencias >= 4) {
+    return { cor: "vermelho", texto: "Atenção" };
+  }
+  return { cor: "amarelo", texto: "Poucas ocorrências" };
 }

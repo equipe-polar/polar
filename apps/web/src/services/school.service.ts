@@ -1,8 +1,9 @@
 import { apiRequest } from "./api";
 import type {
   Aluno,
+  AlunoComResumoOcorrencias,
   AlunoDetalhado,
-  AlunoTurmaHistorico,
+  AlunoDetalhadoComResumoOcorrencias,
   ApiData,
   CreateAlunoPayload,
   CreateOcorrenciaPayload,
@@ -17,6 +18,7 @@ import type {
   RelatorioOcorrencias,
   StatusOcorrencia,
   Turma,
+  UpdateAlunoPayload,
   UpdateTurmaPayload,
   UpdateUsuarioPayload,
   Usuario
@@ -26,7 +28,7 @@ function turmaName(turmas: Turma[], turmaId: string): string {
   return turmas.find((turma) => turma.id === turmaId)?.nome ?? "Turma nao encontrada";
 }
 
-function alunoDetalhado(aluno: Aluno, turmas: Turma[]): AlunoDetalhado {
+function alunoDetalhado<T extends Aluno>(aluno: T, turmas: Turma[]): T & { turma: string } {
   return {
     ...aluno,
     turma: turmaName(turmas, aluno.turmaId)
@@ -99,8 +101,8 @@ export async function updateTurma(id: string, payload: UpdateTurmaPayload): Prom
   return response.data;
 }
 
-export async function listAlunos(): Promise<Aluno[]> {
-  const response = await apiRequest<ApiData<Aluno[]>>("/alunos");
+export async function listAlunos(): Promise<AlunoComResumoOcorrencias[]> {
+  const response = await apiRequest<ApiData<AlunoComResumoOcorrencias[]>>("/alunos");
   return response.data;
 }
 
@@ -112,15 +114,11 @@ export async function createAluno(payload: CreateAlunoPayload): Promise<Aluno> {
   return response.data;
 }
 
-export async function updateAluno(
-  id: string,
-  payload: Partial<CreateAlunoPayload> & { ativo?: boolean }
-): Promise<Aluno> {
+export async function updateAluno(id: string, payload: UpdateAlunoPayload): Promise<Aluno> {
   const response = await apiRequest<ApiData<Aluno>>(`/alunos/${id}`, {
     method: "PATCH",
     body: JSON.stringify(payload)
   });
-
   return response.data;
 }
 
@@ -129,7 +127,7 @@ export async function getAluno(id: string): Promise<Aluno> {
   return response.data;
 }
 
-export async function listAlunosDetalhados(): Promise<AlunoDetalhado[]> {
+export async function listAlunosDetalhados(): Promise<AlunoDetalhadoComResumoOcorrencias[]> {
   const [alunos, turmas] = await Promise.all([listAlunos(), listTurmas()]);
   return alunos.map((aluno) => alunoDetalhado(aluno, turmas));
 }

@@ -70,6 +70,13 @@ describe("Users, turmas e alunos", () => {
       .send({ nome: "Sem Turma", matricula: "2026003", turmaId: "turma-inexistente" })
       .expect(400);
 
+    const updated = await request(app)
+      .patch(`/api/alunos/${ids.aluno}`)
+      .set("Authorization", `Bearer ${auth.adm}`)
+      .send({ responsavelContato: "(11) 98888-0000" })
+      .expect(200);
+    expect(updated.body.data.responsavelContato).toBe("(11) 98888-0000");
+
     const ocorrencia = await request(app)
       .post("/api/ocorrencias")
       .set("Authorization", `Bearer ${auth.professor}`)
@@ -89,5 +96,29 @@ describe("Users, turmas e alunos", () => {
       .set("Authorization", `Bearer ${auth.professor}`)
       .expect(200);
     expect(historico.body.data).toHaveLength(1);
+  });
+
+  it("lista o resumo de ocorrencias de cada aluno", async () => {
+    const { app, ids } = await buildTestContext();
+    const auth = await tokens(app);
+
+    await request(app)
+      .post("/api/ocorrencias")
+      .set("Authorization", `Bearer ${auth.professor}`)
+      .send({
+        alunoId: ids.aluno,
+        categoria: "Desrespeito",
+        prioridade: "ALTA",
+        descricao: "Aluno desrespeitou orientacao institucional em sala."
+      })
+      .expect(201);
+
+    const response = await request(app)
+      .get("/api/alunos")
+      .set("Authorization", `Bearer ${auth.coordenador}`)
+      .expect(200);
+    const aluno = response.body.data.find((item: { id: string }) => item.id === ids.aluno);
+
+    expect(aluno).toMatchObject({ totalOcorrencias: 1, temOcorrenciaGrave: true });
   });
 });

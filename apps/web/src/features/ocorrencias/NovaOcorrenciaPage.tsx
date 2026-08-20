@@ -16,6 +16,9 @@ const schema = z.object({
   turmaId: z.string().min(1, "Selecione uma turma."),
   categoria: z.string().min(1, "Informe a categoria."),
   prioridade: z.enum(["BAIXA", "MEDIA", "ALTA"], { required_error: "Informe a prioridade." }),
+  bimestre: z.enum(["1", "2", "3", "4"], {
+    required_error: "Selecione o bimestre."
+  }),
   descricao: z.string().min(10, "Descreva a ocorrencia com pelo menos 10 caracteres."),
   local: z.string().min(1, "Informe o local."),
   testemunhas: z.string().optional()
@@ -28,6 +31,7 @@ const initialState: FormState = {
   turmaId: "",
   categoria: "",
   prioridade: "MEDIA",
+  bimestre: "",
   descricao: "",
   local: "",
   testemunhas: ""
@@ -97,6 +101,7 @@ export function NovaOcorrenciaPage() {
         alunoId: result.data.alunoId,
         categoria: result.data.categoria,
         prioridade: result.data.prioridade as PrioridadeOcorrencia,
+        bimestre: Number(result.data.bimestre),
         descricao: result.data.descricao,
         local: result.data.local,
         testemunhas: result.data.testemunhas
@@ -132,17 +137,7 @@ export function NovaOcorrenciaPage() {
             options={[{ label: loading ? "Carregando..." : "Selecione", value: "" }, ...turmas.map((turma) => ({ label: turma.nome, value: turma.id }))]}
           />
           <Input label="Categoria" value={form.categoria} onChange={(event) => setField("categoria", event.target.value)} error={errors.categoria} />
-          <Select
-            label="Prioridade"
-            value={form.prioridade}
-            onChange={(event) => setField("prioridade", event.target.value)}
-            error={errors.prioridade}
-            options={[
-              { label: "BAIXA", value: "BAIXA" },
-              { label: "MEDIA", value: "MEDIA" },
-              { label: "ALTA", value: "ALTA" }
-            ]}
-          />
+         
           <Input label="Local" value={form.local} onChange={(event) => setField("local", event.target.value)} error={errors.local} />
           <Input label="Testemunhas" value={form.testemunhas} onChange={(event) => setField("testemunhas", event.target.value)} />
           <label className="ui-field span-2" htmlFor="descricao">

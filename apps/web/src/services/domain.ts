@@ -99,6 +99,7 @@ export interface OcorrenciaHistorico {
   acao: string;
   observacao: string | null;
   usuarioId: string;
+  usuarioNome: string;
   criadoEm: string;
 }
 

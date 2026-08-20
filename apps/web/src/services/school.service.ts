@@ -3,6 +3,7 @@ import type {
   Aluno,
   AlunoComResumoOcorrencias,
   AlunoDetalhado,
+  AlunoTurmaHistorico,
   AlunoDetalhadoComResumoOcorrencias,
   ApiData,
   CreateAlunoPayload,

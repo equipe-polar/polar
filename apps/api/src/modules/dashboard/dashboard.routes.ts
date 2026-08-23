@@ -13,6 +13,7 @@ export function dashboardRoutes(services: Services, config: AppConfig): Router {
   router.use(authenticate(config));
   router.get("/", authorize(Permissao.CONSULTAR_OCORRENCIAS), asyncHandler(controller.resumo));
   router.get("/resumo", authorize(Permissao.CONSULTAR_OCORRENCIAS), asyncHandler(controller.resumo));
+  router.get("/movimentacoes-recentes", authorize(Permissao.CONSULTAR_OCORRENCIAS), asyncHandler(controller.movimentacoesRecentes));
 
   return router;
 }

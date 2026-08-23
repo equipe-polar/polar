@@ -18,4 +18,9 @@ export class DashboardController {
     const actor = requireActor(req);
     return res.json({ data: await this.services.dashboard.resumo(actor) });
   };
+
+  movimentacoesRecentes = async (req: Request, res: Response): Promise<Response> => {
+    const actor = requireActor(req);
+    return res.json({ data: await this.services.dashboard.movimentacoesRecentes(actor) });
+  };
 }

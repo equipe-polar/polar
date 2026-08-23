@@ -18,6 +18,7 @@ export function ocorrenciasRoutes(services: Services, config: AppConfig): Router
   router.put("/:id", authorize(Permissao.REGISTRAR_OCORRENCIA), asyncHandler(controller.update));
   router.patch("/:id/status", authorize(Permissao.CONSULTAR_OCORRENCIAS), asyncHandler(controller.updateStatus));
   router.get("/:id/historico", authorize(Permissao.CONSULTAR_HISTORICO), asyncHandler(controller.historico));
+  router.get("/:id/notificacoes", authorize(Permissao.CONSULTAR_HISTORICO), asyncHandler(controller.notificacoes));
   router.put("/:id/historico/:historicoId", asyncHandler(controller.bloquearEdicaoHistorico));
   router.patch("/:id/historico/:historicoId", asyncHandler(controller.bloquearEdicaoHistorico));
 

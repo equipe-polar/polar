@@ -14,6 +14,7 @@ import {
   PapelUsuario,
   PrioridadeOcorrencia,
   StatusOcorrencia,
+  TipoEnsino,
   type Aluno,
   type Ocorrencia,
   type OcorrenciaHistorico,
@@ -42,7 +43,7 @@ describe.runIf(Boolean(url))("repositorios PostgreSQL (contrato)", () => {
     // TRUNCATE unico com CASCADE: o Postgres resolve a ordem das FKs sozinho,
     // sem precisar desligar a checagem de chave estrangeira como no MySQL.
     await pool.query(
-      "TRUNCATE TABLE audit_logs, faltas, notas, ocorrencia_historico, ocorrencias, alunos, turmas, users RESTART IDENTITY CASCADE"
+      "TRUNCATE TABLE audit_logs, notificacoes_ocorrencia, faltas, notas, ocorrencia_historico, ocorrencias, alunos_turmas_historico, alunos, turmas, users RESTART IDENTITY CASCADE"
     );
   });
 
@@ -97,6 +98,7 @@ describe.runIf(Boolean(url))("repositorios PostgreSQL (contrato)", () => {
       nome: `Turma Nota ${novoId().slice(0, 6)}`,
       anoLetivo: 2026,
       turno: "Manhã",
+      tipoEnsino: TipoEnsino.REGULAR,
       ativa: true,
       criadoEm: now,
       atualizadoEm: now
@@ -146,6 +148,7 @@ describe.runIf(Boolean(url))("repositorios PostgreSQL (contrato)", () => {
       nome: `3ºB - Programação ${novoId().slice(0, 6)}`,
       anoLetivo: 2026,
       turno: "Manhã",
+      tipoEnsino: TipoEnsino.TECNICO,
       ativa: true,
       criadoEm: now,
       atualizadoEm: now
@@ -207,6 +210,7 @@ describe.runIf(Boolean(url))("repositorios PostgreSQL (contrato)", () => {
       nome: `Turma Contrato ${novoId().slice(0, 6)}`,
       anoLetivo: 2026,
       turno: "Tarde",
+      tipoEnsino: TipoEnsino.REGULAR,
       ativa: true,
       criadoEm: now,
       atualizadoEm: now
@@ -285,6 +289,7 @@ describe.runIf(Boolean(url))("repositorios PostgreSQL (contrato)", () => {
       nome: `Turma Dup ${novoId().slice(0, 6)}`,
       anoLetivo: 2026,
       turno: "Manhã",
+      tipoEnsino: TipoEnsino.REGULAR,
       ativa: true,
       criadoEm: now,
       atualizadoEm: now

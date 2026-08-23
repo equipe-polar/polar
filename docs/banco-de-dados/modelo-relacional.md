@@ -16,6 +16,7 @@ erDiagram
     alunos ||--o{ notas : "possui"
     alunos ||--o{ faltas : "possui"
     ocorrencias ||--o{ ocorrencia_historico : "gera (append-only)"
+    ocorrencias ||--o{ notificacoes_ocorrencia : "encaminha"
 
     users {
         char36 id PK
@@ -34,6 +35,7 @@ erDiagram
         varchar nome UK
         int ano_letivo
         varchar turno
+        enum tipo_ensino "REGULAR|TECNICO"
         tinyint ativa
     }
     alunos {
@@ -61,6 +63,13 @@ erDiagram
         varchar acao
         text observacao "encaminhamento opcional"
         char36 usuario_id FK
+        datetime criado_em
+    }
+    notificacoes_ocorrencia {
+        char36 id PK
+        char36 ocorrencia_id FK
+        varchar destinatario "PAET|COORDENACAO|DIRECAO"
+        varchar resultado "ENVIADO"
         datetime criado_em
     }
     notas {
@@ -96,11 +105,12 @@ erDiagram
 | Tabela | Papel no domínio | Chaves e restrições |
 | --- | --- | --- |
 | `users` | Contas que autenticam | PK `id`; UNIQUE `email`; `papel` do tipo `papel_usuario`; senha só em hash |
-| `turmas` | Agrupamento institucional | PK `id`; UNIQUE `nome`; inativação lógica (`ativa`) |
+| `turmas` | Agrupamento institucional | PK `id`; UNIQUE `nome`; `tipo_ensino` é `REGULAR` ou `TECNICO`; inativação lógica (`ativa`) |
 | `alunos` | Entidade de dados (não autentica) | PK `id`; UNIQUE `matricula`; FK `turma_id`; inativação lógica |
 | `categorias_ocorrencia` | Tipos oficiais de ocorrência | PK `id`; UNIQUE `nome`; desativa sem excluir |
 | `ocorrencias` | Núcleo do domínio | FKs `aluno_id`, `criado_por_id`; ENUMs de status/prioridade; sem DELETE |
 | `ocorrencia_historico` | Trilha imutável | FKs; **append-only: só INSERT em todas as camadas** |
+| `notificacoes_ocorrencia` | Encaminhamentos automáticos | FK da ocorrência; destinatário validado e resultado do envio registrado |
 | `notas` | Módulo acadêmico (bônus) | FK aluno/professor; CHECK `valor` 0–10 |
 | `faltas` | Módulo acadêmico (bônus) | UNIQUE `(aluno_id, data)` impede falta duplicada no dia |
 | `audit_logs` | Auditoria de ações sensíveis | `metadata` JSONB; índice por entidade |
@@ -115,7 +125,7 @@ erDiagram
 ## Regras de integridade que o banco garante
 
 1. FKs impedem ocorrência sem aluno, aluno sem turma, histórico sem ocorrência.
-2. Os tipos `status_ocorrencia`, `papel_usuario` e `prioridade_ocorrencia` impedem valores fora do domínio (defesa em profundidade — o backend valida antes).
+2. Os tipos `status_ocorrencia`, `papel_usuario`, `prioridade_ocorrencia` e `tipo_ensino` impedem valores fora do domínio (defesa em profundidade — o backend valida antes).
 3. UNIQUEs impedem e-mail, matrícula e nome de turma duplicados, e falta duplicada por dia.
 4. CHECK impede nota fora de 0–10.
 5. Datas em `TIMESTAMPTZ(3)` UTC geradas pelo backend — o banco nunca inventa data de negócio.

@@ -6,7 +6,8 @@ import { useAuth } from "../../app/providers";
 import { PageHeader } from "../../components/layout/PageHeader";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
-import type { OcorrenciaDetalhada, OcorrenciaHistorico, StatusOcorrencia } from "../../services/domain";
+import type { NotificacaoOcorrencia, OcorrenciaDetalhada, OcorrenciaHistorico, StatusOcorrencia } from "../../services/domain";
+import { listNotificacoesOcorrencia } from "../../services/school.service";
 import { getOcorrenciaDetalhada, listHistoricoOcorrencia, updateOcorrenciaStatus } from "./ocorrencias.service";
 import { PrioridadeBadge, StatusBadge } from "./status";
 
@@ -29,11 +30,23 @@ const expectedCurrentStatus: Record<StatusOcorrencia, StatusOcorrencia> = {
   REGISTRADA: "REGISTRADA"
 };
 
+function formatarDataHora(valor: string): string {
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).format(new Date(valor)).replace(",", "");
+}
+
 export function DetalheOcorrenciaPage() {
   const { id } = useParams();
   const { user } = useAuth();
   const [ocorrencia, setOcorrencia] = useState<OcorrenciaDetalhada | null>(null);
   const [historico, setHistorico] = useState<OcorrenciaHistorico[]>([]);
+  const [notificacoes, setNotificacoes] = useState<NotificacaoOcorrencia[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
@@ -43,9 +56,14 @@ export function DetalheOcorrenciaPage() {
     if (!id) return;
     setLoading(true);
     try {
-      const [nextOcorrencia, nextHistorico] = await Promise.all([getOcorrenciaDetalhada(id), listHistoricoOcorrencia(id)]);
+      const [nextOcorrencia, nextHistorico, nextNotificacoes] = await Promise.all([
+        getOcorrenciaDetalhada(id),
+        listHistoricoOcorrencia(id),
+        listNotificacoesOcorrencia(id)
+      ]);
       setOcorrencia(nextOcorrencia);
       setHistorico(nextHistorico);
+      setNotificacoes(nextNotificacoes);
       setError("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nao foi possivel carregar a ocorrencia.");
@@ -169,10 +187,28 @@ export function DetalheOcorrenciaPage() {
                 <span className="muted">
                   {item.status} por {item.usuarioNome}
                 </span>
+                <time className="muted" dateTime={item.criadoEm}>
+                  {formatarDataHora(item.criadoEm)}
+                </time>
                 {item.observacao ? <span className="muted">Observacao: {item.observacao}</span> : null}
               </li>
             ))}
           </ol>
+        </Card>
+        <Card title="Encaminhamentos automaticos">
+          {notificacoes.length === 0 ? (
+            <p className="muted">Nenhum encaminhamento registrado para esta ocorrencia.</p>
+          ) : (
+            <ul className="timeline">
+              {notificacoes.map((notificacao) => (
+                <li key={notificacao.id}>
+                  <strong>{notificacao.destinatario}</strong>
+                  <span className="muted">Resultado: {notificacao.resultado}</span>
+                  <time className="muted" dateTime={notificacao.criadoEm}>{formatarDataHora(notificacao.criadoEm)}</time>
+                </li>
+              ))}
+            </ul>
+          )}
         </Card>
       </div>
     </>

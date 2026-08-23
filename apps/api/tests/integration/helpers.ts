@@ -1,11 +1,24 @@
 import bcrypt from "bcryptjs";
+import { randomBytes } from "node:crypto";
 import request from "supertest";
 import type { Express } from "express";
 import { createApp } from "../../src/app.js";
 import type { AppConfig } from "../../src/shared/config.js";
 import { createInitialState, createMemoryDatabase, type DatabaseClient } from "../../src/shared/database/database.js";
-import { PapelUsuario, type Usuario } from "../../src/shared/domain.js";
+import { PapelUsuario, TipoEnsino, type Usuario } from "../../src/shared/domain.js";
 import { agoraIso, novoId } from "../../src/shared/utils/ids.js";
+
+const valorAleatorioDeTeste = (): string => randomBytes(24).toString("base64url");
+
+export const SENHAS_TESTE = {
+  adm: valorAleatorioDeTeste(),
+  professor: valorAleatorioDeTeste(),
+  coordenador: valorAleatorioDeTeste(),
+  diretor: valorAleatorioDeTeste(),
+  estudante: valorAleatorioDeTeste()
+} as const;
+
+const segredoJwtDeTeste = randomBytes(48).toString("base64url");
 
 export interface TestContext {
   app: Express;
@@ -25,7 +38,7 @@ export const testConfig: AppConfig = {
   nodeEnv: "test",
   port: 3000,
   corsOrigin: "*",
-  jwtSecret: "teste-jwt-secret-com-mais-de-32-caracteres",
+  jwtSecret: segredoJwtDeTeste,
   jwtExpiresIn: "1h",
   databaseProvider: "json",
   databaseJsonPath: "apps/api/data/test.json",
@@ -54,11 +67,11 @@ function usuario(nome: string, email: string, papel: PapelUsuario, senhaHash: st
 export async function buildTestContext(): Promise<TestContext> {
   const state = createInitialState();
   const [admHash, professorHash, coordenadorHash, diretorHash, estudanteHash] = await Promise.all([
-    bcrypt.hash("Adm12345!", 10),
-    bcrypt.hash("Professor123!", 10),
-    bcrypt.hash("Coord12345!", 10),
-    bcrypt.hash("Diretor123!", 10),
-    bcrypt.hash("Aluno12345!", 10)
+    bcrypt.hash(SENHAS_TESTE.adm, 10),
+    bcrypt.hash(SENHAS_TESTE.professor, 10),
+    bcrypt.hash(SENHAS_TESTE.coordenador, 10),
+    bcrypt.hash(SENHAS_TESTE.diretor, 10),
+    bcrypt.hash(SENHAS_TESTE.estudante, 10)
   ]);
 
   const adm = usuario("Admin", "adm@pola.test", PapelUsuario.ADM, admHash);
@@ -75,6 +88,7 @@ export async function buildTestContext(): Promise<TestContext> {
     nome: "8A",
     anoLetivo: 2026,
     turno: "Manha",
+    tipoEnsino: TipoEnsino.REGULAR,
     ativa: true,
     criadoEm: now,
     atualizadoEm: now
@@ -83,11 +97,11 @@ export async function buildTestContext(): Promise<TestContext> {
 
   const aluno = {
     id: novoId(),
-    nome: "Maria Eduarda",
+    nome: "Estudante de teste",
     matricula: "2026001",
     turmaId: turma.id,
-    responsavelNome: "Maria Silva",
-    responsavelContato: "(11) 99999-0000",
+    responsavelNome: "Responsavel de teste",
+    responsavelContato: "nao-informado",
     ativo: true,
     criadoEm: now,
     atualizadoEm: now
@@ -118,10 +132,10 @@ export async function login(app: Express, email: string, senha: string): Promise
 
 export async function tokens(app: Express) {
   return {
-    adm: await login(app, "adm@pola.test", "Adm12345!"),
-    professor: await login(app, "professor@pola.test", "Professor123!"),
-    coordenador: await login(app, "coordenador@pola.test", "Coord12345!"),
-    diretor: await login(app, "diretor@pola.test", "Diretor123!"),
-    estudante: await login(app, "estudante@pola.test", "Aluno12345!")
+    adm: await login(app, "adm@pola.test", SENHAS_TESTE.adm),
+    professor: await login(app, "professor@pola.test", SENHAS_TESTE.professor),
+    coordenador: await login(app, "coordenador@pola.test", SENHAS_TESTE.coordenador),
+    diretor: await login(app, "diretor@pola.test", SENHAS_TESTE.diretor),
+    estudante: await login(app, "estudante@pola.test", SENHAS_TESTE.estudante)
   };
 }

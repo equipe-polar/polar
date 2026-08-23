@@ -7,8 +7,8 @@ import { iniciaisDe, rotuloDePapel } from "../../components/layout/iniciais";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { Table } from "../../components/ui/Table";
-import { getDashboardResumo, listOcorrenciasDetalhadas } from "../../services/school.service";
-import type { DashboardResumo, OcorrenciaDetalhada } from "../../services/domain";
+import { getDashboardResumo, listMovimentacoesRecentes, listOcorrenciasDetalhadas } from "../../services/school.service";
+import type { DashboardResumo, MovimentacaoRecente, OcorrenciaDetalhada } from "../../services/domain";
 import { contarPendencias, descricaoPendencias, statusPendentes } from "../ocorrencias/pendencias";
 import { DiasEmAberto } from "../ocorrencias/DiasEmAberto";
 import { PrioridadeBadge, StatusBadge } from "../ocorrencias/status";
@@ -25,6 +25,7 @@ export function DashboardPage() {
   const { user } = useAuth();
   const [resumo, setResumo] = useState<DashboardResumo>(emptyResumo);
   const [ocorrencias, setOcorrencias] = useState<OcorrenciaDetalhada[]>([]);
+  const [movimentacoes, setMovimentacoes] = useState<MovimentacaoRecente[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -33,10 +34,15 @@ export function DashboardPage() {
 
     async function load() {
       try {
-        const [nextResumo, nextOcorrencias] = await Promise.all([getDashboardResumo(), listOcorrenciasDetalhadas()]);
+        const [nextResumo, nextOcorrencias, nextMovimentacoes] = await Promise.all([
+          getDashboardResumo(),
+          listOcorrenciasDetalhadas(),
+          listMovimentacoesRecentes()
+        ]);
         if (!active) return;
         setResumo(nextResumo);
         setOcorrencias(nextOcorrencias.slice(0, 5));
+        setMovimentacoes(nextMovimentacoes);
         setError("");
       } catch (err) {
         if (!active) return;
@@ -158,45 +164,56 @@ export function DashboardPage() {
             )}
           </Card>
 
-          <Card title="Acoes rapidas">
-            <div className="actions-row">
-              <Link to="/ocorrencias">
-                <Button variant="secondary" icon={<FileText size={18} />}>
-                  Ocorrencias
-                </Button>
-              </Link>
-              {canAccess(user?.papel, "relatorios:view") ? (
-                <Link to="/relatorios">
+          <div className="page-grid">
+            <Card title="Acoes rapidas">
+              <div className="actions-row">
+                <Link to="/ocorrencias">
                   <Button variant="secondary" icon={<FileText size={18} />}>
-                    Relatorios
+                    Ocorrencias
                   </Button>
                 </Link>
-              ) : null}
-            </div>
-          </Card>
+                {canAccess(user?.papel, "relatorios:view") ? (
+                  <Link to="/relatorios">
+                    <Button variant="secondary" icon={<FileText size={18} />}>
+                      Relatorios
+                    </Button>
+                  </Link>
+                ) : null}
+              </div>
+            </Card>
+            <MovimentacoesRecentesPanel movimentacoes={movimentacoes} loading={loading} />
+          </div>
         </div>
       </div>
     </>
   );
 }
-export function MovimentacoesRecentesPanel() {
-  const exemploMovimentacoes = [
-    { usuario: 'Ana Beatriz', statusAnterior: 'Aberta', statusNovo: 'Em andamento', data: '2026-08-10T09:00:00Z' },
-    { usuario: 'José', statusAnterior: 'Em andamento', statusNovo: 'Resolvida', data: '2026-08-11T14:30:00Z' },
-  ];
-
+function MovimentacoesRecentesPanel({ movimentacoes, loading }: { movimentacoes: MovimentacaoRecente[]; loading: boolean }) {
   return (
-    <aside>
-      <h3>Movimentações recentes</h3>
-      <ul>
-        {exemploMovimentacoes.map((item, index) => (
-          <li key={index}>
-            <strong>{item.usuario}</strong>
-            <span>{item.statusAnterior} → {item.statusNovo}</span>
-            <small>{new Date(item.data).toLocaleString()}</small>
-          </li>
-        ))}
-      </ul>
-    </aside>
+    <Card title="Movimentacoes recentes">
+      {loading ? (
+        <p className="muted">Carregando movimentacoes...</p>
+      ) : movimentacoes.length === 0 ? (
+        <p className="muted">Nenhuma movimentacao disponivel no seu escopo.</p>
+      ) : (
+        <ul className="timeline">
+          {movimentacoes.map((item) => (
+            <li key={item.id}>
+              <strong>{item.usuarioNome}</strong>
+              <span className="muted">{item.acao} ({item.status})</span>
+              <time className="muted" dateTime={item.criadoEm}>
+                {new Intl.DateTimeFormat("pt-BR", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit"
+                }).format(new Date(item.criadoEm))}
+              </time>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
   );
 }

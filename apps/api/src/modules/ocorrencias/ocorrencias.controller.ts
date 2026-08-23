@@ -58,6 +58,12 @@ export class OcorrenciasController {
     return res.json({ data: await this.services.ocorrencias.historico(params.id, actor) });
   };
 
+  notificacoes = async (req: Request, res: Response): Promise<Response> => {
+    const actor = requireActor(req);
+    const params = idParamSchema.parse(req.params);
+    return res.json({ data: await this.services.ocorrencias.notificacoesDaOcorrencia(params.id, actor) });
+  };
+
   bloquearEdicaoHistorico = async (_req: Request, res: Response): Promise<Response> => {
     return res.status(405).json({
       error: {

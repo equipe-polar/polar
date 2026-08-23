@@ -9,6 +9,7 @@ import { PostgresOcorrenciaRepository } from "./ocorrencia.repository.postgres.j
 import { PostgresNotaRepository } from "./nota.repository.postgres.js";
 import { PostgresFaltaRepository } from "./falta.repository.postgres.js";
 import { PostgresAuditRepository } from "./audit.repository.postgres.js";
+import { PostgresNotificacaoOcorrenciaRepository } from "./notificacao-ocorrencia.repository.postgres.js";
 
 export { createPostgresPool, withTransaction } from "./postgres-client.js";
 
@@ -20,6 +21,7 @@ export function createPostgresRepositories(pool: Pool): Repositories {
     alunosTurmasHistorico: new PostgresAlunoTurmaHistoricoRepository(pool),
     viradaAno: new PostgresViradaAnoRepository(pool),
     ocorrencias: new PostgresOcorrenciaRepository(pool),
+    notificacoesOcorrencia: new PostgresNotificacaoOcorrenciaRepository(pool),
     notas: new PostgresNotaRepository(pool),
     faltas: new PostgresFaltaRepository(pool),
     audit: new PostgresAuditRepository(pool)

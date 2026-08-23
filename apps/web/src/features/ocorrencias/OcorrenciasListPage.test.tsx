@@ -8,14 +8,14 @@ describe("OcorrenciasListPage", () => {
   it("renderiza tabela com ocorrencias", async () => {
     renderWithProviders(<OcorrenciasListPage />, ["/ocorrencias"]);
 
-    expect(await screen.findByText("Maria Eduarda")).toBeInTheDocument();
-    expect(screen.getByText("Lucas Pereira")).toBeInTheDocument();
+    expect(await screen.findByText("Estudante 01")).toBeInTheDocument();
+    expect(screen.getByText("Estudante 02")).toBeInTheDocument();
     expect(screen.getByRole("table")).toBeInTheDocument();
   });
 
   it("filtra e ordena pelo nivel textual de prioridade", async () => {
     renderWithProviders(<OcorrenciasListPage />, ["/ocorrencias"]);
-    await screen.findByText("Maria Eduarda");
+    await screen.findByText("Estudante 01");
 
     await userEvent.selectOptions(screen.getByLabelText("Prioridade"), "ALTA");
     const linhasFiltradas = within(screen.getByRole("table")).getAllByRole("row");

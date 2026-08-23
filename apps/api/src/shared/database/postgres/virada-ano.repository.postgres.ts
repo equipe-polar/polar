@@ -25,13 +25,14 @@ export class PostgresViradaAnoRepository
 
         await client.query(
           `INSERT INTO turmas
-            (id, nome, ano_letivo, turno, ativa, criado_em, atualizado_em)
-           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            (id, nome, ano_letivo, turno, tipo_ensino, ativa, criado_em, atualizado_em)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
           [
             turma.id,
             turma.nome,
             turma.anoLetivo,
             turma.turno,
+            turma.tipoEnsino,
             turma.ativa,
             dbDateTime(turma.criadoEm),
             dbDateTime(turma.atualizadoEm)
@@ -58,6 +59,20 @@ export class PostgresViradaAnoRepository
         );
 
         for (const aluno of turmaInput.alunos) {
+          await client.query(
+            `INSERT INTO alunos_turmas_historico
+              (id, aluno_id, turma_id, ano_letivo, criado_em)
+             VALUES ($1, $2, $3, $4, $5)
+             ON CONFLICT (aluno_id, ano_letivo) DO NOTHING`,
+            [
+              crypto.randomUUID(),
+              aluno.id,
+              turmaInput.turmaOrigem.id,
+              turmaInput.turmaOrigem.anoLetivo,
+              agora
+            ]
+          );
+
           const updateResult = await client.query(
             `UPDATE alunos
                 SET turma_id = $1,
@@ -83,7 +98,8 @@ export class PostgresViradaAnoRepository
           await client.query(
             `INSERT INTO alunos_turmas_historico
               (id, aluno_id, turma_id, ano_letivo, criado_em)
-             VALUES ($1, $2, $3, $4, $5)`,
+             VALUES ($1, $2, $3, $4, $5)
+             ON CONFLICT (aluno_id, ano_letivo) DO NOTHING`,
             [
               crypto.randomUUID(),
               aluno.id,

@@ -1,5 +1,5 @@
 import type { Pool } from "pg";
-import type { Turma } from "../../domain.js";
+import type { TipoEnsino, Turma } from "../../domain.js";
 import type { TurmaRepository } from "../repositories/turma.repository.js";
 import { dbDateTime, isoFromDbRequired, withTransaction } from "./postgres-client.js";
 
@@ -8,6 +8,7 @@ interface TurmaRow {
   nome: string;
   ano_letivo: number;
   turno: string;
+  tipo_ensino: TipoEnsino;
   ativa: boolean;
   criado_em: Date;
   atualizado_em: Date;
@@ -19,13 +20,14 @@ function toTurma(row: TurmaRow): Turma {
     nome: row.nome,
     anoLetivo: row.ano_letivo,
     turno: row.turno,
+    tipoEnsino: row.tipo_ensino,
     ativa: row.ativa,
     criadoEm: isoFromDbRequired(row.criado_em),
     atualizadoEm: isoFromDbRequired(row.atualizado_em)
   };
 }
 
-const COLUNAS = "id, nome, ano_letivo, turno, ativa, criado_em, atualizado_em";
+const COLUNAS = "id, nome, ano_letivo, turno, tipo_ensino, ativa, criado_em, atualizado_em";
 
 export class PostgresTurmaRepository implements TurmaRepository {
   constructor(private readonly pool: Pool) {}
@@ -51,11 +53,12 @@ export class PostgresTurmaRepository implements TurmaRepository {
   }
 
   async create(turma: Turma): Promise<Turma> {
-    await this.pool.query(`INSERT INTO turmas (${COLUNAS}) VALUES ($1, $2, $3, $4, $5, $6, $7)`, [
+    await this.pool.query(`INSERT INTO turmas (${COLUNAS}) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`, [
       turma.id,
       turma.nome,
       turma.anoLetivo,
       turma.turno,
+      turma.tipoEnsino,
       turma.ativa,
       dbDateTime(turma.criadoEm),
       dbDateTime(turma.atualizadoEm)
@@ -76,8 +79,8 @@ export class PostgresTurmaRepository implements TurmaRepository {
 
       const updated = updater(toTurma(row));
       await client.query(
-        `UPDATE turmas SET nome = $1, ano_letivo = $2, turno = $3, ativa = $4, atualizado_em = $5 WHERE id = $6`,
-        [updated.nome, updated.anoLetivo, updated.turno, updated.ativa, dbDateTime(updated.atualizadoEm), id]
+        `UPDATE turmas SET nome = $1, ano_letivo = $2, turno = $3, tipo_ensino = $4, ativa = $5, atualizado_em = $6 WHERE id = $7`,
+        [updated.nome, updated.anoLetivo, updated.turno, updated.tipoEnsino, updated.ativa, dbDateTime(updated.atualizadoEm), id]
       );
       return updated;
     });

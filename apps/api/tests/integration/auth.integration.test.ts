@@ -1,13 +1,13 @@
 import request from "supertest";
 import { describe, expect, it } from "vitest";
-import { buildTestContext } from "./helpers.js";
+import { buildTestContext, SENHAS_TESTE } from "./helpers.js";
 
 describe("Auth", () => {
   it("realiza login valido sem vazar senha ou hash", async () => {
     const { app } = await buildTestContext();
     const response = await request(app)
       .post("/api/auth/login")
-      .send({ email: "adm@pola.test", senha: "Adm12345!" })
+      .send({ email: "adm@pola.test", senha: SENHAS_TESTE.adm })
       .expect(200);
 
     expect(response.body.token).toEqual(expect.any(String));
@@ -18,7 +18,7 @@ describe("Auth", () => {
 
   it("recusa usuario inexistente e senha incorreta", async () => {
     const { app } = await buildTestContext();
-    await request(app).post("/api/auth/login").send({ email: "nada@pola.test", senha: "Adm12345!" }).expect(401);
+    await request(app).post("/api/auth/login").send({ email: "nada@pola.test", senha: SENHAS_TESTE.adm }).expect(401);
     await request(app).post("/api/auth/login").send({ email: "adm@pola.test", senha: "senha-errada" }).expect(401);
   });
 
@@ -28,7 +28,7 @@ describe("Auth", () => {
       await request(app).post("/api/auth/login").send({ email: "adm@pola.test", senha: "senha-errada" }).expect(401);
     }
 
-    await request(app).post("/api/auth/login").send({ email: "adm@pola.test", senha: "Adm12345!" }).expect(423);
+    await request(app).post("/api/auth/login").send({ email: "adm@pola.test", senha: SENHAS_TESTE.adm }).expect(423);
   });
 
   it("recusa token ausente e token invalido", async () => {

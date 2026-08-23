@@ -30,13 +30,13 @@ Object.defineProperty(globalThis, "localStorage", {
 });
 
 const turmas = [
-  { id: "t1", nome: "8A", anoLetivo: 2026, turno: "Manha", ativa: true },
-  { id: "t2", nome: "9B", anoLetivo: 2026, turno: "Tarde", ativa: true }
+  { id: "t1", nome: "8A", anoLetivo: 2026, turno: "Manha", tipoEnsino: "REGULAR", ativa: true },
+  { id: "t2", nome: "9B", anoLetivo: 2026, turno: "Tarde", tipoEnsino: "TECNICO", ativa: true }
 ];
 
 const alunos = [
-  { id: "a1", nome: "Maria Eduarda", matricula: "2026001", turmaId: "t1", ativo: true },
-  { id: "a2", nome: "Lucas Pereira", matricula: "2026002", turmaId: "t2", ativo: true }
+  { id: "a1", nome: "Estudante 01", matricula: "2026001", turmaId: "t1", ativo: true },
+  { id: "a2", nome: "Estudante 02", matricula: "2026002", turmaId: "t2", ativo: true }
 ];
 
 const ocorrencias = [
@@ -47,7 +47,7 @@ const ocorrencias = [
     prioridade: "ALTA",
     descricao: "Discussao recorrente no intervalo.",
     local: "Patio",
-    testemunhas: "Professor Roberto",
+    testemunhas: "Pessoa testemunha",
     status: "EM_ANALISE",
     criadoPorId: "u1",
     criadoEm: "2026-05-20T10:00:00.000Z",
@@ -114,8 +114,14 @@ beforeEach(() => {
         });
       }
 
+      if (pathname === "/dashboard/movimentacoes-recentes") {
+        return jsonResponse({
+          data: [{ id: "m1", ocorrenciaId: "o1", acao: "Ocorrencia registrada", status: "REGISTRADA", usuarioNome: "Teste", criadoEm: "2026-05-20T10:00:00.000Z" }]
+        });
+      }
+
       if (pathname === "/turmas" && method === "POST") {
-        return jsonResponse({ data: { id: "t3", nome: "1A", anoLetivo: 2026, turno: "Manha", ativa: true } }, 201);
+        return jsonResponse({ data: { id: "t3", nome: "1A", anoLetivo: 2026, turno: "Manha", tipoEnsino: "REGULAR", ativa: true } }, 201);
       }
 
       if (pathname.startsWith("/turmas/") && method === "PATCH") {
@@ -141,6 +147,10 @@ beforeEach(() => {
         return jsonResponse({ data: alunos });
       }
 
+      if (pathname.endsWith("/historico-turmas")) {
+        return jsonResponse({ data: [{ id: "ht1", alunoId: "a1", turmaId: "t1", anoLetivo: 2026, criadoEm: "2026-01-01T10:00:00.000Z" }] });
+      }
+
       if (pathname.startsWith("/alunos/")) {
         const id = pathname.split("/").at(-1);
         return jsonResponse({ data: alunos.find((aluno) => aluno.id === id) ?? alunos[0] });
@@ -156,6 +166,10 @@ beforeEach(() => {
 
       if (pathname.endsWith("/historico")) {
         return jsonResponse({ data: historico });
+      }
+
+      if (pathname.endsWith("/notificacoes")) {
+        return jsonResponse({ data: [] });
       }
 
       if (pathname.includes("/ocorrencias/") && pathname.endsWith("/status")) {
@@ -186,7 +200,9 @@ beforeEach(() => {
             byStatus: { REGISTRADA: 1, EM_ANALISE: 1 },
             byPriority: { MEDIA: 1, ALTA: 1 },
             byCategory: { Convivencia: 1, Atraso: 1 },
-            recent: ocorrencias
+            recent: ocorrencias,
+            byTurma: [{ nome: "8A", total: 1 }, { nome: "9B", total: 1 }],
+            byPeriodo: [{ periodo: "2026-05", total: 2 }]
           }
         });
       }
@@ -196,14 +212,14 @@ beforeEach(() => {
       }
 
       if (pathname.startsWith("/usuarios/") && method === "PATCH") {
-        return jsonResponse({ data: { id: "u1", nome: "Marina Almeida", email: "marina@polar.local", papel: "ADM", ativo: false } });
+        return jsonResponse({ data: { id: "u1", nome: "Usuario 01", email: "usuario01@polar.local", papel: "ADM", ativo: false } });
       }
 
       if (pathname === "/usuarios") {
         return jsonResponse({
           data: [
-            { id: "u1", nome: "Marina Almeida", email: "marina@polar.local", papel: "ADM", ativo: true },
-            { id: "u2", nome: "Roberto Lima", email: "roberto@polar.local", papel: "COORDENADOR", ativo: true }
+            { id: "u1", nome: "Usuario 01", email: "usuario01@polar.local", papel: "ADM", ativo: true },
+            { id: "u2", nome: "Usuario 02", email: "usuario02@polar.local", papel: "COORDENADOR", ativo: true }
           ]
         });
       }

@@ -231,6 +231,14 @@
 }
 
 @media (max-width: 720px) {
+  .ui-table-wrap {
+    overflow-x: visible;
+  }
+
+  .ui-table {
+    min-width: 0;
+  }
+
   .ui-table thead {
     display: none;
   }
@@ -258,3 +266,18 @@
     color: #374151;
   }
 }
+
+.report-chart {
+  display: block;
+  width: 100%;
+  min-height: 220px;
+  margin-bottom: var(--space-3);
+  overflow: visible;
+}
+
+.report-chart__bar { fill: #2563eb; }
+.report-chart__axis { stroke: #98a2b3; stroke-width: 1; }
+.report-chart__line { stroke: #16a34a; stroke-width: 3; }
+.report-chart__point { fill: #16a34a; }
+.report-chart__value { fill: #344054; font-size: 12px; font-weight: 700; }
+.report-chart__label { fill: #475467; font-size: 11px; }

@@ -16,7 +16,7 @@ describe("AlunosPage", () => {
     const user = userEvent.setup();
     renderWithProviders(<AlunosPage />);
 
-    expect(await screen.findByText("Maria Eduarda")).toBeInTheDocument();
+    expect(await screen.findByText("Estudante 01")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /novo aluno/i }));
     expect(screen.getByRole("dialog", { name: /novo aluno/i })).toBeInTheDocument();

@@ -4,8 +4,8 @@ import { PageHeader } from "../../components/layout/PageHeader";
 import { Card } from "../../components/ui/Card";
 import { Table } from "../../components/ui/Table";
 import { Tabs } from "../../components/ui/Tabs";
-import type { AlunoDetalhado, Falta, Nota, OcorrenciaDetalhada } from "../../services/domain";
-import { getAlunoDetalhado, listFaltasByAluno, listNotasByAluno, listOcorrenciasDetalhadas } from "../../services/school.service";
+import type { AlunoDetalhado, AlunoTurmaHistorico, Falta, Nota, OcorrenciaDetalhada, Turma } from "../../services/domain";
+import { getAlunoDetalhado, listFaltasByAluno, listHistoricoTurmas, listNotasByAluno, listOcorrenciasDetalhadas, listTurmas } from "../../services/school.service";
 import { StatusBadge } from "../ocorrencias/status";
 
 export function PerfilAlunoPage() {
@@ -15,6 +15,8 @@ export function PerfilAlunoPage() {
   const [ocorrencias, setOcorrencias] = useState<OcorrenciaDetalhada[]>([]);
   const [notas, setNotas] = useState<Nota[]>([]);
   const [faltas, setFaltas] = useState<Falta[]>([]);
+  const [historicoTurmas, setHistoricoTurmas] = useState<AlunoTurmaHistorico[]>([]);
+  const [turmas, setTurmas] = useState<Turma[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -24,17 +26,21 @@ export function PerfilAlunoPage() {
     async function load() {
       if (!id) return;
       try {
-        const [nextAluno, nextOcorrencias, nextNotas, nextFaltas] = await Promise.all([
+        const [nextAluno, nextOcorrencias, nextNotas, nextFaltas, nextHistoricoTurmas, nextTurmas] = await Promise.all([
           getAlunoDetalhado(id),
           listOcorrenciasDetalhadas(),
           listNotasByAluno(id),
-          listFaltasByAluno(id)
+          listFaltasByAluno(id),
+          listHistoricoTurmas(id),
+          listTurmas()
         ]);
         if (!activeRequest) return;
         setAluno(nextAluno);
         setOcorrencias(nextOcorrencias.filter((item) => item.alunoId === id));
         setNotas(nextNotas);
         setFaltas(nextFaltas);
+        setHistoricoTurmas(nextHistoricoTurmas);
+        setTurmas(nextTurmas);
         setError("");
       } catch (err) {
         if (!activeRequest) return;
@@ -70,6 +76,12 @@ export function PerfilAlunoPage() {
       </>
     );
   }
+
+  const turmasPorId = new Map(turmas.map((turma) => [turma.id, turma]));
+  const historicoTurmasDetalhado = historicoTurmas.map((item) => ({
+    ...item,
+    turma: turmasPorId.get(item.turmaId)?.nome ?? "Turma nao encontrada"
+  }));
 
   return (
     <>
@@ -131,6 +143,25 @@ export function PerfilAlunoPage() {
                       { key: "data", header: "Data", render: (item) => item.data },
                       { key: "justificativa", header: "Justificativa", render: (item) => item.justificativa ?? "Sem justificativa" }
                     ]}
+                  />
+                )
+              },
+              {
+                id: "turmas",
+                label: "Turmas",
+                content: (
+                  <Table
+                    data={historicoTurmasDetalhado}
+                    columns={[
+                      { key: "ano", header: "Ano letivo", render: (item) => item.anoLetivo },
+                      { key: "turma", header: "Turma", render: (item) => item.turma },
+                      {
+                        key: "registrado", header: "Registrado em", render: (item) => new Intl.DateTimeFormat("pt-BR", {
+                          day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"
+                        }).format(new Date(item.criadoEm))
+                      }
+                    ]}
+                    empty="Nenhum vínculo de turma registrado."
                   />
                 )
               }

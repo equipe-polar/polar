@@ -3,11 +3,16 @@ import {
   PapelUsuario,
   PrioridadeOcorrencia,
   StatusOcorrencia,
+  TipoEnsino,
+  type DestinatarioNotificacao,
+  type NotificacaoOcorrencia,
   type Ocorrencia,
   type OcorrenciaHistorico
 } from "../../shared/domain.js";
 import type { AlunoRepository } from "../../shared/database/repositories/aluno.repository.js";
+import type { TurmaRepository } from "../../shared/database/repositories/turma.repository.js";
 import type { OcorrenciaRepository } from "../../shared/database/repositories/ocorrencia.repository.js";
+import type { NotificacaoOcorrenciaRepository } from "../../shared/database/repositories/notificacao-ocorrencia.repository.js";
 import type { AuditRepository } from "../../shared/database/repositories/audit.repository.js";
 import { agoraIso, novoId } from "../../shared/utils/ids.js";
 import type { AuthenticatedUser } from "../auth/auth.types.js";
@@ -65,6 +70,8 @@ export class OcorrenciasService {
   constructor(
     private readonly ocorrencias: OcorrenciaRepository,
     private readonly alunos: AlunoRepository,
+    private readonly turmas: TurmaRepository,
+    private readonly notificacoes: NotificacaoOcorrenciaRepository,
     private readonly audit: AuditRepository
   ) {}
 
@@ -100,6 +107,11 @@ export class OcorrenciasService {
     return this.ocorrencias.listHistorico(id);
   }
 
+  async notificacoesDaOcorrencia(id: string, actor: AuthenticatedUser): Promise<NotificacaoOcorrencia[]> {
+    await this.get(id, actor);
+    return this.notificacoes.listByOcorrencia(id);
+  }
+
   async create(input: OcorrenciaCreateInput, actor: AuthenticatedUser): Promise<Ocorrencia> {
     const { alunoId, categoria, descricao, prioridade } = input;
 
@@ -110,6 +122,11 @@ export class OcorrenciasService {
     const aluno = await this.alunos.findById(alunoId);
     if (!aluno || !aluno.ativo) {
       throw badRequest("Ocorrencia deve estar vinculada a aluno valido.");
+    }
+
+    const turma = await this.turmas.findById(aluno.turmaId);
+    if (!turma) {
+      throw badRequest("Turma do aluno nao encontrada.");
     }
 
     const duplicate = await this.ocorrencias.findDuplicate({
@@ -148,6 +165,21 @@ export class OcorrenciasService {
     };
 
     await this.ocorrencias.create(ocorrencia, historico);
+
+    const destinatarios: DestinatarioNotificacao[] =
+      turma.tipoEnsino === TipoEnsino.TECNICO
+        ? ["PAET", "COORDENACAO", "DIRECAO"]
+        : ["COORDENACAO", "DIRECAO"];
+
+    await this.notificacoes.createMany(
+      destinatarios.map((destinatario) => ({
+        id: novoId(),
+        ocorrenciaId: ocorrencia.id,
+        destinatario,
+        resultado: "ENVIADO" as const,
+        criadoEm: now
+      }))
+    );
     await this.audit.create({
       id: novoId(),
       usuarioId: actor.id,

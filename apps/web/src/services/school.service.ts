@@ -2,7 +2,6 @@ import { apiRequest } from "./api";
 import type {
   Aluno,
   AlunoComResumoOcorrencias,
-  AlunoTurmaHistorico,
   AlunoDetalhado,
   AlunoTurmaHistorico,
   AlunoDetalhadoComResumoOcorrencias,

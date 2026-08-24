@@ -9,6 +9,9 @@ export interface DatabaseClient {
 }
 
 function clone<T>(value: T): T {
+  if (value === undefined) {
+    return value;
+  }
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
@@ -20,6 +23,7 @@ export function createInitialState(): DatabaseState {
     alunosTurmasHistorico: [],
     ocorrencias: [],
     ocorrenciaHistorico: [],
+    notificacoesOcorrencia: [],
     notas: [],
     faltas: [],
     auditLogs: []
@@ -41,6 +45,9 @@ function normalizeState(input: Partial<DatabaseState> | null): DatabaseState {
     ocorrenciaHistorico: Array.isArray(input.ocorrenciaHistorico)
       ? input.ocorrenciaHistorico
       : base.ocorrenciaHistorico,
+    notificacoesOcorrencia: Array.isArray(input.notificacoesOcorrencia)
+      ? input.notificacoesOcorrencia
+      : base.notificacoesOcorrencia,
     notas: Array.isArray(input.notas) ? input.notas : base.notas,
     faltas: Array.isArray(input.faltas) ? input.faltas : base.faltas,
     auditLogs: Array.isArray(input.auditLogs) ? input.auditLogs : base.auditLogs
@@ -51,7 +58,7 @@ export class MemoryDatabase implements DatabaseClient {
   private state: DatabaseState;
 
   constructor(initialState: DatabaseState = createInitialState()) {
-    this.state = clone(initialState);
+    this.state = clone(normalizeState(initialState));
   }
 
   async read(): Promise<DatabaseState> {

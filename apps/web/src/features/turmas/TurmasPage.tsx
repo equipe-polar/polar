@@ -23,11 +23,21 @@ import {
   updateTurma
 } from "../../services/school.service";
 
-const initialTurmaForm = {
+type TurmaForm = {
+  id: string;
+  nome: string;
+  anoLetivo: string;
+  turno: string;
+  tipoEnsino: Turma["tipoEnsino"];
+  ativa: boolean;
+};
+
+const initialTurmaForm: TurmaForm = {
   id: "",
   nome: "",
   anoLetivo: String(new Date().getFullYear()),
   turno: "Manha",
+  tipoEnsino: "REGULAR",
   ativa: true
 };
 
@@ -160,6 +170,7 @@ export function TurmasPage() {
       nome: turma.nome,
       anoLetivo: String(turma.anoLetivo),
       turno: turma.turno,
+      tipoEnsino: turma.tipoEnsino,
       ativa: turma.ativa
     });
 
@@ -200,7 +211,8 @@ export function TurmasPage() {
       const payload = {
         nome: form.nome.trim(),
         anoLetivo: Number(form.anoLetivo),
-        turno: form.turno.trim()
+        turno: form.turno.trim(),
+        tipoEnsino: form.tipoEnsino
       };
 
       if (form.id) {
@@ -229,6 +241,26 @@ export function TurmasPage() {
   // PREPARAR VIRADA DE ANO
   // =========================================================
 
+  function prepararComposicaoVirada(
+    anoOrigem: number,
+    anoDestino: number,
+    alunos: Aluno[],
+    turmas: Turma[]
+  ) {
+    const composicao: Record<string, string[]> = {};
+    const nomes: Record<string, string> = {};
+
+    for (const turma of turmas.filter((item) => item.anoLetivo === anoOrigem)) {
+      composicao[turma.id] = alunos
+        .filter((aluno) => aluno.ativo && aluno.turmaId === turma.id)
+        .map((aluno) => aluno.id);
+      nomes[turma.id] = turma.nome.replace(String(anoOrigem), String(anoDestino));
+    }
+
+    setViradaComposicao(composicao);
+    setViradaNomes(nomes);
+  }
+
   async function openViradaAno() {
     setViradaError("");
     setViradaLoading(true);
@@ -241,38 +273,11 @@ export function TurmasPage() {
 
       const anoOrigem = new Date().getFullYear();
 
-      const turmasOrigem = turmas.filter(
-        (turma) => turma.anoLetivo === anoOrigem
-      );
-
-      const composicao: Record<string, string[]> =
-        {};
-
-      const nomes: Record<string, string> = {};
-
-      for (const turma of turmasOrigem) {
-        const alunosDaTurma = alunos
-          .filter(
-            (aluno) =>
-              aluno.ativo &&
-              aluno.turmaId === turma.id
-          )
-          .map((aluno) => aluno.id);
-
-        composicao[turma.id] = alunosDaTurma;
-
-        nomes[turma.id] = turma.nome.replace(
-          String(anoOrigem),
-          String(anoOrigem + 1)
-        );
-      }
-
       setViradaAlunos(alunos);
       setViradaTurmas(turmas);
       setViradaAnoOrigem(String(anoOrigem));
       setViradaAnoDestino(String(anoOrigem + 1));
-      setViradaComposicao(composicao);
-      setViradaNomes(nomes);
+      prepararComposicaoVirada(anoOrigem, anoOrigem + 1, alunos, turmas);
       setViradaOpen(true);
     } catch (err) {
       setViradaError(
@@ -414,6 +419,8 @@ export function TurmasPage() {
             ).trim(),
 
             turno: turma.turno,
+
+            tipoEnsino: turma.tipoEnsino,
 
             alunos:
               viradaComposicao[turma.id] ??
@@ -689,6 +696,16 @@ export function TurmasPage() {
             ]}
           />
 
+          <Select
+            label="Tipo de ensino"
+            value={form.tipoEnsino}
+            onChange={(event) => setTurmaField("tipoEnsino", event.target.value)}
+            options={[
+              { label: "Ensino regular", value: "REGULAR" },
+              { label: "Ensino tecnico", value: "TECNICO" }
+            ]}
+          />
+
           {form.id ? (
             <Select
               label="Status"
@@ -753,11 +770,15 @@ export function TurmasPage() {
             label="Ano de origem"
             type="number"
             value={viradaAnoOrigem}
-            onChange={(event) =>
-              setViradaAnoOrigem(
-                event.target.value
-              )
-            }
+            onChange={(event) => {
+              const proximoAno = event.target.value;
+              setViradaAnoOrigem(proximoAno);
+              const origem = Number(proximoAno);
+              const destino = Number(viradaAnoDestino);
+              if (Number.isInteger(origem) && Number.isInteger(destino)) {
+                prepararComposicaoVirada(origem, destino, viradaAlunos, viradaTurmas);
+              }
+            }}
           />
 
           <Input

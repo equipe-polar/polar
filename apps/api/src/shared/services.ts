@@ -16,6 +16,10 @@ import {
 import { JsonNotaRepository, type NotaRepository } from "./database/repositories/nota.repository.js";
 import { JsonFaltaRepository, type FaltaRepository } from "./database/repositories/falta.repository.js";
 import { JsonAuditRepository, type AuditRepository } from "./database/repositories/audit.repository.js";
+import {
+  JsonNotificacaoOcorrenciaRepository,
+  type NotificacaoOcorrenciaRepository
+} from "./database/repositories/notificacao-ocorrencia.repository.js";
 import { AuthService } from "../modules/auth/auth.service.js";
 import { UsersService } from "../modules/users/users.service.js";
 import { TurmasService } from "../modules/turmas/turmas.service.js";
@@ -34,6 +38,7 @@ export interface Repositories {
   alunosTurmasHistorico: AlunoTurmaHistoricoRepository;
   viradaAno: ViradaAnoRepository;
   ocorrencias: OcorrenciaRepository;
+  notificacoesOcorrencia: NotificacaoOcorrenciaRepository;
   notas: NotaRepository;
   faltas: FaltaRepository;
   audit: AuditRepository;
@@ -66,6 +71,7 @@ export function createJsonRepositories(db: DatabaseClient): Repositories {
     alunosTurmasHistorico: new JsonAlunoTurmaHistoricoRepository(db),
     viradaAno: new JsonViradaAnoRepository(db),
     ocorrencias: new JsonOcorrenciaRepository(db),
+    notificacoesOcorrencia: new JsonNotificacaoOcorrenciaRepository(db),
     notas: new JsonNotaRepository(db),
     faltas: new JsonFaltaRepository(db),
     audit: new JsonAuditRepository(db)
@@ -107,11 +113,11 @@ export async function createServiceContainer(config: AppConfig, database?: Datab
     users: new UsersService(repositories.users, repositories.audit),
     turmas: new TurmasService(repositories.turmas, repositories.alunos, repositories.alunosTurmasHistorico, repositories.viradaAno, repositories.audit),
     alunos: new AlunosService(repositories.alunos, repositories.alunosTurmasHistorico, repositories.turmas, repositories.ocorrencias, repositories.audit),
-    ocorrencias: new OcorrenciasService(repositories.ocorrencias, repositories.alunos, repositories.audit),
+    ocorrencias: new OcorrenciasService(repositories.ocorrencias, repositories.alunos, repositories.turmas, repositories.notificacoesOcorrencia, repositories.audit),
     notas: new NotasService(repositories.notas, repositories.alunos, repositories.audit),
     faltas: new FaltasService(repositories.faltas, repositories.alunos, repositories.audit),
-    dashboard: new DashboardService(repositories.ocorrencias),
-    relatorios: new RelatoriosService(repositories.ocorrencias, repositories.alunos),
+    dashboard: new DashboardService(repositories.ocorrencias, repositories.users),
+    relatorios: new RelatoriosService(repositories.ocorrencias, repositories.alunos, repositories.turmas, repositories.alunosTurmasHistorico),
     auditoria: new AuditoriaService(repositories.audit),
   };
 

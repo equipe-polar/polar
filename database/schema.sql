@@ -18,6 +18,10 @@ DO $$ BEGIN
   CREATE TYPE status_ocorrencia AS ENUM ('REGISTRADA', 'EM_ANALISE', 'RESOLVIDA', 'ENCERRADA');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+DO $$ BEGIN
+  CREATE TYPE tipo_ensino AS ENUM ('REGULAR', 'TECNICO');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
 CREATE TABLE IF NOT EXISTS users (
   id CHAR(36) NOT NULL,
   nome VARCHAR(120) NOT NULL,
@@ -40,12 +44,16 @@ CREATE TABLE IF NOT EXISTS turmas (
   nome VARCHAR(120) NOT NULL,
   ano_letivo INTEGER NOT NULL,
   turno VARCHAR(40) NOT NULL,
+  tipo_ensino tipo_ensino NOT NULL DEFAULT 'REGULAR',
   ativa BOOLEAN NOT NULL DEFAULT TRUE,
   criado_em TIMESTAMPTZ(3) NOT NULL,
   atualizado_em TIMESTAMPTZ(3) NOT NULL,
   CONSTRAINT pk_turmas PRIMARY KEY (id),
   CONSTRAINT uq_turmas_nome UNIQUE (nome)
 );
+
+-- Compatibilidade com bancos ja existentes: toda turma anterior passa a ser REGULAR.
+ALTER TABLE turmas ADD COLUMN IF NOT EXISTS tipo_ensino tipo_ensino NOT NULL DEFAULT 'REGULAR';
 
 CREATE TABLE IF NOT EXISTS alunos (
   id CHAR(36) NOT NULL,
@@ -138,6 +146,20 @@ CREATE TABLE IF NOT EXISTS ocorrencia_historico (
 );
 
 CREATE INDEX IF NOT EXISTS idx_historico_ocorrencia_id ON ocorrencia_historico (ocorrencia_id);
+
+CREATE TABLE IF NOT EXISTS notificacoes_ocorrencia (
+  id CHAR(36) NOT NULL,
+  ocorrencia_id CHAR(36) NOT NULL,
+  destinatario VARCHAR(20) NOT NULL,
+  resultado VARCHAR(20) NOT NULL,
+  criado_em TIMESTAMPTZ(3) NOT NULL,
+  CONSTRAINT pk_notificacoes_ocorrencia PRIMARY KEY (id),
+  CONSTRAINT fk_notificacoes_ocorrencia FOREIGN KEY (ocorrencia_id) REFERENCES ocorrencias (id),
+  CONSTRAINT ck_notificacoes_destinatario CHECK (destinatario IN ('PAET', 'COORDENACAO', 'DIRECAO')),
+  CONSTRAINT ck_notificacoes_resultado CHECK (resultado = 'ENVIADO')
+);
+
+CREATE INDEX IF NOT EXISTS idx_notificacoes_ocorrencia_id ON notificacoes_ocorrencia (ocorrencia_id);
 
 CREATE TABLE IF NOT EXISTS notas (
   id CHAR(36) NOT NULL,

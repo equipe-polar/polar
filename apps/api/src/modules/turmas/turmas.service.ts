@@ -1,5 +1,5 @@
 import { badRequest, conflict, notFound } from "../../shared/errors/app-error.js";
-import type { Aluno, Turma } from "../../shared/domain.js";
+import { TipoEnsino, type Aluno, type Turma } from "../../shared/domain.js";
 import type { TurmaRepository } from "../../shared/database/repositories/turma.repository.js";
 import type { AlunoRepository } from "../../shared/database/repositories/aluno.repository.js";
 import type { AlunoTurmaHistoricoRepository } from "../../shared/database/repositories/aluno-turma-historico.repository.js";
@@ -11,6 +11,7 @@ export interface CopiarAnoTurmaInput {
   origemId: string;
   nome: string;
   turno: string;
+  tipoEnsino?: TipoEnsino;
   alunos: string[];
 }
 
@@ -38,6 +39,7 @@ export class TurmasService {
       nome: string;
       anoLetivo: number;
       turno: string;
+      tipoEnsino?: TipoEnsino;
     },
     actorId: string
   ): Promise<Turma> {
@@ -54,6 +56,7 @@ export class TurmasService {
       nome: input.nome,
       anoLetivo: input.anoLetivo,
       turno: input.turno,
+      tipoEnsino: input.tipoEnsino ?? TipoEnsino.REGULAR,
       ativa: true,
       criadoEm: now,
       atualizadoEm: now
@@ -238,6 +241,7 @@ export class TurmasService {
           nome: turmaInput.nome.trim(),
           anoLetivo: input.anoDestino,
           turno: turmaInput.turno.trim(),
+          tipoEnsino: turmaInput.tipoEnsino ?? turmasOrigem.find((turma) => turma.id === turmaInput.origemId)?.tipoEnsino ?? TipoEnsino.REGULAR,
           ativa: true,
           criadoEm: now,
           atualizadoEm: now
@@ -295,6 +299,7 @@ export class TurmasService {
       nome?: string | undefined;
       anoLetivo?: number | undefined;
       turno?: string | undefined;
+      tipoEnsino?: TipoEnsino | undefined;
       ativa?: boolean | undefined;
     },
     actorId: string
@@ -308,6 +313,7 @@ export class TurmasService {
         nome: input.nome ?? current.nome,
         anoLetivo: input.anoLetivo ?? current.anoLetivo,
         turno: input.turno ?? current.turno,
+        tipoEnsino: input.tipoEnsino ?? current.tipoEnsino,
         ativa: input.ativa ?? current.ativa,
         atualizadoEm: now
       })

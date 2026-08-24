@@ -10,12 +10,22 @@
       "precisaTrocarSenha": true,
       "tentativasLoginInvalidas": 0,
       "bloqueadoAte": null,
-      "ultimoLoginEm": "2026-08-18T14:33:57.860Z",
+      "ultimoLoginEm": "2026-08-20T13:08:11.421Z",
       "criadoEm": "2026-08-18T14:20:55.303Z",
-      "atualizadoEm": "2026-08-18T14:33:57.860Z"
+      "atualizadoEm": "2026-08-20T13:08:11.421Z"
     }
   ],
-  "turmas": [],
+  "turmas": [
+    {
+      "id": "96edc6b9-2ef1-4f7b-8d20-e2f1c043d8e2",
+      "nome": "Desenvolvimento de Sistemas 3°B",
+      "anoLetivo": 2026,
+      "turno": "Manha",
+      "ativa": true,
+      "criadoEm": "2026-08-20T13:07:26.490Z",
+      "atualizadoEm": "2026-08-20T13:07:26.490Z"
+    }
+  ],
   "alunos": [],
   "alunosTurmasHistorico": [],
   "ocorrencias": [],
@@ -53,6 +63,44 @@
       "entidadeId": "2a430713-ccc3-460e-8992-6e70f7516023",
       "metadata": {},
       "criadoEm": "2026-08-18T14:33:57.860Z"
+    },
+    {
+      "id": "0dd843e7-1cfa-48c7-9b5f-12f05dbafa7a",
+      "usuarioId": "2a430713-ccc3-460e-8992-6e70f7516023",
+      "acao": "LOGIN_SUCESSO",
+      "entidade": "usuarios",
+      "entidadeId": "2a430713-ccc3-460e-8992-6e70f7516023",
+      "metadata": {},
+      "criadoEm": "2026-08-20T13:05:13.263Z"
+    },
+    {
+      "id": "3a9e95e8-34f6-4eee-9639-2f70cb6586f2",
+      "usuarioId": "2a430713-ccc3-460e-8992-6e70f7516023",
+      "acao": "LOGIN_SUCESSO",
+      "entidade": "usuarios",
+      "entidadeId": "2a430713-ccc3-460e-8992-6e70f7516023",
+      "metadata": {},
+      "criadoEm": "2026-08-20T13:07:03.548Z"
+    },
+    {
+      "id": "7db84cbd-86d7-4b3a-bea5-e4825ec89131",
+      "usuarioId": "2a430713-ccc3-460e-8992-6e70f7516023",
+      "acao": "TURMA_CRIADA",
+      "entidade": "turmas",
+      "entidadeId": "96edc6b9-2ef1-4f7b-8d20-e2f1c043d8e2",
+      "metadata": {
+        "nome": "Desenvolvimento de Sistemas 3°B"
+      },
+      "criadoEm": "2026-08-20T13:07:26.490Z"
+    },
+    {
+      "id": "23f3ad69-ebab-452c-b002-e8fcd1e39f2f",
+      "usuarioId": "2a430713-ccc3-460e-8992-6e70f7516023",
+      "acao": "LOGIN_SUCESSO",
+      "entidade": "usuarios",
+      "entidadeId": "2a430713-ccc3-460e-8992-6e70f7516023",
+      "metadata": {},
+      "criadoEm": "2026-08-20T13:08:11.421Z"
     }
   ]
 }

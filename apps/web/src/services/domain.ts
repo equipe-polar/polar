@@ -37,6 +37,7 @@ export interface Turma {
   nome: string;
   anoLetivo: number;
   turno: string;
+  tipoEnsino: "REGULAR" | "TECNICO";
   ativa: boolean;
   criadoEm?: string;
   atualizadoEm?: string;
@@ -99,6 +100,15 @@ export interface OcorrenciaHistorico {
   acao: string;
   observacao: string | null;
   usuarioId: string;
+  usuarioNome: string;
+  criadoEm: string;
+}
+
+export interface NotificacaoOcorrencia {
+  id: string;
+  ocorrenciaId: string;
+  destinatario: "PAET" | "COORDENACAO" | "DIRECAO";
+  resultado: "ENVIADO";
   criadoEm: string;
 }
 
@@ -129,14 +139,23 @@ export interface DashboardResumo {
   ocorrenciasPorCategoria: Record<string, number>;
 }
 
+export interface MovimentacaoRecente {
+  id: string;
+  ocorrenciaId: string;
+  acao: string;
+  status: StatusOcorrencia;
+  usuarioNome: string;
+  criadoEm: string;
+}
+
 export interface RelatorioOcorrencias {
   total: number;
   byStatus: Partial<Record<StatusOcorrencia, number>>;
   byPriority: Partial<Record<PrioridadeOcorrencia, number>>;
   byCategory: Record<string, number>;
   recent: Ocorrencia[];
-  byTurma?: { nome: string; total: number }[];     // NOVO
-  byPeriodo?: { periodo: string; total: number }[]; // NOVO
+  byTurma: { nome: string; total: number }[];
+  byPeriodo: { periodo: string; total: number }[];
 }
 
 export interface CreateOcorrenciaPayload {
@@ -169,13 +188,21 @@ export interface CreateTurmaPayload {
   nome: string;
   anoLetivo: number;
   turno: string;
+  tipoEnsino?: "REGULAR" | "TECNICO";
 }
 
 export interface UpdateTurmaPayload {
   nome?: string;
   anoLetivo?: number;
   turno?: string;
+  tipoEnsino?: "REGULAR" | "TECNICO";
   ativa?: boolean;
+}
+
+export interface RelatorioOcorrenciasFiltro {
+  turmaId?: string;
+  dataInicio?: string;
+  dataFim?: string;
 }
 
 export interface CreateUsuarioPayload {

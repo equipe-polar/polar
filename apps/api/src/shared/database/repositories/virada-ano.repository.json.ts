@@ -37,6 +37,22 @@ export class JsonViradaAnoRepository implements ViradaAnoRepository {
         });
 
         for (const aluno of turmaInput.alunos) {
+          const jaPossuiHistoricoOrigem = state.alunosTurmasHistorico.some(
+            (item) =>
+              item.alunoId === aluno.id &&
+              item.anoLetivo === turmaInput.turmaOrigem.anoLetivo
+          );
+
+          if (!jaPossuiHistoricoOrigem) {
+            state.alunosTurmasHistorico.push({
+              id: crypto.randomUUID(),
+              alunoId: aluno.id,
+              turmaId: turmaInput.turmaOrigem.id,
+              anoLetivo: turmaInput.turmaOrigem.anoLetivo,
+              criadoEm: agora
+            });
+          }
+
           const index = state.alunos.findIndex(
             (item) => item.id === aluno.id
           );
@@ -67,13 +83,21 @@ export class JsonViradaAnoRepository implements ViradaAnoRepository {
             atualizadoEm: agora
           };
 
-          state.alunosTurmasHistorico.push({
-            id: crypto.randomUUID(),
-            alunoId: aluno.id,
-            turmaId: turmaInput.turmaDestino.id,
-            anoLetivo: turmaInput.turmaDestino.anoLetivo,
-            criadoEm: agora
-          });
+          const jaPossuiHistoricoDestino = state.alunosTurmasHistorico.some(
+            (item) =>
+              item.alunoId === aluno.id &&
+              item.anoLetivo === turmaInput.turmaDestino.anoLetivo
+          );
+
+          if (!jaPossuiHistoricoDestino) {
+            state.alunosTurmasHistorico.push({
+              id: crypto.randomUUID(),
+              alunoId: aluno.id,
+              turmaId: turmaInput.turmaDestino.id,
+              anoLetivo: turmaInput.turmaDestino.anoLetivo,
+              criadoEm: agora
+            });
+          }
 
           state.auditLogs.push({
             id: crypto.randomUUID(),

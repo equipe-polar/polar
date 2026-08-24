@@ -4,6 +4,7 @@ import type {
   AlunoComResumoOcorrencias,
   AlunoTurmaHistorico,
   AlunoDetalhado,
+  AlunoTurmaHistorico,
   AlunoDetalhadoComResumoOcorrencias,
   ApiData,
   CreateAlunoPayload,
@@ -11,12 +12,15 @@ import type {
   CreateTurmaPayload,
   CreateUsuarioPayload,
   DashboardResumo,
+  MovimentacaoRecente,
   Falta,
   Nota,
+  NotificacaoOcorrencia,
   Ocorrencia,
   OcorrenciaDetalhada,
   OcorrenciaHistorico,
   RelatorioOcorrencias,
+  RelatorioOcorrenciasFiltro,
   StatusOcorrencia,
   Turma,
   UpdateAlunoPayload,
@@ -51,6 +55,7 @@ export interface CopiarAnoTurmaPayload {
   origemId: string;
   nome: string;
   turno: string;
+  tipoEnsino?: "REGULAR" | "TECNICO";
   alunos: string[];
 }
 
@@ -163,6 +168,11 @@ export async function listHistoricoOcorrencia(id: string): Promise<OcorrenciaHis
   return response.data;
 }
 
+export async function listNotificacoesOcorrencia(id: string): Promise<NotificacaoOcorrencia[]> {
+  const response = await apiRequest<ApiData<NotificacaoOcorrencia[]>>(`/ocorrencias/${id}/notificacoes`);
+  return response.data;
+}
+
 export async function createOcorrencia(payload: CreateOcorrenciaPayload): Promise<Ocorrencia> {
   const response = await apiRequest<ApiData<Ocorrencia>>("/ocorrencias", {
     method: "POST",
@@ -198,8 +208,18 @@ export async function getDashboardResumo(): Promise<DashboardResumo> {
   return response.data;
 }
 
-export async function getRelatorioOcorrencias(): Promise<RelatorioOcorrencias> {
-  const response = await apiRequest<ApiData<RelatorioOcorrencias>>("/relatorios/ocorrencias");
+export async function listMovimentacoesRecentes(): Promise<MovimentacaoRecente[]> {
+  const response = await apiRequest<ApiData<MovimentacaoRecente[]>>("/dashboard/movimentacoes-recentes");
+  return response.data;
+}
+
+export async function getRelatorioOcorrencias(filtro: RelatorioOcorrenciasFiltro = {}): Promise<RelatorioOcorrencias> {
+  const query = new URLSearchParams();
+  if (filtro.turmaId) query.set("turmaId", filtro.turmaId);
+  if (filtro.dataInicio) query.set("dataInicio", filtro.dataInicio);
+  if (filtro.dataFim) query.set("dataFim", filtro.dataFim);
+  const suffix = query.size > 0 ? `?${query.toString()}` : "";
+  const response = await apiRequest<ApiData<RelatorioOcorrencias>>(`/relatorios/ocorrencias${suffix}`);
   return response.data;
 }
 

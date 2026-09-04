@@ -42,7 +42,10 @@ export class AlunosService {
       };
 
       resumo.totalOcorrencias += 1;
-      resumo.temOcorrenciaGrave ||= ocorrencia.prioridade === PrioridadeOcorrencia.ALTA;
+      resumo.temOcorrenciaGrave ||= (
+        ocorrencia.prioridade === PrioridadeOcorrencia.ALTA ||
+        ocorrencia.prioridade === PrioridadeOcorrencia.URGENTE
+      );
       resumoPorAluno.set(ocorrencia.alunoId, resumo);
     }
 

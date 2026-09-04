@@ -15,7 +15,7 @@ const schema = z.object({
   alunoId: z.string().min(1, "Selecione um aluno."),
   turmaId: z.string().min(1, "Selecione uma turma."),
   categoria: z.string().min(1, "Informe a categoria."),
-  prioridade: z.enum(["BAIXA", "MEDIA", "ALTA"], { required_error: "Informe a prioridade." }),
+  prioridade: z.enum(["BAIXA", "MEDIA", "ALTA", "URGENTE"], { required_error: "Informe a prioridade." }),
   descricao: z.string().min(10, "Descreva a ocorrencia com pelo menos 10 caracteres."),
   local: z.string().min(1, "Informe o local."),
   testemunhas: z.string().optional()

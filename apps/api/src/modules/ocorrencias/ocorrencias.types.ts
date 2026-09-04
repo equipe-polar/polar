@@ -10,7 +10,9 @@ function normalizePrioridade(value: unknown): unknown {
     BAIXA: PrioridadeOcorrencia.BAIXA,
     MEDIA: PrioridadeOcorrencia.MEDIA,
     MÉDIA: PrioridadeOcorrencia.MEDIA,
-    ALTA: PrioridadeOcorrencia.ALTA
+    ALTA: PrioridadeOcorrencia.ALTA,
+    URGENTE: PrioridadeOcorrencia.URGENTE,
+    "URGÊNCIA": PrioridadeOcorrencia.URGENTE
   };
   return aliases[raw] ?? raw;
 }

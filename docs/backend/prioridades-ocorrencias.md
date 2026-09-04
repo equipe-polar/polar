@@ -17,10 +17,13 @@ apenas um apoio visual.
 - **Alta:** situações urgentes, com risco atual, possibilidade de agravamento ou
   impacto relevante na segurança e no bem-estar. Devem ser analisadas antes das
   prioridades média e baixa e encaminhadas imediatamente à coordenação.
+- **Urgente:** situações críticas que exigem ação imediata. Na interface, é
+  apresentada com marcador de exclamação e texto explícito, além do contraste
+  escuro que a diferencia de uma ocorrência grave.
 
 ## Uso no sistema
 
-Quem registra a ocorrência seleciona um dos três níveis no formulário. A equipe
+Quem registra a ocorrência seleciona um dos quatro níveis no formulário. A equipe
 pode filtrar a listagem por um nível específico ou ordená-la de alta para baixa
 e de baixa para alta. A prioridade pode ser revista enquanto a ocorrência ainda
 estiver no estado `REGISTRADA`, de acordo com as regras de edição existentes.

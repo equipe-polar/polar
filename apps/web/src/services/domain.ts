@@ -2,12 +2,13 @@ export type PapelUsuario = "PROFESSOR" | "COORDENADOR" | "DIRETOR" | "ADM" | "AL
 
 export type StatusOcorrencia = "REGISTRADA" | "EM_ANALISE" | "RESOLVIDA" | "ENCERRADA";
 
-export type PrioridadeOcorrencia = "BAIXA" | "MEDIA" | "ALTA";
+export type PrioridadeOcorrencia = "BAIXA" | "MEDIA" | "ALTA" | "URGENTE";
 
 export const PRIORIDADES_OCORRENCIA = [
   { value: "BAIXA", label: "Baixa", peso: 1 },
   { value: "MEDIA", label: "Media", peso: 2 },
-  { value: "ALTA", label: "Alta", peso: 3 }
+  { value: "ALTA", label: "Alta", peso: 3 },
+  { value: "URGENTE", label: "Urgente", peso: 4 }
 ] as const satisfies ReadonlyArray<{ value: PrioridadeOcorrencia; label: string; peso: number }>;
 
 export const PRIORIDADE_LABEL: Record<PrioridadeOcorrencia, string> = Object.fromEntries(

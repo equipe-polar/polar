@@ -51,7 +51,7 @@ erDiagram
         char36 id PK
         char36 aluno_id FK
         varchar categoria
-        enum prioridade "BAIXA|MEDIA|ALTA"
+        enum prioridade "BAIXA|MEDIA|ALTA|URGENTE"
         text descricao
         enum status "REGISTRADA|EM_ANALISE|RESOLVIDA|ENCERRADA"
         char36 criado_por_id FK

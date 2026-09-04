@@ -6,7 +6,7 @@ import { Table } from "../../components/ui/Table";
 import { Tabs } from "../../components/ui/Tabs";
 import type { AlunoDetalhado, AlunoTurmaHistorico, Falta, Nota, OcorrenciaDetalhada, Turma } from "../../services/domain";
 import { getAlunoDetalhado, listFaltasByAluno, listHistoricoTurmas, listNotasByAluno, listOcorrenciasDetalhadas, listTurmas } from "../../services/school.service";
-import { StatusBadge } from "../ocorrencias/status";
+import { PrioridadeBadge, StatusBadge } from "../ocorrencias/status";
 
 export function PerfilAlunoPage() {
   const { id } = useParams();
@@ -114,6 +114,7 @@ export function PerfilAlunoPage() {
                     data={ocorrencias}
                     columns={[
                       { key: "categoria", header: "Categoria", render: (item) => item.categoria },
+                      { key: "prioridade", header: "Gravidade", render: (item) => <PrioridadeBadge prioridade={item.prioridade} /> },
                       { key: "status", header: "Status", render: (item) => <StatusBadge status={item.status} /> }
                     ]}
                   />

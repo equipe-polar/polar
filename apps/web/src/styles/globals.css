@@ -365,6 +365,15 @@ textarea:focus-visible {
   display: block;
 }
 
+/* A gravidade tem nome e marcador visiveis, alem da cor. O marcador distingue
+   urgencia de gravidade alta inclusive para quem nao percebe as cores. */
+.severity-badge__marker {
+  display: inline-grid;
+  width: 1em;
+  place-items: center;
+  font-weight: 900;
+}
+
 @media (max-width: 1100px) {
   .login-page {
     grid-template-columns: 1fr;

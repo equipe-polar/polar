@@ -42,7 +42,7 @@ O nome evoluiu ao longo do projeto: PM-GPO → Acta → P.O.L.A → **POLAR** (n
 - Autenticação JWT com senha em hash (bcrypt) e papéis.
 - RBAC aplicado **no backend** (a UI apenas oculta; o servidor bloqueia).
 - Cadastro/listagem de usuários, turmas e alunos (sem auto-cadastro).
-- Registro de ocorrência (aluno, categoria, prioridade `BAIXA|MEDIA|ALTA`, descrição ≥ 10 caracteres); autor e data derivados no backend; status inicial `REGISTRADA`.
+- Registro de ocorrência (aluno, categoria, prioridade `BAIXA|MEDIA|ALTA|URGENTE`, descrição ≥ 10 caracteres); autor e data derivados no backend; status inicial `REGISTRADA`.
 - Máquina de estados com exatamente 4 estados e 3 transições, cada uma restrita a um papel.
 - Histórico automático append-only, sem rota de edição/exclusão (tentativa → `405`).
 - Ocorrência `ENCERRADA` é somente leitura.

@@ -135,6 +135,11 @@
   color: var(--color-danger);
 }
 
+.ui-badge--critical {
+  background: var(--color-critical);
+  color: #fff;
+}
+
 .ui-table-wrap {
   overflow-x: auto;
 }

@@ -112,6 +112,7 @@ CREATE TABLE IF NOT EXISTS ocorrencias (
   id CHAR(36) NOT NULL,
   aluno_id CHAR(36) NOT NULL,
   categoria VARCHAR(120) NOT NULL,
+  bimestre INTEGER NOT NULL CHECK (bimestre IN (1, 2, 3, 4)),
   prioridade prioridade_ocorrencia NOT NULL,
   descricao TEXT NOT NULL,
   local VARCHAR(160) NOT NULL DEFAULT '',

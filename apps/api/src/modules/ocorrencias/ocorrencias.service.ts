@@ -31,6 +31,7 @@ export interface OcorrenciaCreateInput {
   descricao: string;
   local?: string | undefined;
   testemunhas?: string | undefined;
+  bimestre: number;
 }
 
 export interface OcorrenciaUpdateInput {
@@ -75,7 +76,7 @@ export class OcorrenciasService {
     private readonly audit: AuditRepository
   ) {}
 
-  async list(actor: AuthenticatedUser): Promise<Ocorrencia[]> {
+  async list(actor: AuthenticatedUser, bimestre?: Number): Promise<Ocorrencia[]> {
     const escopo = escopoDeOcorrencias(actor);
     switch (escopo.tipo) {
       case "global":
@@ -149,6 +150,7 @@ export class OcorrenciasService {
       descricao,
       local: input.local ?? "",
       testemunhas: input.testemunhas ?? "",
+      bimestre: input.bimestre,
       status: StatusOcorrencia.REGISTRADA,
       criadoPorId: actor.id,
       criadoEm: now,

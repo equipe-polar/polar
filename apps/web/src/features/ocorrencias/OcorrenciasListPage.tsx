@@ -22,6 +22,7 @@ export function OcorrenciasListPage() {
   const [aluno, setAluno] = useState("");
   const [status, setStatus] = useState("");
   const [prioridade, setPrioridade] = useState("");
+  const [bimestre, setBimestre] = useState("");
   const [ordemPrioridade, setOrdemPrioridade] = useState("");
   const [categoria, setCategoria] = useState("");
   const [ocorrencias, setOcorrencias] = useState<OcorrenciaDetalhada[]>([]);
@@ -60,16 +61,16 @@ export function OcorrenciasListPage() {
             item.aluno.toLowerCase().includes(aluno.toLowerCase()) &&
             (!status || item.status === status) &&
             (!prioridade || item.prioridade === prioridade) &&
-            (!categoria || item.categoria.toLowerCase().includes(categoria.toLowerCase()))
+            (!categoria || item.categoria.toLowerCase().includes(categoria.toLowerCase())) &&
+            (!bimestre || item.bimestre === Number(bimestre))
         )
         .sort((a, b) => {
           if (!ordemPrioridade) return 0;
           const diferenca = PRIORIDADE_PESO[b.prioridade] - PRIORIDADE_PESO[a.prioridade];
           return ordemPrioridade === "MAIOR" ? diferenca : -diferenca;
         }),
-    [aluno, categoria, ocorrencias, ordemPrioridade, prioridade, status]
+    [aluno, bimestre, categoria, ocorrencias, ordemPrioridade, prioridade, status]
   );
-
   return (
     <>
       <PageHeader

@@ -65,6 +65,7 @@ export function RelatoriosPage() {
   const [turmaId, setTurmaId] = useState("");
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
+  const [bimestre, setBimestre] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 

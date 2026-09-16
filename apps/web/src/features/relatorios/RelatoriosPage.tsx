@@ -65,6 +65,7 @@ export function RelatoriosPage() {
   const [turmaId, setTurmaId] = useState("");
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
+  const [bimestre, setBimestre] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -90,8 +91,9 @@ export function RelatoriosPage() {
         const data = await getRelatorioOcorrencias({
           turmaId: turmaId || undefined,
           dataInicio: dataInicio || undefined,
-          dataFim: dataFim || undefined
-        });
+          dataFim: dataFim || undefined,
+          bimestre: bimestre ? Number(bimestre) : undefined
+      });
         if (!active) return;
         setRelatorio(data);
         setError("");
@@ -103,7 +105,7 @@ export function RelatoriosPage() {
     }
     void loadRelatorio();
     return () => { active = false; };
-  }, [turmaId, dataInicio, dataFim]);
+  }, [turmaId, dataInicio, dataFim, bimestre]);
 
   const total = relatorio?.total ?? 0;
   const resolvidas = relatorio?.byStatus.RESOLVIDA ?? 0;
@@ -125,6 +127,18 @@ export function RelatoriosPage() {
       <div className="page-grid">
         <Card title="Filtros">
           <div className="form-grid">
+            <Select
+            label="Bimestre"
+            value={bimestre}
+            onChange={(event) => setBimestre(event.target.value)}
+            options={[
+              { value: "", label: "Todos os bimestres" },
+              { value: "1", label: "1º Bimestre" },
+              { value: "2", label: "2º Bimestre" },
+              { value: "3", label: "3º Bimestre" },
+              { value: "4", label: "4º Bimestre" }
+          ]}
+        />
             <Select
               label="Turma"
               value={turmaId}

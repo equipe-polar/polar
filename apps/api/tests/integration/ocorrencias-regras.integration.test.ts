@@ -22,7 +22,8 @@ describe("Ocorrencias - regras v3", () => {
         alunoId: ctx.ids.aluno,
         categoria: "Não fez atividade",
         prioridade: "MEDIA",
-        descricao: "Aluno não entregou a atividade de Programação."
+        descricao: "Aluno não entregou a atividade de Programação.",
+        bimestre: 1
       })
       .expect(201);
     return response.body.data.id as string;
@@ -165,6 +166,7 @@ describe("Ocorrencias - regras v3", () => {
         alunoId: ctx.ids.aluno,
         categoria: "Desrespeito",
         prioridade: "MEDIA",
+        bimestre: 1,
         descricao: `Descricao com controle ${String.fromCharCode(7)} invisivel no meio.`
       })
       .expect(400);
@@ -177,7 +179,8 @@ describe("Ocorrencias - regras v3", () => {
         alunoId: ctx.ids.aluno,
         categoria: "Desrespeito",
         prioridade: "MEDIA",
-        descricao: "Aluno usou <script>alert('xss')</script> palavras inadequadas com colegas."
+        descricao: "Aluno usou <script>alert('xss')</script> palavras inadequadas com colegas.",
+        bimestre: 1
       })
       .expect(201);
     expect(response.body.data.descricao).not.toContain("<script>");

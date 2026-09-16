@@ -58,6 +58,7 @@ describe("Notas, faltas e dashboard", () => {
       .set("Authorization", `Bearer ${auth.professor}`)
       .send({
         alunoId: ids.aluno,
+        bimestre: 1,
         categoria: "Atraso",
         prioridade: "BAIXA",
         descricao: "Aluno chegou atrasado apos o intervalo escolar."

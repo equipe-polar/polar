@@ -34,6 +34,7 @@ describe("Escopo de leitura por papel", () => {
         alunoId: ctx.ids.aluno,
         categoria: "Desrespeito",
         prioridade: "ALTA",
+        bimestre: 1,
         descricao
       })
       .expect(201);
@@ -124,7 +125,8 @@ describe("Escopo de leitura por papel", () => {
         alunoId: ctx.ids.aluno,
         categoria: "Atraso",
         prioridade: "BAIXA",
-        descricao: "Tentativa de registro por conta de aluno."
+        descricao: "Tentativa de registro por conta de aluno.",
+        bimestre: 1
       })
       .expect(403);
 

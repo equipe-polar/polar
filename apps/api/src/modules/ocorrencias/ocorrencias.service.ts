@@ -31,6 +31,7 @@ export interface OcorrenciaCreateInput {
   descricao: string;
   local?: string | undefined;
   testemunhas?: string | undefined;
+  bimestre: number;
 }
 
 export interface OcorrenciaUpdateInput {
@@ -73,15 +74,28 @@ export class OcorrenciasService {
     private readonly turmas: TurmaRepository,
     private readonly notificacoes: NotificacaoOcorrenciaRepository,
     private readonly audit: AuditRepository
-  ) {}
+  ) { }
 
-  async list(actor: AuthenticatedUser): Promise<Ocorrencia[]> {
+  async list(actor: AuthenticatedUser, bimestre?: number): Promise<Ocorrencia[]> {
     const escopo = escopoDeOcorrencias(actor);
+
     switch (escopo.tipo) {
-      case "global":
-        return this.ocorrencias.list();
-      case "autor":
-        return this.ocorrencias.listByCriadoPor(escopo.usuarioId);
+      case "global": {
+        const ocorrencias = bimestre
+          ? await this.ocorrencias.listByBimestre(bimestre)
+          : await this.ocorrencias.list();
+
+        return ocorrencias;
+      }
+
+      case "autor": {
+        const ocorrencias = await this.ocorrencias.listByCriadoPor(escopo.usuarioId);
+
+        return bimestre
+          ? ocorrencias.filter((ocorrencia) => ocorrencia.bimestre === bimestre)
+          : ocorrencias;
+      }
+
       default:
         return [];
     }
@@ -149,6 +163,7 @@ export class OcorrenciasService {
       descricao,
       local: input.local ?? "",
       testemunhas: input.testemunhas ?? "",
+      bimestre: input.bimestre,
       status: StatusOcorrencia.REGISTRADA,
       criadoPorId: actor.id,
       criadoEm: now,

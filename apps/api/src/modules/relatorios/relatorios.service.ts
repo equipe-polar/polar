@@ -8,6 +8,7 @@ export interface RelatorioOcorrenciasFiltro {
   turmaId?: string;
   dataInicio?: string;
   dataFim?: string;
+  bimestre?: number;
 }
 
 export class RelatoriosService {
@@ -16,7 +17,7 @@ export class RelatoriosService {
     private readonly alunos: AlunoRepository,
     private readonly turmas: TurmaRepository,
     private readonly alunosTurmasHistorico: AlunoTurmaHistoricoRepository
-  ) {}
+  ) { }
 
   async ocorrenciasResumo(filtro: RelatorioOcorrenciasFiltro = {}) {
     const [todasOcorrencias, alunos, turmas] = await Promise.all([
@@ -43,7 +44,8 @@ export class RelatoriosService {
       return (
         (!filtro.turmaId || turmaId === filtro.turmaId) &&
         (!inicio || criadaEm.getTime() >= inicio.getTime()) &&
-        (!fim || criadaEm.getTime() <= fim.getTime())
+        (!fim || criadaEm.getTime() <= fim.getTime()) &&
+        (!filtro.bimestre || ocorrencia.bimestre === filtro.bimestre)
       );
     });
     const byStatus: Record<string, number> = {};

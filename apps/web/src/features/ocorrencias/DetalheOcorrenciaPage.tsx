@@ -134,6 +134,9 @@ export function DetalheOcorrenciaPage() {
               <strong>Turma:</strong> {ocorrencia.turma}
             </p>
             <p>
+              <strong>Bimestre:</strong> {ocorrencia.bimestre}º Bimestre
+            </p>
+            <p>
               <strong>Categoria:</strong> {ocorrencia.categoria}
             </p>
             <div className="actions-row">

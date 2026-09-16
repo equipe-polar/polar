@@ -10,6 +10,7 @@ async function criarOcorrencia(app: Awaited<ReturnType<typeof buildTestContext>>
       alunoId,
       categoria: "Desrespeito",
       prioridade: "ALTA",
+      bimestre: 1,
       descricao: "Aluno desrespeitou orientacao institucional em sala."
     })
     .expect(201);
@@ -41,6 +42,7 @@ describe("Ocorrencias", () => {
         alunoId: ids.aluno,
         categoria: "Atraso",
         prioridade: "URGENTE",
+        bimestre: 1,
         descricao: "Aluno chegou depois do inicio da atividade escolar."
       })
       .expect(400);
@@ -124,6 +126,7 @@ describe("Ocorrencias", () => {
         alunoId: ids.aluno,
         categoria: "Desrespeito",
         prioridade: "ALTA",
+        bimestre: 1,
         descricao: "Aluno desrespeitou orientacao institucional em sala."
       })
       .expect(409);

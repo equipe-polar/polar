@@ -217,6 +217,7 @@ export async function getRelatorioOcorrencias(filtro: RelatorioOcorrenciasFiltro
   if (filtro.turmaId) query.set("turmaId", filtro.turmaId);
   if (filtro.dataInicio) query.set("dataInicio", filtro.dataInicio);
   if (filtro.dataFim) query.set("dataFim", filtro.dataFim);
+  if (filtro.bimestre) query.set("bimestre", String(filtro.bimestre));
   const suffix = query.size > 0 ? `?${query.toString()}` : "";
   const response = await apiRequest<ApiData<RelatorioOcorrencias>>(`/relatorios/ocorrencias${suffix}`);
   return response.data;

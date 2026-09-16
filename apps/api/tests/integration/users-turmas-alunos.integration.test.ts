@@ -84,6 +84,7 @@ describe("Users, turmas e alunos", () => {
         alunoId: ids.aluno,
         categoria: "Desrespeito",
         prioridade: "MEDIA",
+        bimestre: 1,
         descricao: "Aluno interrompeu a explicacao de forma recorrente."
       })
       .expect(201);
@@ -109,6 +110,7 @@ describe("Users, turmas e alunos", () => {
         alunoId: ids.aluno,
         categoria: "Desrespeito",
         prioridade: "ALTA",
+        bimestre: 1,
         descricao: "Aluno desrespeitou orientacao institucional em sala."
       })
       .expect(201);

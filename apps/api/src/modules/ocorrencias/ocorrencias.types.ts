@@ -42,7 +42,8 @@ export const createOcorrenciaSchema = z.object({
   prioridade: z.preprocess(normalizePrioridade, z.nativeEnum(PrioridadeOcorrencia)),
   descricao: textoLimpo(2000).pipe(z.string().min(10, "Descricao deve ter pelo menos 10 caracteres.")),
   local: textoLimpo(160).optional(),
-  testemunhas: textoLimpo(240).optional()
+  testemunhas: textoLimpo(240).optional(),
+  bimestre: z.coerce.number().int().min(1).max(4)
 });
 
 export const updateOcorrenciaSchema = z.object({

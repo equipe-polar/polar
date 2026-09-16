@@ -16,11 +16,17 @@ function requireActor(req: Request): AuthenticatedUser {
 }
 
 export class OcorrenciasController {
-  constructor(private readonly services: Services) {}
+  constructor(private readonly services: Services) { }
 
   list = async (req: Request, res: Response): Promise<Response> => {
     const actor = requireActor(req);
-    return res.json({ data: await this.services.ocorrencias.list(actor) });
+    const bimestre = req.query.bimestre
+      ? z.coerce.number().int().min(1).max(4).parse(req.query.bimestre)
+      : undefined;
+
+    return res.json({
+      data: await this.services.ocorrencias.list(actor, bimestre)
+    });
   };
 
   get = async (req: Request, res: Response): Promise<Response> => {

@@ -12,6 +12,7 @@ export interface OcorrenciaDuplicateParams {
 export interface OcorrenciaRepository {
   list(): Promise<Ocorrencia[]>;
   listByCriadoPor(criadoPorId: string): Promise<Ocorrencia[]>;
+  listByBimestre(bimestre: number): Promise<Ocorrencia[]>;
   findById(id: string): Promise<Ocorrencia | null>;
   listHistorico(ocorrenciaId: string): Promise<OcorrenciaHistorico[]>;
   findDuplicate(params: OcorrenciaDuplicateParams): Promise<Ocorrencia | null>;
@@ -36,6 +37,14 @@ export class JsonOcorrenciaRepository implements OcorrenciaRepository {
     const state = await this.db.read();
     return state.ocorrencias.filter((ocorrencia) => ocorrencia.criadoPorId === criadoPorId);
   }
+
+  async listByBimestre(bimestre: number): Promise<Ocorrencia[]> {
+  const state = await this.db.read();
+
+  return state.ocorrencias.filter(
+    (ocorrencia) => ocorrencia.bimestre === bimestre
+  );
+}
 
   async findById(id: string): Promise<Ocorrencia | null> {
     const state = await this.db.read();

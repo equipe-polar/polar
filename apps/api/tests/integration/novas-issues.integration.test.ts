@@ -21,7 +21,7 @@ describe("FE-09, FE-10, BE-03, BD-05 e BE-01", () => {
     const ocorrencia = await request(app)
       .post("/api/ocorrencias")
       .set("Authorization", `Bearer ${auth.professor}`)
-      .send({ alunoId: aluno.body.data.id, categoria: "Atraso", prioridade: "MEDIA", descricao: "Atraso em aula técnica." })
+      .send({ alunoId: aluno.body.data.id, categoria: "Atraso", prioridade: "MEDIA", descricao: "Atraso em aula técnica.", bimestre: 1  })
       .expect(201);
 
     const notificacoes = await request(app)
@@ -64,7 +64,7 @@ describe("FE-09, FE-10, BE-03, BD-05 e BE-01", () => {
     await request(app)
       .post("/api/ocorrencias")
       .set("Authorization", `Bearer ${auth.professor}`)
-      .send({ alunoId: ids.aluno, categoria: "Desrespeito", prioridade: "ALTA", descricao: "Ocorrência para painel e relatório." })
+      .send({ alunoId: ids.aluno, categoria: "Desrespeito", prioridade: "ALTA", descricao: "Ocorrência para painel e relatório.", bimestre: 1 })
       .expect(201);
 
     const movimentacoes = await request(app)

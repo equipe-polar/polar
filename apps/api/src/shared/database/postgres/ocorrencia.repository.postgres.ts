@@ -15,6 +15,7 @@ interface OcorrenciaRow {
   id: string;
   aluno_id: string;
   categoria: string;
+  bimestre: number;
   prioridade: PrioridadeOcorrencia;
   descricao: string;
   local: string;
@@ -40,6 +41,7 @@ function toOcorrencia(row: OcorrenciaRow): Ocorrencia {
     id: row.id,
     alunoId: row.aluno_id,
     categoria: row.categoria,
+    bimestre: row.bimestre,
     prioridade: row.prioridade,
     descricao: row.descricao,
     local: row.local,
@@ -61,11 +63,12 @@ function toHistorico(row: HistoricoRow): OcorrenciaHistorico {
     usuarioId: row.usuario_id,
     criadoEm: isoFromDbRequired(row.criado_em)
   };
-}
+} const COLUNAS =
+  "id, aluno_id, categoria, bimestre, prioridade, descricao, local, testemunhas, status, criado_por_id, criado_em, atualizado_em";
 
-const COLUNAS =
-  "id, aluno_id, categoria, prioridade, descricao, local, testemunhas, status, criado_por_id, criado_em, atualizado_em";
-const COLUNAS_HISTORICO = "id, ocorrencia_id, status, acao, observacao, usuario_id, criado_em";
+
+const COLUNAS_HISTORICO =
+  "id, ocorrencia_id, status, acao, observacao, usuario_id, criado_em";
 
 async function insertHistorico(executor: Pool | PoolClient, historico: OcorrenciaHistorico): Promise<void> {
   await executor.query(
@@ -83,7 +86,7 @@ async function insertHistorico(executor: Pool | PoolClient, historico: Ocorrenci
 }
 
 export class PostgresOcorrenciaRepository implements OcorrenciaRepository {
-  constructor(private readonly pool: Pool) {}
+  constructor(private readonly pool: Pool) { }
 
   async list(): Promise<Ocorrencia[]> {
     const { rows } = await this.pool.query<OcorrenciaRow>(
@@ -99,6 +102,18 @@ export class PostgresOcorrenciaRepository implements OcorrenciaRepository {
     );
     return rows.map(toOcorrencia);
   }
+  async listByBimestre(bimestre: number): Promise<Ocorrencia[]> {
+    const { rows } = await this.pool.query<OcorrenciaRow>(
+      `SELECT ${COLUNAS}
+       FROM ocorrencias
+      WHERE bimestre = $1
+      ORDER BY criado_em DESC`,
+      [bimestre]
+    );
+
+    return rows.map(toOcorrencia);
+  }
+
 
   async findById(id: string): Promise<Ocorrencia | null> {
     const { rows } = await this.pool.query<OcorrenciaRow>(
@@ -144,11 +159,12 @@ export class PostgresOcorrenciaRepository implements OcorrenciaRepository {
     // Ocorrencia e primeiro registro de historico sao gravados atomicamente.
     return withTransaction(this.pool, async (client) => {
       await client.query(
-        `INSERT INTO ocorrencias (${COLUNAS}) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+        `INSERT INTO ocorrencias (${COLUNAS}) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
         [
           ocorrencia.id,
           ocorrencia.alunoId,
           ocorrencia.categoria,
+          ocorrencia.bimestre,
           ocorrencia.prioridade,
           ocorrencia.descricao,
           ocorrencia.local ?? "",

@@ -30,7 +30,7 @@ describe("Ocorrencias", () => {
       .expect(400);
   });
 
-  it("rejeita prioridade fora dos niveis permitidos", async () => {
+  it("aceita urgencia e rejeita prioridade fora dos niveis permitidos", async () => {
     const { app, ids } = await buildTestContext();
     const auth = await tokens(app);
 
@@ -41,6 +41,17 @@ describe("Ocorrencias", () => {
         alunoId: ids.aluno,
         categoria: "Atraso",
         prioridade: "URGENTE",
+        descricao: "Aluno chegou depois do inicio da atividade escolar."
+      })
+      .expect(201);
+
+    await request(app)
+      .post("/api/ocorrencias")
+      .set("Authorization", `Bearer ${auth.professor}`)
+      .send({
+        alunoId: ids.aluno,
+        categoria: "Atraso diferente",
+        prioridade: "CRITICA",
         descricao: "Aluno chegou depois do inicio da atividade escolar."
       })
       .expect(400);

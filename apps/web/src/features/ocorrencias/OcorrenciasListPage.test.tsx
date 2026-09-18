@@ -13,18 +13,18 @@ describe("OcorrenciasListPage", () => {
     expect(screen.getByRole("table")).toBeInTheDocument();
   });
 
-  it("filtra e ordena pelo nivel textual de prioridade", async () => {
+  it("filtra e ordena pela prioridade, mantendo a classificacao de gravidade visivel", async () => {
     renderWithProviders(<OcorrenciasListPage />, ["/ocorrencias"]);
     await screen.findByText("Estudante 01");
 
     await userEvent.selectOptions(screen.getByLabelText("Prioridade"), "ALTA");
     const linhasFiltradas = within(screen.getByRole("table")).getAllByRole("row");
     expect(linhasFiltradas).toHaveLength(2);
-    expect(within(linhasFiltradas[1]).getByText("Alta")).toBeInTheDocument();
+    expect(within(linhasFiltradas[1]).getByText("Alta: Grave")).toBeInTheDocument();
 
     await userEvent.selectOptions(screen.getByLabelText("Prioridade"), "");
     await userEvent.selectOptions(screen.getByLabelText("Ordenar por prioridade"), "MAIOR");
     const linhasOrdenadas = within(screen.getByRole("table")).getAllByRole("row").slice(1);
-    expect(within(linhasOrdenadas[0]).getByText("Alta")).toBeInTheDocument();
+    expect(within(linhasOrdenadas[0]).getByText("Alta: Grave")).toBeInTheDocument();
   });
 });

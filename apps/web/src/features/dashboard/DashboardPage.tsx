@@ -62,6 +62,7 @@ export function DashboardPage() {
   const total = resumo.totalOcorrencias;
   const emAnalise = resumo.ocorrenciasPorStatus.EM_ANALISE ?? 0;
   const alta = resumo.ocorrenciasPorPrioridade.ALTA ?? 0;
+  const urgente = resumo.ocorrenciasPorPrioridade.URGENTE ?? 0;
   const encerradas = resumo.ocorrenciasPorStatus.ENCERRADA ?? 0;
 
   const temPendencias = statusPendentes(user?.papel).length > 0;
@@ -124,8 +125,8 @@ export function DashboardPage() {
           </Card>
 
           <Card className="stat-card stat-card--red">
-            <span className="stat-card__value">{loading ? "..." : alta}</span>
-            <span className="stat-card__label">Alta prioridade</span>
+            <span className="stat-card__value">{loading ? "..." : alta + urgente}</span>
+            <span className="stat-card__label">Graves ou urgentes</span>
           </Card>
 
           <Card className="stat-card stat-card--green">

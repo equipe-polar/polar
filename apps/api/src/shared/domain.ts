@@ -16,7 +16,8 @@ export enum StatusOcorrencia {
 export enum PrioridadeOcorrencia {
   BAIXA = "BAIXA",
   MEDIA = "MEDIA",
-  ALTA = "ALTA"
+  ALTA = "ALTA",
+  URGENTE = "URGENTE"
 }
 
 export enum TipoEnsino {

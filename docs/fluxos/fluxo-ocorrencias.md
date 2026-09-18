@@ -15,7 +15,7 @@ Não existe pular etapa, retroceder, cancelar nem reabrir. Transição inválida
 
 ## Registro
 
-O professor registra com: aluno válido e ativo, categoria, prioridade (`BAIXA`, `MEDIA`, `ALTA`) e descrição com pelo menos 10 caracteres. O backend deriva autor e data do usuário logado (não são digitáveis). A ocorrência nasce `REGISTRADA` e o primeiro registro de histórico é criado na mesma transação.
+O professor registra com: aluno válido e ativo, categoria, prioridade (`BAIXA`, `MEDIA`, `ALTA`, `URGENTE`) e descrição com pelo menos 10 caracteres. O backend deriva autor e data do usuário logado (não são digitáveis). A ocorrência nasce `REGISTRADA` e o primeiro registro de histórico é criado na mesma transação.
 
 Duplicata (mesmo autor + aluno + categoria + descrição em 5 minutos) é bloqueada com `409`.
 

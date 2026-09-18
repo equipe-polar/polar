@@ -26,6 +26,8 @@
   --color-warning-soft: #fff3d6;
   --color-danger: #c73636;
   --color-danger-soft: #fde7e7;
+  --color-critical: #15171a;
+  --color-critical-soft: #e9eaec;
 
   /* Faixas de destaque no topo dos cards de indicador. Cada numero do painel
      recebe uma cor propria para ser localizavel de relance, sem depender do rotulo. */

@@ -11,8 +11,12 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE TYPE prioridade_ocorrencia AS ENUM ('BAIXA', 'MEDIA', 'ALTA');
+  CREATE TYPE prioridade_ocorrencia AS ENUM ('BAIXA', 'MEDIA', 'ALTA', 'URGENTE');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- Bancos criados antes da classificacao de urgencia recebem o novo nivel sem
+-- perder registros existentes. IF NOT EXISTS torna a atualizacao idempotente.
+ALTER TYPE prioridade_ocorrencia ADD VALUE IF NOT EXISTS 'URGENTE';
 
 DO $$ BEGIN
   CREATE TYPE status_ocorrencia AS ENUM ('REGISTRADA', 'EM_ANALISE', 'RESOLVIDA', 'ENCERRADA');
